@@ -282,7 +282,9 @@ function CategoryAccordion({
       entityMap.set(slot.entity_name, { entity_name: slot.entity_name, entity_label: slot.entity_label })
     }
   }
-  const entities = Array.from(entityMap.values())
+  const entities = Array.from(entityMap.values()).sort((a, b) =>
+    a.entity_label.localeCompare(b.entity_label, 'es', { sensitivity: 'base' })
+  )
 
   // Group slots by entity
   const byEntity: Record<string, AssetSlotWithApprovals[]> = {}

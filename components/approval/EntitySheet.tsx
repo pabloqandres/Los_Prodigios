@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import ApprovalSeal from './ApprovalSeal'
 import SlotUploader from './SlotUploader'
 import CanonValidatorModal from './CanonValidatorModal'
+import BulkUploadPanel from './BulkUploadPanel'
 import type { AssetSlotWithApprovals, ValidationResult } from '@/lib/supabase'
 import { storageUrl } from '@/lib/supabase'
 import { REVIEWERS, SLOT_MATRIX, makeApprovedFileName } from '@/lib/approval-config'
@@ -480,6 +481,7 @@ export default function EntitySheet({ entity, category, slots, userEmail, onClos
   const [showingResult, setShowingResult] = useState<{ slot: AssetSlotWithApprovals; result: ValidationResult } | null>(null)
   const [validationResults, setValidationResults] = useState<Record<string, ValidationResult>>({})
   const [validationSlots, setValidationSlots] = useState<Record<string, AssetSlotWithApprovals>>({})
+  const [bulkMode, setBulkMode] = useState(false)
   const overlayRef = useRef<HTMLDivElement>(null)
 
   // ── Load persisted prompts from fresh slot data ────────────────────────────
@@ -669,6 +671,23 @@ export default function EntitySheet({ entity, category, slots, userEmail, onClos
               ✓ {Object.keys(prompts).length} prompts
             </div>
           )}
+          {/* Bulk mode toggle */}
+          <button
+            onClick={() => setBulkMode(v => !v)}
+            style={{
+              padding: '0.375rem 0.875rem',
+              background: bulkMode ? 'rgba(245,165,42,0.15)' : 'rgba(245,165,42,0.07)',
+              border: `1px solid ${bulkMode ? 'rgba(245,165,42,0.5)' : 'rgba(245,165,42,0.2)'}`,
+              borderRadius: 5,
+              color: bulkMode ? '#F5A52A' : 'rgba(245,165,42,0.6)',
+              fontSize: '0.6875rem', fontWeight: 700, cursor: 'pointer',
+              fontFamily: 'IBM Plex Sans, sans-serif', letterSpacing: '0.06em',
+              textTransform: 'uppercase', flexShrink: 0,
+              transition: 'all 0.15s',
+            }}
+          >
+            {bulkMode ? '← Vista normal' : '↑ Subida masiva'}
+          </button>
           <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
 
           {/* Progress */}
@@ -767,8 +786,21 @@ export default function EntitySheet({ entity, category, slots, userEmail, onClos
             )}
           </div>
 
-          {/* Right: slots */}
-          <div style={{ flex: 1, overflowY: 'auto', padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          {/* Right: slots or bulk upload */}
+          {bulkMode ? (
+            <div style={{ flex: 1, overflowY: 'hidden', display: 'flex', flexDirection: 'column' }}>
+              <BulkUploadPanel
+                entity={entity}
+                category={category}
+                slots={slots}
+                onSlotsUpdated={(updated) => {
+                  updated.forEach(s => onSlotUpdated(s))
+                }}
+                onClose={() => setBulkMode(false)}
+              />
+            </div>
+          ) : null}
+          <div style={{ flex: 1, overflowY: 'auto', padding: '1.25rem', display: bulkMode ? 'none' : 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             {(() => {
               let orderCounter = 0
               const orderedVTs = [
