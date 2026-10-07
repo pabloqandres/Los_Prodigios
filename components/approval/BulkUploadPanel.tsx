@@ -113,15 +113,28 @@ function SlotDropCard({
         onChange={e => { const f = e.target.files?.[0]; if (f) { onDrop(index, f); e.target.value = '' } }}
       />
 
-      {/* Number badge */}
+      {/* Label header — always visible */}
       <div style={{
-        position: 'absolute', top: 4, left: 4,
-        width: 16, height: 16, borderRadius: '50%',
-        background: 'rgba(8,6,15,0.8)', border: `1px solid ${statusColor}44`,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: '0.45rem', color: 'rgba(240,235,225,0.5)', fontWeight: 700,
-        fontFamily: 'monospace', zIndex: 2,
-      }}>{index + 1}</div>
+        padding: '5px 7px 4px',
+        background: 'rgba(0,0,0,0.35)',
+        borderBottom: `1px solid ${statusColor}22`,
+        display: 'flex', alignItems: 'flex-start', gap: 4,
+      }}>
+        <span style={{
+          fontSize: '0.5rem', fontWeight: 700, color: statusColor === 'rgba(255,255,255,0.08)' ? 'rgba(240,235,225,0.3)' : statusColor,
+          fontFamily: 'monospace', flexShrink: 0, marginTop: 1,
+        }}>{index + 1}</span>
+        <span style={{
+          fontSize: '0.5625rem', fontWeight: 600, lineHeight: 1.25,
+          color: item.status === 'uploaded' ? '#4ECDC4'
+            : item.status === 'ready' ? '#F5A52A'
+            : 'rgba(240,235,225,0.75)',
+          display: '-webkit-box', WebkitLineClamp: 2,
+          WebkitBoxOrient: 'vertical', overflow: 'hidden',
+        }}>
+          {item.slot.version_label}
+        </span>
+      </div>
 
       {/* Clear button */}
       {(item.status === 'ready' || item.status === 'error') && (
@@ -138,7 +151,7 @@ function SlotDropCard({
       )}
 
       {/* Image area */}
-      <div style={{ height: 100, background: '#060410', flexShrink: 0, position: 'relative', overflow: 'hidden' }}>
+      <div style={{ height: 80, background: '#060410', flexShrink: 0, position: 'relative', overflow: 'hidden' }}>
         {item.preview ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={item.preview} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -161,19 +174,9 @@ function SlotDropCard({
         )}
       </div>
 
-      {/* Label */}
-      <div style={{ padding: '5px 6px' }}>
-        <div style={{
-          fontSize: '0.5625rem', fontWeight: 600, lineHeight: 1.3,
-          color: item.status === 'uploaded' ? '#4ECDC4' : item.status === 'ready' ? '#F5A52A' : 'rgba(240,235,225,0.55)',
-          display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
-        }}>
-          {item.slot.version_label}
-        </div>
-        {item.status === 'error' && (
-          <div style={{ fontSize: '0.45rem', color: '#D4256A', marginTop: 2 }}>{item.errorMsg}</div>
-        )}
-      </div>
+      {item.status === 'error' && (
+        <div style={{ padding: '3px 7px', fontSize: '0.45rem', color: '#D4256A' }}>{item.errorMsg}</div>
+      )}
     </div>
   )
 }
