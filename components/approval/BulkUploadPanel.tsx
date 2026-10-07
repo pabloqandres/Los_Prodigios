@@ -115,25 +115,51 @@ function SlotDropCard({
 
       {/* Label header — always visible */}
       <div style={{
-        padding: '5px 7px 4px',
+        padding: '5px 7px 5px',
         background: 'rgba(0,0,0,0.35)',
         borderBottom: `1px solid ${statusColor}22`,
-        display: 'flex', alignItems: 'flex-start', gap: 4,
+        display: 'flex', alignItems: 'flex-start', gap: 5,
       }}>
+        {/* Number */}
         <span style={{
-          fontSize: '0.5rem', fontWeight: 700, color: statusColor === 'rgba(255,255,255,0.08)' ? 'rgba(240,235,225,0.3)' : statusColor,
+          fontSize: '0.45rem', fontWeight: 700,
+          color: statusColor === 'rgba(255,255,255,0.08)' ? 'rgba(240,235,225,0.25)' : statusColor,
           fontFamily: 'monospace', flexShrink: 0, marginTop: 1,
         }}>{index + 1}</span>
-        <span style={{
-          fontSize: '0.5625rem', fontWeight: 600, lineHeight: 1.25,
-          color: item.status === 'uploaded' ? '#4ECDC4'
-            : item.status === 'ready' ? '#F5A52A'
-            : 'rgba(240,235,225,0.75)',
-          display: '-webkit-box', WebkitLineClamp: 2,
-          WebkitBoxOrient: 'vertical', overflow: 'hidden',
-        }}>
-          {item.slot.version_label}
-        </span>
+        {/* Label parts */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 1, minWidth: 0 }}>
+          <span style={{
+            fontSize: '0.5625rem', fontWeight: 700, lineHeight: 1.2,
+            color: item.status === 'uploaded' ? '#4ECDC4'
+              : item.status === 'ready' ? '#F5A52A'
+              : 'rgba(240,235,225,0.9)',
+            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+          }}>
+            {item.slot.view_type}
+          </span>
+          {item.slot.outfit && (
+            <span style={{
+              fontSize: '0.5rem', lineHeight: 1.2,
+              color: item.status === 'uploaded' ? 'rgba(78,205,196,0.7)'
+                : item.status === 'ready' ? 'rgba(245,165,42,0.7)'
+                : 'rgba(240,235,225,0.45)',
+              whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+            }}>
+              {item.slot.outfit}
+            </span>
+          )}
+          {item.slot.age_version && (
+            <span style={{
+              fontSize: '0.5rem', lineHeight: 1.2,
+              color: item.status === 'uploaded' ? 'rgba(78,205,196,0.55)'
+                : item.status === 'ready' ? 'rgba(245,165,42,0.55)'
+                : 'rgba(240,235,225,0.35)',
+              whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+            }}>
+              {item.slot.age_version}
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Clear button */}
