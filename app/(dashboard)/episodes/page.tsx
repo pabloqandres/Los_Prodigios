@@ -36,14 +36,33 @@ export default function EpisodesPage() {
   const [episodes, setEpisodes] = useState<EpisodeSummary[]>([])
   const [loading, setLoading] = useState(true)
   const [creating, setCreating] = useState<{ season: number; ep: number } | null>(null)
+  const [isAdmin, setIsAdmin] = useState(false)
+  const [deleting, setDeleting] = useState<string | null>(null)
 
   useEffect(() => {
-    fetch('/api/episodes')
-      .then(r => r.json())
-      .then(d => { if (Array.isArray(d)) setEpisodes(d) })
+    Promise.all([
+      fetch('/api/episodes').then(r => r.json()),
+      fetch('/api/me').then(r => r.json()),
+    ])
+      .then(([d, me]) => {
+        if (Array.isArray(d)) setEpisodes(d)
+        if (me?.role === 'admin') setIsAdmin(true)
+      })
       .catch(() => {})
       .finally(() => setLoading(false))
   }, [])
+
+  async function deleteEpisode(e: React.MouseEvent, episodeId: string) {
+    e.stopPropagation()
+    if (!confirm('¿Eliminar este episodio? Esta acción no se puede deshacer.')) return
+    setDeleting(episodeId)
+    try {
+      await fetch(`/api/episodes?id=${episodeId}`, { method: 'DELETE' })
+      setEpisodes(prev => prev.filter(ep => ep.id !== episodeId))
+    } finally {
+      setDeleting(null)
+    }
+  }
 
   async function createEpisode(season: number, episode_number: number) {
     setCreating({ season, ep: episode_number })
@@ -169,7 +188,20 @@ export default function EpisodesPage() {
                           <span style={{ fontSize: '0.55rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: statusColor, fontWeight: 600 }}>
                             {STATUS_LABELS[episode.status]}
                           </span>
-                          <span style={{ fontSize: '0.6rem', color: '#D4256A', fontWeight: 700 }}>Abrir →</span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            {isAdmin && (
+                              <button
+                                onClick={e => deleteEpisode(e, episode.id)}
+                                disabled={deleting === episode.id}
+                                style={{ background: 'none', border: 'none', color: 'rgba(212,37,106,0.25)', cursor: deleting === episode.id ? 'not-allowed' : 'pointer', fontSize: '0.85rem', padding: '0', lineHeight: 1 }}
+                                onMouseEnter={e => (e.currentTarget.style.color = '#D4256A')}
+                                onMouseLeave={e => (e.currentTarget.style.color = 'rgba(212,37,106,0.25)')}
+                              >
+                                {deleting === episode.id ? '...' : '×'}
+                              </button>
+                            )}
+                            <span style={{ fontSize: '0.6rem', color: '#D4256A', fontWeight: 700 }}>Abrir →</span>
+                          </div>
                         </div>
                       </div>
                     )
