@@ -89,6 +89,9 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
   const [manualLabel, setManualLabel] = useState('')
   const [manualType, setManualType] = useState('personaje_jugador')
   const [analysisRan, setAnalysisRan] = useState(false)
+  const [editingSuggestion, setEditingSuggestion] = useState(false)
+  const [editLabel, setEditLabel] = useState('')
+  const [editType, setEditType] = useState('personaje_jugador')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const MANUAL_TYPES = [
@@ -109,33 +112,36 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
       .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join('')
   }
 
-  async function applyManualEntity() {
-    const typeConf = MANUAL_TYPES.find(t => t.value === manualType)
-    if (!typeConf || !manualLabel.trim()) return
-    const entity_name = toPascalCase(manualLabel.trim())
-    const suggestion = {
-      category: typeConf.category,
-      matrix_key: typeConf.matrix_key,
-      entity_name,
-      entity_label: manualLabel.trim(),
-      confidence: 1,
-    }
+  function typeFromSuggestion(s: { category: string; matrix_key: string }) {
+    return MANUAL_TYPES.find(t => t.category === s.category && t.matrix_key === s.matrix_key)?.value ?? 'personaje_jugador'
+  }
+
+  async function applySuggestionFromType(label: string, typeValue: string, keepActivated: boolean) {
+    const typeConf = MANUAL_TYPES.find(t => t.value === typeValue)
+    if (!typeConf || !label.trim()) return
+    const entity_name = toPascalCase(label.trim())
+    const suggestion = { category: typeConf.category, matrix_key: typeConf.matrix_key, entity_name, entity_label: label.trim(), confidence: 1 }
     setAssetSuggestion(suggestion)
-    setCreateAssetSlots(true)
-    setShowManualEntity(false)
+    setCreateAssetSlots(keepActivated)
+    setExistingSlotCount(null)
+    setExpectedSlotCount(null)
 
     const [existingRes, previewRes] = await Promise.all([
       fetch(`/api/assets/slots?entity_name=${encodeURIComponent(entity_name)}`),
       fetch(`/api/assets/seed-checklist/preview?entity_name=${encodeURIComponent(entity_name)}&category=${encodeURIComponent(typeConf.category)}&matrix_key=${encodeURIComponent(typeConf.matrix_key)}`),
     ])
-    if (existingRes.ok) {
-      const d = await existingRes.json()
-      setExistingSlotCount(Array.isArray(d) ? d.length : 0)
-    }
-    if (previewRes.ok) {
-      const d = await previewRes.json()
-      setExpectedSlotCount(d.total ?? null)
-    }
+    if (existingRes.ok) { const d = await existingRes.json(); setExistingSlotCount(Array.isArray(d) ? d.length : 0) }
+    if (previewRes.ok) { const d = await previewRes.json(); setExpectedSlotCount(d.total ?? null) }
+  }
+
+  async function applyManualEntity() {
+    await applySuggestionFromType(manualLabel, manualType, true)
+    setShowManualEntity(false)
+  }
+
+  async function applyEditedSuggestion() {
+    await applySuggestionFromType(editLabel, editType, createAssetSlots)
+    setEditingSuggestion(false)
   }
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -507,14 +513,43 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
                     <div style={{ fontSize: '0.8125rem', color: accent, fontWeight: 600, marginBottom: 3 }}>
                       {lowConfidence ? '¿Es este elemento?' : 'Elemento visual detectado'}
                     </div>
-                    <div style={{ fontSize: '0.75rem', color: 'rgba(240,235,225,0.6)' }}>
-                      <strong style={{ color: 'rgba(240,235,225,0.85)' }}>{assetSuggestion.entity_label}</strong>
-                      {' '}· {assetSuggestion.matrix_key !== assetSuggestion.category ? assetSuggestion.matrix_key : assetSuggestion.category}
-                      {' '}· {Math.round(assetSuggestion.confidence * 100)}% confianza
-                      {lowConfidence && <span style={{ color: '#F5A52A', marginLeft: '0.375rem' }}>— confirma antes de crear</span>}
-                    </div>
+                    {!editingSuggestion ? (
+                      <div style={{ fontSize: '0.75rem', color: 'rgba(240,235,225,0.6)', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                        <strong style={{ color: 'rgba(240,235,225,0.85)' }}>{assetSuggestion.entity_label}</strong>
+                        <span>·</span>
+                        <span>{MANUAL_TYPES.find(t => t.category === assetSuggestion.category && t.matrix_key === assetSuggestion.matrix_key)?.label ?? assetSuggestion.matrix_key}</span>
+                        <span>· {Math.round(assetSuggestion.confidence * 100)}%</span>
+                        <button
+                          onClick={() => { setEditLabel(assetSuggestion.entity_label); setEditType(typeFromSuggestion(assetSuggestion)); setEditingSuggestion(true) }}
+                          style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', color: 'rgba(240,235,225,0.35)', fontSize: '0.7rem', fontFamily: 'IBM Plex Sans, sans-serif', textDecoration: 'underline' }}
+                        >editar</button>
+                        {lowConfidence && <span style={{ color: '#F5A52A' }}>— confirma antes de crear</span>}
+                      </div>
+                    ) : (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.375rem', marginTop: '0.375rem' }}>
+                        <div style={{ display: 'flex', gap: '0.375rem' }}>
+                          <input
+                            value={editLabel} onChange={e => setEditLabel(e.target.value)}
+                            style={{ flex: 1, background: '#1A1235', border: '1px solid rgba(78,205,196,0.3)', borderRadius: '2px', color: '#F0EBE1', fontFamily: 'IBM Plex Sans, sans-serif', fontSize: '0.8125rem', padding: '0.375rem 0.5rem', outline: 'none' }}
+                          />
+                          <select value={editType} onChange={e => setEditType(e.target.value)}
+                            style={{ background: '#1A1235', border: '1px solid rgba(78,205,196,0.3)', borderRadius: '2px', color: '#F0EBE1', fontFamily: 'IBM Plex Sans, sans-serif', fontSize: '0.75rem', padding: '0.375rem 0.5rem', outline: 'none', cursor: 'pointer' }}
+                          >
+                            {MANUAL_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+                          </select>
+                        </div>
+                        <div style={{ display: 'flex', gap: '0.375rem' }}>
+                          <button onClick={applyEditedSuggestion} disabled={!editLabel.trim()}
+                            style={{ padding: '0.3rem 0.75rem', background: 'rgba(78,205,196,0.15)', border: '1px solid rgba(78,205,196,0.3)', borderRadius: '2px', color: '#4ECDC4', fontSize: '0.7rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'IBM Plex Sans, sans-serif' }}
+                          >Aplicar</button>
+                          <button onClick={() => setEditingSuggestion(false)}
+                            style={{ padding: '0.3rem 0.75rem', background: 'transparent', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '2px', color: 'rgba(240,235,225,0.3)', fontSize: '0.7rem', cursor: 'pointer', fontFamily: 'IBM Plex Sans, sans-serif' }}
+                          >Cancelar</button>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                  {!alreadyComplete && (
+                  {!alreadyComplete && !editingSuggestion && (
                     <button
                       onClick={() => setCreateAssetSlots(v => !v)}
                       style={{

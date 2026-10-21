@@ -459,7 +459,7 @@ export default function ApprovalPage() {
   const [loading, setLoading] = useState(true)
 
   const [openCats, setOpenCats] = useState<Record<string, boolean>>(
-    Object.fromEntries(CATEGORY_ORDER.map(c => [c, true]))
+    Object.fromEntries(CATEGORY_ORDER.map(c => [c, false]))
   )
   const userEmail = session?.user?.email ?? ''
 
@@ -467,7 +467,13 @@ export default function ApprovalPage() {
     setLoading(true)
     try {
       const res = await fetch('/api/assets/slots')
-      if (res.ok) setSlots(await res.json())
+      if (res.ok) {
+        const data = await res.json()
+        setSlots(data)
+        // Auto-open only categories that have slots
+        const catsWithData = new Set<string>((data as AssetSlotWithApprovals[]).map((s: AssetSlotWithApprovals) => s.category))
+        setOpenCats(Object.fromEntries(CATEGORY_ORDER.map(c => [c, catsWithData.has(c)])))
+      }
     } finally {
       setLoading(false)
     }
