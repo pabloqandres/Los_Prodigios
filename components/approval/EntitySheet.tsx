@@ -236,7 +236,8 @@ function SlotRow({
   async function deleteSlot(e: React.MouseEvent) {
     e.stopPropagation()
     if (deleting) return
-    if (!confirm(`¿Eliminar el slot "${slot.version_label}" permanentemente? Esto no se puede deshacer.`)) return
+    const approvedWarning = slot.status === 'approved' ? '\n\n⚠️ Este slot está APROBADO. Borrarlo eliminará también la imagen aprobada.' : ''
+    if (!confirm(`¿Eliminar el slot "${slot.version_label}" permanentemente? Esto no se puede deshacer.${approvedWarning}`)) return
     setDeleting(true)
     try {
       const res = await fetch(`/api/assets/slots/${slot.id}/delete`, { method: 'POST' })
@@ -336,13 +337,13 @@ function SlotRow({
         <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'rgba(240,235,225,0.85)', lineHeight: 1.3 }}>
           {slot.version_label}
         </div>
-        {slot.status === 'approved' && slot.approved_drive_file_id && (
+        {slot.status === 'approved' && slot.approved_drive_file_id && storageUrl(slot.approved_drive_file_id) && (
           <a
-            href={`https://drive.google.com/file/d/${slot.approved_drive_file_id}/view`}
+            href={storageUrl(slot.approved_drive_file_id)!}
             target="_blank" rel="noopener noreferrer"
             style={{ fontSize: '0.6rem', color: '#4ECDC4', textDecoration: 'none', opacity: 0.7 }}
           >
-            Ver en Drive →
+            Ver imagen →
           </a>
         )}
         <div style={{
@@ -448,7 +449,7 @@ function SlotRow({
             />
           ))}
         </div>
-        {isReviewer && slot.status !== 'approved' && (
+        {isReviewer && (
           <button
             onClick={deleteSlot}
             disabled={deleting}
