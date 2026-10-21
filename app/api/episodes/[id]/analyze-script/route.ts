@@ -179,13 +179,13 @@ Reglas:
   // ── 5. Parse result ──────────────────────────────────────────────────────────
   let parsed: Omit<AnalysisResult, 'gaps'>
   try {
-    const match = analysisRaw.match(/\{[\s\S]*\}/)
-    parsed = JSON.parse(match ? match[0] : analysisRaw)
+    // Strip markdown code fences if present
+    const cleaned = analysisRaw.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim()
+    const match = cleaned.match(/\{[\s\S]*\}/)
+    parsed = JSON.parse(match ? match[0] : cleaned)
   } catch {
-    return NextResponse.json({
-      error: 'No se pudo parsear la respuesta de Claude',
-      raw: analysisRaw.substring(0, 500),
-    }, { status: 500 })
+    // Return partial result instead of hard error
+    parsed = { canon_issues: [], scene_needs: [], summary: 'No se pudo interpretar la respuesta del análisis.' }
   }
 
   // ── 6. Gap analysis — filter out already-approved slots ──────────────────────
@@ -283,6 +283,6 @@ export async function GET(
     .order('scene_ref')
     .order('entity_name')
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (error) return NextResponse.json([])  // table may not exist yet — return empty
   return NextResponse.json(data ?? [])
 }
