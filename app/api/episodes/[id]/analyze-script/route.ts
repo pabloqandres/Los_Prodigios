@@ -84,12 +84,12 @@ export async function POST(
 
   const canonContext = (refDocs ?? [])
     .filter(d => d.content && d.content.length > 100)
-    .slice(0, 12)
-    .map(d => `### ${d.title}\n${d.content?.substring(0, 2000)}`)
+    .slice(0, 8)
+    .map(d => `### ${d.title}\n${d.content?.substring(0, 1500)}`)
     .join('\n\n---\n\n')
 
   // ── 4. Claude analysis ────────────────────────────────────────────────────────
-  const scriptExcerpt = episode.script.substring(0, 12000)
+  const scriptExcerpt = episode.script.substring(0, 8000)
   const episodeLabel  = `T${episode.season}E${episode.episode_number}${episode.title ? ` — ${episode.title}` : ''}`
 
   const systemPrompt = `Eres el supervisor de producción de "Los Prodigios", serie animada latinoamericana de fútbol.
@@ -167,7 +167,7 @@ Reglas:
   try {
     const response = await client.messages.create({
       model: 'claude-sonnet-4-6',
-      max_tokens: 4000,
+      max_tokens: 8000,
       system: systemPrompt,
       messages: [{ role: 'user', content: userPrompt }],
     })
