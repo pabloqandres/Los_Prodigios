@@ -85,7 +85,58 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
   const [createAssetSlots, setCreateAssetSlots] = useState(false)
   const [existingSlotCount, setExistingSlotCount] = useState<number | null>(null)
   const [expectedSlotCount, setExpectedSlotCount] = useState<number | null>(null)
+  const [showManualEntity, setShowManualEntity] = useState(false)
+  const [manualLabel, setManualLabel] = useState('')
+  const [manualType, setManualType] = useState('personaje_jugador')
+  const [analysisRan, setAnalysisRan] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const MANUAL_TYPES = [
+    { value: 'personaje_jugador',   label: 'Personaje jugador',     category: 'personajes', matrix_key: 'personajes' },
+    { value: 'entrenador',          label: 'Entrenador / DT',       category: 'personajes', matrix_key: 'entrenadores' },
+    { value: 'secundario',          label: 'Personaje secundario',  category: 'secundarios', matrix_key: 'secundarios' },
+    { value: 'locacion',            label: 'Locación',              category: 'locaciones',  matrix_key: 'locaciones' },
+    { value: 'prop',                label: 'Prop / Objeto',         category: 'props',       matrix_key: 'props' },
+    { value: 'criatura',            label: 'Criatura',              category: 'criaturas',   matrix_key: 'criaturas' },
+    { value: 'mascota',             label: 'Mascota',               category: 'mascotas',    matrix_key: 'mascotas' },
+    { value: 'hawks_jugador',       label: 'Hawks (jugador)',       category: 'hawks',       matrix_key: 'hawks' },
+    { value: 'hawks_entrenador',    label: 'Hawks (entrenador)',    category: 'hawks',       matrix_key: 'entrenadores' },
+  ]
+
+  function toPascalCase(label: string): string {
+    return label.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-zA-Z0-9\s]/g, '').split(/\s+/)
+      .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join('')
+  }
+
+  async function applyManualEntity() {
+    const typeConf = MANUAL_TYPES.find(t => t.value === manualType)
+    if (!typeConf || !manualLabel.trim()) return
+    const entity_name = toPascalCase(manualLabel.trim())
+    const suggestion = {
+      category: typeConf.category,
+      matrix_key: typeConf.matrix_key,
+      entity_name,
+      entity_label: manualLabel.trim(),
+      confidence: 1,
+    }
+    setAssetSuggestion(suggestion)
+    setCreateAssetSlots(true)
+    setShowManualEntity(false)
+
+    const [existingRes, previewRes] = await Promise.all([
+      fetch(`/api/assets/slots?entity_name=${encodeURIComponent(entity_name)}`),
+      fetch(`/api/assets/seed-checklist/preview?entity_name=${encodeURIComponent(entity_name)}&category=${encodeURIComponent(typeConf.category)}&matrix_key=${encodeURIComponent(typeConf.matrix_key)}`),
+    ])
+    if (existingRes.ok) {
+      const d = await existingRes.json()
+      setExistingSlotCount(Array.isArray(d) ? d.length : 0)
+    }
+    if (previewRes.ok) {
+      const d = await previewRes.json()
+      setExpectedSlotCount(d.total ?? null)
+    }
+  }
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0]
@@ -99,6 +150,9 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
     setExistingSlotCount(null)
     setExpectedSlotCount(null)
     setStoragePath(null)
+    setAnalysisRan(false)
+    setShowManualEntity(false)
+    setManualLabel('')
     setError('')
     setAnalyzing(true)
     try {
@@ -133,6 +187,7 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
         const data = await analyzeRes.json()
         setDescription(data.description ?? '')
         setCategories(data.categories ?? [])
+        setAnalysisRan(true)
         if (data.needs_assets && data.asset_entity_name) {
           const suggestion = {
             category: data.asset_category,
@@ -513,6 +568,57 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
               </div>
             )
           })()}
+
+          {/* Manual entity fallback — shown when analysis ran but found nothing */}
+          {!analyzing && analysisRan && !assetSuggestion && (
+            <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '0.875rem' }}>
+              {!showManualEntity ? (
+                <button
+                  onClick={() => setShowManualEntity(true)}
+                  style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: '0.75rem', color: 'rgba(240,235,225,0.3)', fontFamily: 'IBM Plex Sans, sans-serif', display: 'flex', alignItems: 'center', gap: '0.375rem' }}
+                >
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                  No se detectó elemento visual — crear entidad manualmente
+                </button>
+              ) : (
+                <div style={{ background: 'rgba(155,111,212,0.06)', border: '1px solid rgba(155,111,212,0.2)', borderRadius: '4px', padding: '0.875rem 1rem', display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
+                  <div style={{ fontSize: '0.8125rem', color: 'rgba(155,111,212,0.9)', fontWeight: 600 }}>Crear entidad visual manualmente</div>
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <input
+                      value={manualLabel}
+                      onChange={e => setManualLabel(e.target.value)}
+                      placeholder="Nombre del personaje / locación..."
+                      style={{ flex: 1, background: '#1A1235', border: '1px solid rgba(155,111,212,0.2)', borderRadius: '2px', color: '#F0EBE1', fontFamily: 'IBM Plex Sans, sans-serif', fontSize: '0.8125rem', padding: '0.5rem 0.625rem', outline: 'none' }}
+                    />
+                    <select
+                      value={manualType}
+                      onChange={e => setManualType(e.target.value)}
+                      style={{ background: '#1A1235', border: '1px solid rgba(155,111,212,0.2)', borderRadius: '2px', color: '#F0EBE1', fontFamily: 'IBM Plex Sans, sans-serif', fontSize: '0.8125rem', padding: '0.5rem 0.625rem', outline: 'none', cursor: 'pointer' }}
+                    >
+                      {MANUAL_TYPES.map(t => (
+                        <option key={t.value} value={t.value}>{t.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <button
+                      onClick={applyManualEntity}
+                      disabled={!manualLabel.trim()}
+                      style={{ flex: 1, padding: '0.4rem 0.75rem', background: manualLabel.trim() ? 'rgba(155,111,212,0.2)' : 'transparent', border: '1px solid rgba(155,111,212,0.3)', borderRadius: '2px', color: manualLabel.trim() ? '#9B6FD4' : 'rgba(155,111,212,0.3)', fontSize: '0.75rem', fontWeight: 600, cursor: manualLabel.trim() ? 'pointer' : 'not-allowed', fontFamily: 'IBM Plex Sans, sans-serif' }}
+                    >
+                      Aplicar
+                    </button>
+                    <button
+                      onClick={() => setShowManualEntity(false)}
+                      style={{ padding: '0.4rem 0.75rem', background: 'transparent', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '2px', color: 'rgba(240,235,225,0.3)', fontSize: '0.75rem', cursor: 'pointer', fontFamily: 'IBM Plex Sans, sans-serif' }}
+                    >
+                      Cancelar
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           {error && <p style={{ fontSize: '0.8125rem', color: '#D4256A', margin: 0 }}>{error}</p>}
         </div>
