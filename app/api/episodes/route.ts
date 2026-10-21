@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getToken } from 'next-auth/jwt'
 import { createServerClient } from '@/lib/supabase'
+import { logActivity } from '@/lib/activity'
 
 export const runtime = 'nodejs'
 
@@ -76,6 +77,14 @@ export async function POST(request: NextRequest) {
     { episode_id: data.id, act_number: 3 },
   ])
 
+  await logActivity({
+    action: 'episode.create',
+    entity_type: 'episode',
+    entity_id: data.id,
+    entity_label: title ? `T${season}E${episode_number} — ${title}` : `T${season}E${episode_number}`,
+    user_email: token.email,
+  })
+
   return NextResponse.json(data, { status: 201 })
 }
 
@@ -103,6 +112,16 @@ export async function PATCH(request: NextRequest) {
     .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+  await logActivity({
+    action: 'episode.edit',
+    entity_type: 'episode',
+    entity_id: id,
+    entity_label: data.title ? `T${data.season}E${data.episode_number} — ${data.title}` : `T${data.season}E${data.episode_number}`,
+    detail: patch.status ? `estado: ${patch.status}` : undefined,
+    user_email: token.email,
+  })
+
   return NextResponse.json(data)
 }
 

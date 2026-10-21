@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getToken } from 'next-auth/jwt'
 import { createServerClient } from '@/lib/supabase'
 import mammoth from 'mammoth'
+import { logActivity } from '@/lib/activity'
 
 export const runtime = 'nodejs'
 export const maxDuration = 30
@@ -87,6 +88,15 @@ export async function POST(request: NextRequest) {
     // Clean up temp file from storage (content is now in DB)
     await supabase.storage.from('assets').remove([storage_path])
 
+    await logActivity({
+      action: 'doc.upload',
+      entity_type: 'document',
+      entity_id: data.id,
+      entity_label: data.title,
+      detail: data.categories?.join(', ') || undefined,
+      user_email: token.email as string,
+    })
+
     return NextResponse.json(data, { status: 201 })
   } catch (e) {
     return NextResponse.json({ error: `Error al procesar el archivo: ${String(e)}` }, { status: 500 })
@@ -138,6 +148,15 @@ export async function PATCH(request: NextRequest) {
     .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+  await logActivity({
+    action: 'doc.edit',
+    entity_type: 'document',
+    entity_id: id,
+    entity_label: data.title,
+    user_email: token.email as string,
+  })
+
   return NextResponse.json(data)
 }
 
@@ -150,8 +169,19 @@ export async function DELETE(request: NextRequest) {
   if (!id) return NextResponse.json({ error: 'id requerido' }, { status: 400 })
 
   const supabase = createServerClient()
-  const { error } = await supabase.from('reference_docs').delete().eq('id', id)
 
+  const { data: doc } = await supabase.from('reference_docs').select('title').eq('id', id).single()
+
+  const { error } = await supabase.from('reference_docs').delete().eq('id', id)
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+  await logActivity({
+    action: 'doc.delete',
+    entity_type: 'document',
+    entity_id: id,
+    entity_label: doc?.title ?? id,
+    user_email: token.email as string,
+  })
+
   return NextResponse.json({ ok: true })
 }

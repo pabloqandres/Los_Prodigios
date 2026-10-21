@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getToken } from 'next-auth/jwt'
 import { createServerClient } from '@/lib/supabase'
+import { logActivity } from '@/lib/activity'
 
 async function isAdmin(email: string, supabase: ReturnType<typeof createServerClient>) {
   const { data } = await supabase.from('user_roles').select('role').eq('email', email).single()
@@ -57,6 +58,15 @@ export async function POST(request: NextRequest) {
     .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+  await logActivity({
+    action: 'artwork.create',
+    entity_type: 'artwork_flow',
+    entity_id: data.id,
+    entity_label: title,
+    user_email: token.email,
+  })
+
   return NextResponse.json(data, { status: 201 })
 }
 
@@ -84,6 +94,15 @@ export async function PATCH(request: NextRequest) {
     .single()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+  await logActivity({
+    action: 'artwork.edit',
+    entity_type: 'artwork_flow',
+    entity_id: id,
+    entity_label: data.title,
+    user_email: token.email,
+  })
+
   return NextResponse.json(data)
 }
 

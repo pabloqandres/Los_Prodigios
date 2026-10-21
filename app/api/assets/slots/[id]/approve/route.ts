@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getToken } from 'next-auth/jwt'
 import { createServerClient } from '@/lib/supabase'
 import { REVIEWERS, makeApprovedFileName } from '@/lib/approval-config'
+import { logActivity } from '@/lib/activity'
 
 export const runtime = 'nodejs'
 export const maxDuration = 60
@@ -51,6 +52,15 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       .from('asset_slots')
       .update({ status: 'rejected', updated_at: new Date().toISOString() })
       .eq('id', slotId)
+
+    await logActivity({
+      action: 'asset.reject',
+      entity_type: 'asset_slot',
+      entity_id: slotId,
+      entity_label: `${slot.entity_label} — ${slot.version_label}`,
+      detail: note ? `"${note}"` : undefined,
+      user_email: email,
+    })
 
     const { data: updated } = await supabase
       .from('asset_slots')
@@ -116,6 +126,15 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         .eq('id', slotId)
         .single()
 
+      await logActivity({
+        action: 'asset.approve',
+        entity_type: 'asset_slot',
+        entity_id: slotId,
+        entity_label: `${slot.entity_label} — ${slot.version_label}`,
+        detail: `Aprobado por ambos revisores`,
+        user_email: email,
+      })
+
       return NextResponse.json({ slot: updated, moved: true })
     } catch (err) {
       console.error('[approve] error moving file:', err)
@@ -129,6 +148,15 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       .update({ status: 'in_review', updated_at: new Date().toISOString() })
       .eq('id', slotId)
   }
+
+  await logActivity({
+    action: 'asset.approve',
+    entity_type: 'asset_slot',
+    entity_id: slotId,
+    entity_label: `${slot.entity_label} — ${slot.version_label}`,
+    detail: `Voto de ${reviewerName} — esperando segundo revisor`,
+    user_email: email,
+  })
 
   const { data: updated } = await supabase
     .from('asset_slots')

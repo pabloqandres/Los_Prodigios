@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getToken } from 'next-auth/jwt'
 import { createServerClient } from '@/lib/supabase'
+import { logActivity } from '@/lib/activity'
 
 export const runtime = 'nodejs'
 export const maxDuration = 60
@@ -68,6 +69,15 @@ export async function POST(req: NextRequest) {
     .select('*, asset_approvals(*)')
     .eq('id', slot_id)
     .single()
+
+  await logActivity({
+    action: 'asset.upload',
+    entity_type: 'asset_slot',
+    entity_id: slot_id,
+    entity_label: `${slot.entity_label} — ${slot.version_label}`,
+    detail: slot.category,
+    user_email: token.email as string,
+  })
 
   return NextResponse.json({ slot: updated })
 }

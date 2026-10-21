@@ -2,15 +2,38 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getToken } from 'next-auth/jwt'
 import { createServerClient } from '@/lib/supabase'
 
-type ActivityItem = {
-  id: string
-  type: string
-  title: string
-  subtitle: string
-  user: string
-  ts: string
-  accent: string
-  href: string
+const ACTION_META: Record<string, { type: string; accent: string; href: string }> = {
+  'doc.upload':        { type: 'Biblia',      accent: '#4A8FE8', href: '/bible' },
+  'doc.delete':        { type: 'Biblia',      accent: '#D4256A', href: '/bible' },
+  'doc.edit':          { type: 'Biblia',      accent: '#4A8FE8', href: '/bible' },
+  'asset.upload':      { type: 'Asset',       accent: '#9B6FD4', href: '/approval' },
+  'asset.approve':     { type: 'Aprobación',  accent: '#4ECDC4', href: '/approval' },
+  'asset.reject':      { type: 'Aprobación',  accent: '#D4256A', href: '/approval' },
+  'asset.delete':      { type: 'Asset',       accent: '#D4256A', href: '/approval' },
+  'asset.bulk_approve':{ type: 'Aprobación',  accent: '#4ECDC4', href: '/approval' },
+  'entity.create':     { type: 'Entidad',     accent: '#F5A52A', href: '/approval' },
+  'entity.delete':     { type: 'Entidad',     accent: '#D4256A', href: '/approval' },
+  'episode.create':    { type: 'Episodio',    accent: '#D4256A', href: '/episodes' },
+  'episode.edit':      { type: 'Episodio',    accent: '#D4256A', href: '/episodes' },
+  'artwork.create':    { type: 'Arte',        accent: '#F5A52A', href: '/artwork' },
+  'artwork.edit':      { type: 'Arte',        accent: '#F5A52A', href: '/artwork' },
+}
+
+const ACTION_VERB: Record<string, string> = {
+  'doc.upload':        'Biblia subida',
+  'doc.delete':        'Biblia eliminada',
+  'doc.edit':          'Biblia editada',
+  'asset.upload':      'Imagen subida',
+  'asset.approve':     'Asset aprobado',
+  'asset.reject':      'Asset rechazado',
+  'asset.delete':      'Slot eliminado',
+  'asset.bulk_approve':'Aprobación masiva',
+  'entity.create':     'Entidad creada',
+  'entity.delete':     'Entidad eliminada',
+  'episode.create':    'Episodio creado',
+  'episode.edit':      'Episodio editado',
+  'artwork.create':    'Flow de arte creado',
+  'artwork.edit':      'Flow de arte editado',
 }
 
 export async function GET(request: NextRequest) {
@@ -18,125 +41,36 @@ export async function GET(request: NextRequest) {
   if (!token || !token.email) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const supabase = createServerClient()
+  const limit = parseInt(request.nextUrl.searchParams.get('limit') ?? '20')
 
-  const { data: roleData } = await supabase
-    .from('user_roles')
-    .select('role')
-    .eq('email', token.email as string)
-    .single()
-  const isAdmin = roleData?.role === 'admin'
+  const { data, error } = await supabase
+    .from('activity_log')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(limit)
 
-  const results = await Promise.allSettled([
-    // Artwork flows
-    isAdmin
-      ? supabase.from('artwork_flows').select('id, title, created_by, updated_at').order('updated_at', { ascending: false }).limit(8)
-      : supabase.from('artwork_flows').select('id, title, created_by, updated_at').eq('created_by', token.email as string).order('updated_at', { ascending: false }).limit(8),
-    // Biblia / reference docs
-    supabase.from('reference_docs').select('id, title, categories, created_by, created_at').order('created_at', { ascending: false }).limit(6),
-    // Approval slots (in_review + approved)
-    supabase.from('asset_slots').select('id, entity_label, version_label, status, updated_at').in('status', ['in_review', 'approved']).order('updated_at', { ascending: false }).limit(10),
-    // Episodes
-    supabase.from('episodes').select('id, season, episode_number, title, status, created_by, updated_at').order('updated_at', { ascending: false }).limit(8),
-    // Canon log entries
-    supabase.from('canon_log').select('id, doc_title, change_summary, created_by, created_at').order('created_at', { ascending: false }).limit(6),
-  ])
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
-  const items: ActivityItem[] = []
-
-  // Artwork flows
-  const r0 = results[0]
-  if (r0.status === 'fulfilled' && r0.value.data) {
-    for (const f of r0.value.data) {
-      items.push({
-        id: `flow-${f.id}`,
-        type: 'Arte',
-        title: f.title,
-        subtitle: 'Flow de generación',
-        user: f.created_by ?? '',
-        ts: f.updated_at,
-        accent: '#F5A52A',
-        href: '/artwork',
-      })
+  const items = (data ?? []).map((row: {
+    id: string
+    action: string
+    entity_label: string
+    detail: string | null
+    user_email: string
+    created_at: string
+  }) => {
+    const meta = ACTION_META[row.action] ?? { type: row.action, accent: '#9B6FD4', href: '/' }
+    return {
+      id: row.id,
+      type: meta.type,
+      title: row.entity_label,
+      subtitle: row.detail ?? ACTION_VERB[row.action] ?? row.action,
+      user: row.user_email,
+      ts: row.created_at,
+      accent: meta.accent,
+      href: meta.href,
     }
-  }
+  })
 
-  // Reference docs
-  const r1 = results[1]
-  if (r1.status === 'fulfilled' && r1.value.data) {
-    for (const d of r1.value.data) {
-      items.push({
-        id: `doc-${d.id}`,
-        type: 'Biblia',
-        title: d.title,
-        subtitle: d.categories?.join(', ') || 'Documento canónico',
-        user: d.created_by ?? '',
-        ts: d.created_at,
-        accent: '#4A8FE8',
-        href: '/bible',
-      })
-    }
-  }
-
-  // Approval slots
-  const r2 = results[2]
-  if (r2.status === 'fulfilled' && r2.value.data) {
-    const STATUS_LABEL: Record<string, string> = { in_review: 'En revisión', approved: 'Aprobado' }
-    for (const s of r2.value.data) {
-      items.push({
-        id: `slot-${s.id}`,
-        type: 'Aprobación',
-        title: `${s.entity_label} — ${s.version_label}`,
-        subtitle: STATUS_LABEL[s.status] ?? s.status,
-        user: '',
-        ts: s.updated_at,
-        accent: s.status === 'approved' ? '#4ECDC4' : '#9B6FD4',
-        href: '/approval',
-      })
-    }
-  }
-
-  // Episodes
-  const r3 = results[3]
-  if (r3.status === 'fulfilled' && r3.value.data) {
-    const EP_STATUS: Record<string, string> = {
-      draft: 'Borrador',
-      in_progress: 'En progreso',
-      completed: 'Completado',
-    }
-    for (const e of r3.value.data) {
-      const epLabel = e.title
-        ? `T${e.season}E${e.episode_number} — ${e.title}`
-        : `T${e.season}E${e.episode_number}`
-      items.push({
-        id: `ep-${e.id}`,
-        type: 'Episodio',
-        title: epLabel,
-        subtitle: EP_STATUS[e.status] ?? e.status ?? 'Actualizado',
-        user: e.created_by ?? '',
-        ts: e.updated_at,
-        accent: '#D4256A',
-        href: `/episodes/${e.id}`,
-      })
-    }
-  }
-
-  // Canon log
-  const r4 = results[4]
-  if (r4.status === 'fulfilled' && r4.value.data) {
-    for (const c of r4.value.data) {
-      items.push({
-        id: `canon-${c.id}`,
-        type: 'Canon',
-        title: c.doc_title,
-        subtitle: c.change_summary ?? 'Cambio registrado',
-        user: c.created_by ?? '',
-        ts: c.created_at,
-        accent: '#4ECDC4',
-        href: '/bible',
-      })
-    }
-  }
-
-  items.sort((a, b) => new Date(b.ts).getTime() - new Date(a.ts).getTime())
-  return NextResponse.json(items.slice(0, 15))
+  return NextResponse.json(items)
 }

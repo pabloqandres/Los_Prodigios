@@ -3,6 +3,7 @@ import { getToken } from 'next-auth/jwt'
 import { createServerClient } from '@/lib/supabase'
 import { getDriveWriteClient } from '@/lib/drive'
 import { REVIEWERS } from '@/lib/approval-config'
+import { logActivity } from '@/lib/activity'
 
 // POST /api/assets/slots/[id]/delete
 // Elimina el slot completo (+ imagen de Drive si existe + votos)
@@ -43,6 +44,15 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   // Eliminar slot
   const { error } = await supabase.from('asset_slots').delete().eq('id', slotId)
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+  await logActivity({
+    action: 'asset.delete',
+    entity_type: 'asset_slot',
+    entity_id: slotId,
+    entity_label: `${slot.entity_label} — ${slot.version_label}`,
+    detail: slot.category,
+    user_email: email,
+  })
 
   return NextResponse.json({ deleted: slotId })
 }

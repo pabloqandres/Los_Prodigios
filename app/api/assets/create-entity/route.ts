@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getToken } from 'next-auth/jwt'
 import { createServerClient } from '@/lib/supabase'
 import { SLOT_MATRIX, ENTITIES, makeVersionLabel } from '@/lib/approval-config'
+import { logActivity } from '@/lib/activity'
 
 // POST /api/assets/create-entity
 // Crea todos los slots para una entidad nueva basado en SLOT_MATRIX[category]
@@ -95,6 +96,14 @@ export async function POST(req: NextRequest) {
     .select()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+  await logActivity({
+    action: 'entity.create',
+    entity_type: 'entity',
+    entity_label,
+    detail: `${data?.length ?? 0} slots creados — categoría: ${category}`,
+    user_email: token.email as string,
+  })
 
   return NextResponse.json({
     message: `${data?.length ?? 0} slots creados para "${entity_label}".`,
