@@ -183,7 +183,7 @@ const NAV_SECTIONS: NavSection[] = [
   {
     title: 'DISEÑO & ARTE',
     items: [
-      { href: '/approval',   label: 'Aprobación', icon: <IconCheck /> },
+      { href: '/approval',   label: 'Biblia Visual', icon: <IconCheck /> },
       { href: '/assets',     label: 'Arte',       icon: <IconPalette /> },
       { href: '/continuity', label: 'Continuidad',icon: <IconLayers /> },
     ],

@@ -509,7 +509,7 @@ export default function ApprovalPage() {
         </div>
         <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
           <h1 style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '2.75rem', letterSpacing: '0.04em', color: '#F0EBE1', lineHeight: 1 }}>
-            Aprobación de Assets
+            Biblia Visual
           </h1>
           <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
             <button
