@@ -189,6 +189,8 @@ export default function EpisodeBuilderPage() {
   // Local draft of script
   const [scriptDraft, setScriptDraft] = useState('')
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const scriptFileRef = useRef<HTMLInputElement>(null)
+  const [importingDoc, setImportingDoc] = useState(false)
 
   // Scene being expanded
   const [expandedScene, setExpandedScene] = useState<string | null>(null)
@@ -473,6 +475,48 @@ export default function EpisodeBuilderPage() {
     if (data.id) setEpisode(prev => prev ? { ...prev, script_finalized: true } : prev)
   }
 
+  async function importScriptFromDoc(file: File) {
+    if (importingDoc) return
+    setImportingDoc(true)
+    try {
+      // 1. Get signed upload URL
+      const pathRes = await fetch('/api/assets/upload-signed-url', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ path: `scripts/${id}/${file.name}` }),
+      })
+      const { signed_url, path } = await pathRes.json()
+      if (!signed_url) throw new Error('No se pudo obtener URL de subida')
+
+      // 2. Upload file
+      await fetch(signed_url, { method: 'PUT', body: file, headers: { 'Content-Type': file.type || 'application/octet-stream' } })
+
+      // 3. Parse text
+      const parseRes = await fetch('/api/parse-doc', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ storage_path: path, filename: file.name }),
+      })
+      const { text, error } = await parseRes.json()
+      if (error || !text) throw new Error(error ?? 'No se pudo extraer texto')
+
+      // 4. Set and save
+      setScriptDraft(text)
+      await fetch(`/api/episodes?id=${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ script: text }),
+      })
+      setSavedMsg(true)
+      setTimeout(() => setSavedMsg(false), 2000)
+    } catch (e) {
+      alert(`Error al importar: ${e instanceof Error ? e.message : String(e)}`)
+    } finally {
+      setImportingDoc(false)
+      if (scriptFileRef.current) scriptFileRef.current.value = ''
+    }
+  }
+
   async function analyzeScript() {
     if (!episode || analyzingScript) return
     setAnalyzingScript(true)
@@ -703,6 +747,20 @@ export default function EpisodeBuilderPage() {
                   </span>
                 </div>
                 <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
+                  <input
+                    ref={scriptFileRef}
+                    type="file"
+                    accept=".docx,.txt,.md"
+                    style={{ display: 'none' }}
+                    onChange={e => { const f = e.target.files?.[0]; if (f) importScriptFromDoc(f) }}
+                  />
+                  <button
+                    onClick={() => scriptFileRef.current?.click()}
+                    disabled={importingDoc}
+                    style={{ padding: '4px 10px', background: 'rgba(78,205,196,0.10)', border: '1px solid rgba(78,205,196,0.3)', borderRadius: '3px', color: '#4ECDC4', fontSize: '0.7rem', cursor: importingDoc ? 'not-allowed' : 'pointer', fontFamily: 'IBM Plex Sans, sans-serif' }}
+                  >
+                    {importingDoc ? '...' : '↑ Importar Word'}
+                  </button>
                   <button
                     onClick={() => activateWorkflow('write_script')}
                     style={{ padding: '4px 10px', background: 'rgba(245,165,42,0.12)', border: '1px solid rgba(245,165,42,0.3)', borderRadius: '3px', color: '#F5A52A', fontSize: '0.7rem', cursor: 'pointer', fontFamily: 'IBM Plex Sans, sans-serif' }}
