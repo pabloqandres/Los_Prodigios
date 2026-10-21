@@ -171,10 +171,34 @@ export default function EpisodesPage() {
                           display: 'flex',
                           flexDirection: 'column',
                           gap: '0.375rem',
+                          position: 'relative',
                         }}
-                        onMouseEnter={e => { e.currentTarget.style.background = '#130D2A'; e.currentTarget.style.boxShadow = `0 4px 20px rgba(212,37,106,0.12)` }}
-                        onMouseLeave={e => { e.currentTarget.style.background = '#0D0920'; e.currentTarget.style.boxShadow = 'none' }}
+                        onMouseEnter={e => { e.currentTarget.style.background = '#130D2A'; e.currentTarget.style.boxShadow = `0 4px 20px rgba(212,37,106,0.12)`; const btn = e.currentTarget.querySelector('.delete-btn') as HTMLElement; if (btn) btn.style.opacity = '1' }}
+                        onMouseLeave={e => { e.currentTarget.style.background = '#0D0920'; e.currentTarget.style.boxShadow = 'none'; const btn = e.currentTarget.querySelector('.delete-btn') as HTMLElement; if (btn) btn.style.opacity = '0' }}
                       >
+                        {isAdmin && (
+                          <button
+                            className="delete-btn"
+                            onClick={e => deleteEpisode(e, episode.id)}
+                            disabled={deleting === episode.id}
+                            title="Eliminar episodio"
+                            style={{
+                              position: 'absolute', top: '8px', right: '8px',
+                              background: 'rgba(212,37,106,0.12)', border: '1px solid rgba(212,37,106,0.2)',
+                              borderRadius: '4px', color: '#D4256A', cursor: 'pointer',
+                              width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              fontSize: '0.75rem', opacity: 0, transition: 'opacity 0.15s, background 0.15s',
+                            }}
+                            onMouseEnter={e => { e.stopPropagation(); e.currentTarget.style.background = 'rgba(212,37,106,0.3)' }}
+                            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(212,37,106,0.12)' }}
+                          >
+                            {deleting === episode.id ? '…' : (
+                              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M1.5 3h9M4.5 3V2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5v1M10 3l-.75 7a.5.5 0 0 1-.5.45H3.25a.5.5 0 0 1-.5-.45L2 3" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"/>
+                              </svg>
+                            )}
+                          </button>
+                        )}
                         <div style={{ fontFamily: 'monospace', fontSize: '0.55rem', letterSpacing: '0.16em', color: 'rgba(240,235,225,0.3)', textTransform: 'uppercase' }}>{code}</div>
                         <div style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '1rem', letterSpacing: '0.05em', color: '#F0EBE1', lineHeight: 1.1, flex: 1 }}>
                           {episode.title || 'Sin título'}
@@ -188,20 +212,7 @@ export default function EpisodesPage() {
                           <span style={{ fontSize: '0.55rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: statusColor, fontWeight: 600 }}>
                             {STATUS_LABELS[episode.status]}
                           </span>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            {isAdmin && (
-                              <button
-                                onClick={e => deleteEpisode(e, episode.id)}
-                                disabled={deleting === episode.id}
-                                style={{ background: 'none', border: 'none', color: 'rgba(212,37,106,0.25)', cursor: deleting === episode.id ? 'not-allowed' : 'pointer', fontSize: '0.85rem', padding: '0', lineHeight: 1 }}
-                                onMouseEnter={e => (e.currentTarget.style.color = '#D4256A')}
-                                onMouseLeave={e => (e.currentTarget.style.color = 'rgba(212,37,106,0.25)')}
-                              >
-                                {deleting === episode.id ? '...' : '×'}
-                              </button>
-                            )}
-                            <span style={{ fontSize: '0.6rem', color: '#D4256A', fontWeight: 700 }}>Abrir →</span>
-                          </div>
+                          <span style={{ fontSize: '0.6rem', color: '#D4256A', fontWeight: 700 }}>Abrir →</span>
                         </div>
                       </div>
                     )
