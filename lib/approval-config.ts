@@ -7,6 +7,8 @@ export interface SlotMatrixRow {
 export interface EntityDef {
   entity_name: string
   entity_label: string
+  // Override which SLOT_MATRIX key to use for this entity (default: the category key)
+  matrix_key?: string
   // Per-entity accessory overrides. If defined, replaces the generic Accesorio row from SLOT_MATRIX.
   accessories?: string[]
 }
@@ -134,6 +136,7 @@ export const ENTITIES: Record<string, EntityDef[]> = {
     },
     {
       entity_name: 'ProfesorCasas', entity_label: 'Emilio "Profe" Casas',
+      matrix_key: 'entrenadores',
       // Reloj analógico de su padre, libreta negra inseparable, lápiz amarillo con el que piensa
       accessories: ['Reloj analógico (herencia)', 'Libreta negra (detalle)', 'Lápiz amarillo', 'Zapatillas deportivas gastadas'],
     },
@@ -200,6 +203,7 @@ export const ENTITIES: Record<string, EntityDef[]> = {
     { entity_name: 'HawksCamilaMendoza',    entity_label: 'Camila Mendoza' },
     {
       entity_name: 'HawksSebastianMontoya', entity_label: 'Sebastián Montoya (DT)',
+      matrix_key: 'entrenadores',
       accessories: ['Pin emblema Hawks (detalle)', 'Colleras doradas (detalle)'],
     },
   ],
@@ -209,6 +213,27 @@ export const ENTITIES: Record<string, EntityDef[]> = {
   ],
   rivales: [
     // Equipos rivales de temporadas futuras se agregan aquí
+  ],
+  entrenadores: [
+    // ── VISTAS GENERALES ─────────────────────────────────────────────────────
+    { view_type: 'Vista general',  outfit: 'Casual',             age_versions: ['Frente', 'Perfil D', 'Perfil I', 'Espalda'] },
+    // ── VERSIÓN JOVEN (flashback como jugador) ────────────────────────────────
+    { view_type: 'Versión etaria', outfit: 'Casual',             age_versions: ['Versión joven (jugador)'] },
+    // ── 3/4 ──────────────────────────────────────────────────────────────────
+    { view_type: '3/4',            outfit: 'Casual',             age_versions: ['Izquierda', 'Derecha'] },
+    // ── EXPRESIONES ───────────────────────────────────────────────────────────
+    { view_type: 'Expresión',      outfit: null,                 age_versions: ['Neutral', 'Alegría', 'Enojo', 'Tristeza', 'Sorpresa', 'Concentración', 'Orgullo', 'Preocupación'] },
+    // ── OUTFIT TÉCNICO (ropa de entrenador, NO uniforme de partido) ───────────
+    { view_type: 'Outfit técnico', outfit: 'Ropa de entrenador', age_versions: ['Frente', 'Espalda'] },
+    // ── ACCIÓN EN BANCA / PIZARRÓN ───────────────────────────────────────────
+    { view_type: 'Acción banca',   outfit: 'Ropa de entrenador', age_versions: ['Dando indicaciones', 'Pizarrón táctico', 'Celebración contenida', 'Tenso en banca'] },
+    { view_type: 'Acción',         outfit: 'Casual',             age_versions: ['Gesto característico', 'Pose de reposo', 'Leyendo libreta'] },
+    // ── OUTFIT CASUAL — variantes ─────────────────────────────────────────────
+    { view_type: 'Outfit casual',  outfit: 'Variante 1',         age_versions: ['Frente'] },
+    { view_type: 'Outfit casual',  outfit: 'Variante 2',         age_versions: ['Frente'] },
+    { view_type: 'Outfit casual',  outfit: 'Variante 3 (frío)',  age_versions: ['Frente'] },
+    // ── ACCESORIOS / ELEMENTOS DEL PERSONAJE ─────────────────────────────────
+    { view_type: 'Accesorio',      outfit: null,                 age_versions: [] }, // usa entityDef.accessories
   ],
   simbolos: [
     // ── NUEVA CORONA ──────────────────────────────────────────────────────────

@@ -80,7 +80,7 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
   const [error, setError] = useState('')
   const [storagePath, setStoragePath] = useState<string | null>(null)
   const [assetSuggestion, setAssetSuggestion] = useState<{
-    category: string; entity_name: string; entity_label: string; confidence: number
+    category: string; matrix_key: string; entity_name: string; entity_label: string; confidence: number
   } | null>(null)
   const [createAssetSlots, setCreateAssetSlots] = useState(false)
   const [existingSlotCount, setExistingSlotCount] = useState<number | null>(null)
@@ -136,6 +136,7 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
         if (data.needs_assets && data.asset_entity_name) {
           const suggestion = {
             category: data.asset_category,
+            matrix_key: data.asset_matrix_key ?? data.asset_category,
             entity_name: data.asset_entity_name,
             entity_label: data.asset_entity_label,
             confidence: data.asset_confidence,
@@ -145,7 +146,7 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
           // Check existing slots and expected total in parallel
           const [existingRes, previewRes] = await Promise.all([
             fetch(`/api/assets/slots?entity_name=${encodeURIComponent(data.asset_entity_name)}`),
-            fetch(`/api/assets/seed-checklist/preview?entity_name=${encodeURIComponent(data.asset_entity_name)}&category=${encodeURIComponent(data.asset_category)}`),
+            fetch(`/api/assets/seed-checklist/preview?entity_name=${encodeURIComponent(data.asset_entity_name)}&category=${encodeURIComponent(data.asset_category)}&matrix_key=${encodeURIComponent(data.asset_matrix_key ?? data.asset_category)}`),
           ])
           if (existingRes.ok) {
             const existingData = await existingRes.json()
@@ -209,6 +210,7 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             category: assetSuggestion.category,
+            matrix_key: assetSuggestion.matrix_key,
             entity_name: assetSuggestion.entity_name,
             entity_label: assetSuggestion.entity_label,
           }),

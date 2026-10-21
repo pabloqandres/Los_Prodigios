@@ -13,19 +13,21 @@ export async function POST(req: NextRequest) {
   if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const body = await req.json()
-  const { entity_name, entity_label, category, dry_run } = body
+  const { entity_name, entity_label, category, matrix_key: bodyMatrixKey, dry_run } = body
 
   if (!entity_name || !entity_label || !category) {
     return NextResponse.json({ error: 'Faltan campos: entity_name, entity_label, category' }, { status: 400 })
   }
 
-  const matrix = SLOT_MATRIX[category]
+  // Buscar la definición de entidad (para override de matrix_key y accesorios)
+  // Prioridad: entityDef.matrix_key > body.matrix_key > category
+  const entityDef = Object.values(ENTITIES).flat().find(e => e.entity_name === entity_name)
+
+  const matrixKey = entityDef?.matrix_key ?? bodyMatrixKey ?? category
+  const matrix = SLOT_MATRIX[matrixKey]
   if (!matrix) {
     return NextResponse.json({ error: `Categoría no válida: ${category}` }, { status: 400 })
   }
-
-  // Buscar la definición de entidad (para override de accesorios)
-  const entityDef = Object.values(ENTITIES).flat().find(e => e.entity_name === entity_name)
 
   // Generar todos los slots esperados para esta entidad
   const expectedSlots: object[] = []
