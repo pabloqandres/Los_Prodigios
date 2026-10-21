@@ -211,7 +211,8 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
             const previewData = await previewRes.json()
             setExpectedSlotCount(previewData.total ?? null)
           }
-          setCreateAssetSlots(true)
+          // Auto-activate only if high confidence — otherwise user must confirm
+          setCreateAssetSlots((data.asset_confidence ?? 0) >= 0.7)
         }
       }
     } finally {
@@ -490,7 +491,8 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
               ? Math.max(0, expectedSlotCount - existingSlotCount)
               : null
             const alreadyComplete = newSlots === 0
-            const accent = alreadyComplete ? '#F5A52A' : '#4ECDC4'
+            const lowConfidence = (assetSuggestion.confidence ?? 0) < 0.7
+            const accent = alreadyComplete ? '#F5A52A' : lowConfidence ? '#F5A52A' : '#4ECDC4'
 
             return (
               <div style={{
@@ -503,12 +505,13 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.625rem' }}>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: '0.8125rem', color: accent, fontWeight: 600, marginBottom: 3 }}>
-                      Elemento visual detectado
+                      {lowConfidence ? '¿Es este elemento?' : 'Elemento visual detectado'}
                     </div>
                     <div style={{ fontSize: '0.75rem', color: 'rgba(240,235,225,0.6)' }}>
                       <strong style={{ color: 'rgba(240,235,225,0.85)' }}>{assetSuggestion.entity_label}</strong>
-                      {' '}· {assetSuggestion.category}
+                      {' '}· {assetSuggestion.matrix_key !== assetSuggestion.category ? assetSuggestion.matrix_key : assetSuggestion.category}
                       {' '}· {Math.round(assetSuggestion.confidence * 100)}% confianza
+                      {lowConfidence && <span style={{ color: '#F5A52A', marginLeft: '0.375rem' }}>— confirma antes de crear</span>}
                     </div>
                   </div>
                   {!alreadyComplete && (

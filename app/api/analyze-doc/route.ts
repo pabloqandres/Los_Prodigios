@@ -86,9 +86,10 @@ Responde ÚNICAMENTE con el JSON, sin texto adicional.`,
       ? parsed.categories.filter((c: string) => VALID_CATEGORIES.includes(c))
       : []
 
-    const needsAssets = parsed.needs_assets === true && parsed.asset_confidence >= 0.7
     const assetCategory = VALID_ASSET_CATEGORIES.includes(parsed.asset_category) ? parsed.asset_category : null
     const matrixKey = VALID_MATRIX_KEYS.includes(parsed.asset_matrix_key) ? parsed.asset_matrix_key : assetCategory
+    const confidence = typeof parsed.asset_confidence === 'number' ? parsed.asset_confidence : 0
+    const needsAssets = parsed.needs_assets === true && confidence > 0 && !!assetCategory && !!parsed.asset_entity_name
 
     return NextResponse.json({
       description,
@@ -96,9 +97,9 @@ Responde ÚNICAMENTE con el JSON, sin texto adicional.`,
       needs_assets: needsAssets,
       asset_category: needsAssets ? assetCategory : null,
       asset_matrix_key: needsAssets && assetCategory ? matrixKey : null,
-      asset_entity_name: needsAssets && assetCategory ? (parsed.asset_entity_name ?? null) : null,
-      asset_entity_label: needsAssets && assetCategory ? (parsed.asset_entity_label ?? null) : null,
-      asset_confidence: needsAssets ? (parsed.asset_confidence ?? null) : null,
+      asset_entity_name: needsAssets ? (parsed.asset_entity_name ?? null) : null,
+      asset_entity_label: needsAssets ? (parsed.asset_entity_label ?? null) : null,
+      asset_confidence: needsAssets ? confidence : null,
     })
   } catch {
     return NextResponse.json({ description: '', categories: ['general'], needs_assets: false })
