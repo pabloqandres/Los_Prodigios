@@ -51,6 +51,29 @@ type Episode = {
 
 type WorkflowKey = 'write_script' | 'review_continuity' | 'improve_dialogue' | 'breakdown' | 'generate_scenes' | 'analyze_continuity' | null
 
+type ExtractedScene = {
+  title: string
+  description: string
+  location: string
+  characters: string[]
+  duration_est: number
+  mood: string
+  scene_ref: string
+}
+
+type ExtractedAct = {
+  act_number: number
+  title: string
+  goal: string
+  scenes: ExtractedScene[]
+}
+
+type ExtractionResult = {
+  acts: ExtractedAct[]
+  notes: string
+  total_scenes: number
+}
+
 type AssetGap = {
   id?: string
   scene_ref: string
@@ -202,6 +225,13 @@ export default function EpisodeBuilderPage() {
   type GeneratedScene = { title: string; description: string; characters: string[]; location: string; duration_est: number; mood: string }
   const [pendingScenes, setPendingScenes] = useState<GeneratedScene[] | null>(null)
   const [importing, setImporting] = useState(false)
+
+  // Structure extraction from script
+  const [extractingStructure, setExtractingStructure] = useState(false)
+  const [extractStep, setExtractStep] = useState('')
+  const [extractedStructure, setExtractedStructure] = useState<ExtractionResult | null>(null)
+  const [applyingStructure, setApplyingStructure] = useState(false)
+  const extractTimer = useRef<ReturnType<typeof setInterval> | null>(null)
 
   // Continuity log entries saved to DB
   type ContinuityEntry = { id: string; type: string; entity: string; description: string; created_at: string }
@@ -444,6 +474,86 @@ export default function EpisodeBuilderPage() {
     setPendingScenes(null)
     setMode('structure')
     setImporting(false)
+  }
+
+  async function extractStructureFromScript() {
+    if (!episode?.script || extractingStructure) return
+    setExtractingStructure(true)
+    setExtractedStructure(null)
+
+    const steps = ['Leyendo guión...', 'Identificando actos...', 'Extrayendo escenas...', 'Analizando ritmo...']
+    let stepIdx = 0
+    setExtractStep(steps[0])
+    extractTimer.current = setInterval(() => {
+      stepIdx = Math.min(stepIdx + 1, steps.length - 1)
+      setExtractStep(steps[stepIdx])
+    }, 5000)
+
+    try {
+      const res = await fetch(`/api/episodes/${id}/extract-structure`, { method: 'POST' })
+      const data = await res.json()
+      if (data.error) { setExtractStep('Error: ' + data.error) }
+      else { setExtractedStructure(data) }
+    } catch { setExtractStep('Error al contactar el servidor') }
+    finally {
+      if (extractTimer.current) clearInterval(extractTimer.current)
+      setExtractingStructure(false)
+    }
+  }
+
+  async function applyExtractedStructure() {
+    if (!episode || !extractedStructure || applyingStructure) return
+    setApplyingStructure(true)
+
+    // 1. Clear all existing scenes
+    await fetch(`/api/scenes?episode_id=${id}`, { method: 'DELETE' })
+
+    const acts = [...episode.acts].sort((a, b) => a.act_number - b.act_number)
+    const allCreated: Scene[] = []
+
+    for (const extractedAct of extractedStructure.acts) {
+      const dbAct = acts.find(a => a.act_number === extractedAct.act_number)
+      if (!dbAct) continue
+
+      // 2. Patch act title + goal
+      await fetch(`/api/acts?id=${dbAct.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: extractedAct.title, goal: extractedAct.goal }),
+      })
+
+      // 3. Create scenes for this act
+      for (const sc of extractedAct.scenes) {
+        const res = await fetch('/api/scenes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ act_id: dbAct.id, episode_id: id, title: sc.title, description: sc.description }),
+        })
+        const scene = await res.json()
+        if (scene.id) {
+          await fetch(`/api/scenes?id=${scene.id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ location_name: sc.location, duration_est: sc.duration_est, mood: sc.mood }),
+          })
+          allCreated.push({ ...scene, location_name: sc.location, duration_est: sc.duration_est, mood: sc.mood })
+        }
+      }
+    }
+
+    // 4. Update local state
+    setEpisode(prev => prev ? {
+      ...prev,
+      scenes: allCreated,
+      acts: prev.acts.map(a => {
+        const ext = extractedStructure.acts.find(ea => ea.act_number === a.act_number)
+        return ext ? { ...a, title: ext.title, goal: ext.goal } : a
+      }),
+    } : prev)
+
+    setExtractedStructure(null)
+    setApplyingStructure(false)
+    setMode('structure')
   }
 
   function scriptCode() {
@@ -896,14 +1006,120 @@ export default function EpisodeBuilderPage() {
             <div>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
                 <div style={{ ...SECTION_HEADER, marginBottom: 0 }}>Estructura del episodio</div>
-                <button
-                  onClick={() => activateWorkflow('generate_scenes')}
-                  style={{ padding: '5px 12px', background: 'rgba(74,143,232,0.15)', border: '1px solid rgba(74,143,232,0.4)', borderRadius: '3px', color: '#4A8FE8', fontSize: '0.75rem', cursor: 'pointer', fontFamily: 'IBM Plex Sans, sans-serif' }}
-                >
-                  <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style={{ marginRight: '4px', verticalAlign: 'middle' }}><rect x="2" y="3" width="12" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.2"/><path d="M6.5 6.5L10 8l-3.5 1.5V6.5z" fill="currentColor"/></svg>
-                  Generar estructura con AI
-                </button>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  {episode.script && episode.script.trim().length > 100 && !extractingStructure && !extractedStructure && (
+                    <button
+                      onClick={extractStructureFromScript}
+                      style={{ padding: '5px 12px', background: 'rgba(212,37,106,0.15)', border: '1px solid rgba(212,37,106,0.5)', borderRadius: '3px', color: '#D4256A', fontSize: '0.75rem', cursor: 'pointer', fontFamily: 'IBM Plex Sans, sans-serif', fontWeight: 600 }}
+                    >
+                      <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style={{ marginRight: '5px', verticalAlign: 'middle' }}><path d="M3 4h10v1.5H3zM3 7.5h10V9H3zM3 11h6v1.5H3z" fill="currentColor" opacity=".8"/></svg>
+                      Extraer del guión
+                    </button>
+                  )}
+                  <button
+                    onClick={() => activateWorkflow('generate_scenes')}
+                    style={{ padding: '5px 12px', background: 'rgba(74,143,232,0.10)', border: '1px solid rgba(74,143,232,0.25)', borderRadius: '3px', color: '#4A8FE8', fontSize: '0.75rem', cursor: 'pointer', fontFamily: 'IBM Plex Sans, sans-serif' }}
+                  >
+                    <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style={{ marginRight: '4px', verticalAlign: 'middle' }}><rect x="2" y="3" width="12" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.2"/><path d="M6.5 6.5L10 8l-3.5 1.5V6.5z" fill="currentColor"/></svg>
+                    Generar con AI
+                  </button>
+                </div>
               </div>
+
+              {/* Extraction loading */}
+              {extractingStructure && (
+                <div style={{ background: 'rgba(212,37,106,0.04)', border: '1px solid rgba(212,37,106,0.15)', borderRadius: '6px', padding: '1.5rem', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                  <div style={{ width: '32px', height: '32px', flexShrink: 0, position: 'relative' }}>
+                    <svg width="32" height="32" viewBox="0 0 32 32" style={{ animation: 'spin 1.2s linear infinite' }}>
+                      <circle cx="16" cy="16" r="13" stroke="rgba(212,37,106,0.15)" strokeWidth="2.5" fill="none"/>
+                      <path d="M16 3 A13 13 0 0 1 29 16" stroke="#D4256A" strokeWidth="2.5" fill="none" strokeLinecap="round"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '0.8rem', color: '#F0EBE1', fontWeight: 600, marginBottom: '3px' }}>Analizando guión...</div>
+                    <div style={{ fontSize: '0.7rem', color: 'rgba(240,235,225,0.45)' }}>{extractStep}</div>
+                  </div>
+                </div>
+              )}
+
+              {/* Extracted structure preview */}
+              {extractedStructure && !applyingStructure && (
+                <div style={{ background: '#0D0920', border: '1px solid rgba(212,37,106,0.2)', borderRadius: '6px', marginBottom: '1.5rem', overflow: 'hidden' }}>
+                  {/* Header */}
+                  <div style={{ background: 'rgba(212,37,106,0.08)', padding: '0.875rem 1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div>
+                      <div style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '1rem', letterSpacing: '0.1em', color: '#D4256A' }}>
+                        ESTRUCTURA EXTRAÍDA — {extractedStructure.total_scenes} ESCENAS
+                      </div>
+                      <div style={{ fontSize: '0.65rem', color: 'rgba(240,235,225,0.4)', marginTop: '2px' }}>
+                        Revisa y aplica al episodio
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <button
+                        onClick={() => setExtractedStructure(null)}
+                        style={{ padding: '5px 12px', background: 'transparent', border: '1px solid rgba(240,235,225,0.12)', borderRadius: '3px', color: 'rgba(240,235,225,0.4)', fontSize: '0.7rem', cursor: 'pointer', fontFamily: 'IBM Plex Sans, sans-serif' }}
+                      >
+                        Descartar
+                      </button>
+                      <button
+                        onClick={applyExtractedStructure}
+                        style={{ padding: '5px 14px', background: '#D4256A', border: 'none', borderRadius: '3px', color: '#F0EBE1', fontSize: '0.7rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'IBM Plex Sans, sans-serif' }}
+                      >
+                        Aplicar al episodio →
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Acts preview */}
+                  <div style={{ padding: '1rem 1.25rem', display: 'flex', gap: '0.75rem', flexDirection: 'column' }}>
+                    {extractedStructure.acts.map(act => (
+                      <div key={act.act_number} style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(212,37,106,0.08)', borderRadius: '4px', overflow: 'hidden' }}>
+                        <div style={{ padding: '0.625rem 0.875rem', background: 'rgba(212,37,106,0.05)', display: 'flex', alignItems: 'baseline', gap: '0.75rem' }}>
+                          <span style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '0.85rem', letterSpacing: '0.1em', color: '#D4256A', flexShrink: 0 }}>ACTO {act.act_number}</span>
+                          <span style={{ fontSize: '0.8rem', color: '#F0EBE1', fontWeight: 600 }}>{act.title}</span>
+                          <span style={{ fontSize: '0.65rem', color: 'rgba(240,235,225,0.35)', marginLeft: 'auto', flexShrink: 0 }}>{act.scenes.length} esc</span>
+                        </div>
+                        {act.goal && (
+                          <div style={{ padding: '4px 0.875rem 6px', fontSize: '0.65rem', color: 'rgba(240,235,225,0.35)', fontStyle: 'italic' }}>{act.goal}</div>
+                        )}
+                        <div style={{ padding: '0.375rem 0.875rem 0.75rem', display: 'flex', flexDirection: 'column', gap: '0.375rem' }}>
+                          {act.scenes.map((sc, i) => (
+                            <div key={i} style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start' }}>
+                              <span style={{ fontSize: '0.55rem', fontFamily: 'monospace', color: 'rgba(240,235,225,0.2)', marginTop: '2px', flexShrink: 0, minWidth: '32px' }}>{sc.scene_ref}</span>
+                              <div style={{ flex: 1 }}>
+                                <span style={{ fontSize: '0.7rem', color: '#F0EBE1', fontWeight: 600 }}>{sc.title}</span>
+                                {sc.location && <span style={{ fontSize: '0.65rem', color: 'rgba(240,235,225,0.3)', marginLeft: '6px' }}>{sc.location}</span>}
+                                <div style={{ fontSize: '0.65rem', color: 'rgba(240,235,225,0.4)', lineHeight: 1.4, marginTop: '1px' }}>{sc.description}</div>
+                              </div>
+                              <span style={{ fontSize: '0.55rem', color: 'rgba(240,235,225,0.2)', flexShrink: 0, fontFamily: 'monospace' }}>{sc.duration_est}s</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* AI notes */}
+                  {extractedStructure.notes && (
+                    <div style={{ padding: '0.75rem 1.25rem', borderTop: '1px solid rgba(212,37,106,0.08)', display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
+                      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0, marginTop: '1px', color: '#F5A52A' }}><circle cx="8" cy="8" r="6.5" stroke="currentColor" strokeWidth="1.2"/><path d="M8 7v4M8 5.5v.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>
+                      <p style={{ fontSize: '0.7rem', color: 'rgba(240,235,225,0.5)', lineHeight: 1.6, margin: 0 }}>{extractedStructure.notes}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Applying indicator */}
+              {applyingStructure && (
+                <div style={{ background: 'rgba(212,37,106,0.06)', border: '1px solid rgba(212,37,106,0.2)', borderRadius: '6px', padding: '1rem 1.25rem', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <svg width="16" height="16" viewBox="0 0 32 32" style={{ animation: 'spin 1.2s linear infinite', flexShrink: 0 }}>
+                    <circle cx="16" cy="16" r="13" stroke="rgba(212,37,106,0.15)" strokeWidth="2.5" fill="none"/>
+                    <path d="M16 3 A13 13 0 0 1 29 16" stroke="#D4256A" strokeWidth="2.5" fill="none" strokeLinecap="round"/>
+                  </svg>
+                  <span style={{ fontSize: '0.8rem', color: '#F0EBE1' }}>Aplicando estructura al episodio...</span>
+                </div>
+              )}
 
               {episode.acts.map(act => {
                 const actScenes = episode.scenes.filter(s => s.act_id === act.id).sort((a, b) => a.scene_number - b.scene_number)

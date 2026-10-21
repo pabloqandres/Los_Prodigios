@@ -55,15 +55,22 @@ export async function PATCH(request: NextRequest) {
   return NextResponse.json(data)
 }
 
-// DELETE /api/scenes?id=uuid
+// DELETE /api/scenes?id=uuid  — single scene
+// DELETE /api/scenes?episode_id=uuid — all scenes for episode
 export async function DELETE(request: NextRequest) {
   const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET })
   if (!token?.email) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const id = request.nextUrl.searchParams.get('id')
-  if (!id) return NextResponse.json({ error: 'id requerido' }, { status: 400 })
-
   const supabase = createServerClient()
+  const episodeId = request.nextUrl.searchParams.get('episode_id')
+  if (episodeId) {
+    const { error } = await supabase.from('scenes').delete().eq('episode_id', episodeId)
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json({ ok: true })
+  }
+
+  const id = request.nextUrl.searchParams.get('id')
+  if (!id) return NextResponse.json({ error: 'id o episode_id requerido' }, { status: 400 })
   const { error } = await supabase.from('scenes').delete().eq('id', id)
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json({ ok: true })
