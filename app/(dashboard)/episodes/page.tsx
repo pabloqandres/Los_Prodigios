@@ -160,21 +160,20 @@ export default function EpisodesPage() {
                         onClick={() => router.push(`/episodes/${episode.id}`)}
                         style={{
                           background: '#0D0920',
-                          borderRadius: '4px',
-                          borderTop: `2px solid ${statusColor}`,
+                          borderRadius: '8px',
                           border: `1px solid rgba(212,37,106,0.10)`,
-                          borderTopColor: statusColor,
-                          padding: '1rem',
+                          borderTop: `2px solid ${statusColor}`,
+                          padding: '1.25rem',
                           cursor: 'pointer',
-                          transition: 'background 0.15s, box-shadow 0.15s',
-                          minHeight: '140px',
+                          transition: 'transform 0.15s, box-shadow 0.15s, background 0.15s',
+                          minHeight: '200px',
                           display: 'flex',
                           flexDirection: 'column',
                           gap: '0.375rem',
                           position: 'relative',
                         }}
-                        onMouseEnter={e => { e.currentTarget.style.background = '#130D2A'; e.currentTarget.style.boxShadow = `0 4px 20px rgba(212,37,106,0.12)`; const btn = e.currentTarget.querySelector('.delete-btn') as HTMLElement; if (btn) btn.style.opacity = '1' }}
-                        onMouseLeave={e => { e.currentTarget.style.background = '#0D0920'; e.currentTarget.style.boxShadow = 'none'; const btn = e.currentTarget.querySelector('.delete-btn') as HTMLElement; if (btn) btn.style.opacity = '0' }}
+                        onMouseEnter={e => { e.currentTarget.style.background = '#130D2A'; e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = `0 6px 24px rgba(212,37,106,0.14)`; const btn = e.currentTarget.querySelector('.delete-btn') as HTMLElement; if (btn) btn.style.opacity = '1' }}
+                        onMouseLeave={e => { e.currentTarget.style.background = '#0D0920'; e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; const btn = e.currentTarget.querySelector('.delete-btn') as HTMLElement; if (btn) btn.style.opacity = '0' }}
                       >
                         {isAdmin && (
                           <button
@@ -187,29 +186,32 @@ export default function EpisodesPage() {
                               background: 'rgba(212,37,106,0.12)', border: '1px solid rgba(212,37,106,0.2)',
                               borderRadius: '4px', color: '#D4256A', cursor: 'pointer',
                               width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                              fontSize: '0.75rem', opacity: 0, transition: 'opacity 0.15s, background 0.15s',
+                              opacity: 0, transition: 'opacity 0.15s, background 0.15s',
                             }}
                             onMouseEnter={e => { e.stopPropagation(); e.currentTarget.style.background = 'rgba(212,37,106,0.3)' }}
                             onMouseLeave={e => { e.currentTarget.style.background = 'rgba(212,37,106,0.12)' }}
                           >
                             {deleting === episode.id ? '…' : (
-                              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M1.5 3h9M4.5 3V2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5v1M10 3l-.75 7a.5.5 0 0 1-.5.45H3.25a.5.5 0 0 1-.5-.45L2 3" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"/>
-                              </svg>
+                              <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 3.5h9M5 3.5V2.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5v1M10.5 3.5l-.7 7a.5.5 0 0 1-.5.45H3.7a.5.5 0 0 1-.5-.45l-.7-7" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
                             )}
                           </button>
                         )}
-                        <div style={{ fontFamily: 'monospace', fontSize: '0.55rem', letterSpacing: '0.16em', color: 'rgba(240,235,225,0.3)', textTransform: 'uppercase' }}>{code}</div>
-                        <div style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '1rem', letterSpacing: '0.05em', color: '#F0EBE1', lineHeight: 1.1, flex: 1 }}>
+                        <div style={{ fontFamily: 'monospace', fontSize: '0.7rem', letterSpacing: '0.18em', color: statusColor, textTransform: 'uppercase' }}>{code}</div>
+                        <div style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '1.25rem', letterSpacing: '0.04em', color: '#F0EBE1', lineHeight: 1.1, flex: 1 }}>
                           {episode.title || 'Sin título'}
                         </div>
                         {episode.logline && (
-                          <div style={{ fontSize: '0.6875rem', color: 'rgba(240,235,225,0.35)', lineHeight: 1.4, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                          <div style={{ fontSize: '0.75rem', color: 'rgba(240,235,225,0.35)', lineHeight: 1.4, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }}>
                             {episode.logline}
                           </div>
                         )}
                         <div style={{ marginTop: 'auto', paddingTop: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                          <span style={{ fontSize: '0.55rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: statusColor, fontWeight: 600 }}>
+                          <span style={{
+                            fontSize: '0.6rem', letterSpacing: '0.1em', textTransform: 'uppercase',
+                            color: statusColor, fontWeight: 600,
+                            background: `${statusColor}22`, borderRadius: '20px',
+                            padding: '3px 8px',
+                          }}>
                             {STATUS_LABELS[episode.status]}
                           </span>
                           <span style={{ fontSize: '0.6rem', color: '#D4256A', fontWeight: 700 }}>Abrir →</span>
@@ -225,24 +227,24 @@ export default function EpisodesPage() {
                       onClick={() => !isCreating && createEpisode(season, ep)}
                       style={{
                         background: 'rgba(212,37,106,0.02)',
-                        borderRadius: '4px',
+                        borderRadius: '8px',
                         border: '1px dashed rgba(212,37,106,0.12)',
-                        padding: '1rem',
+                        padding: '1.25rem',
                         cursor: isCreating ? 'not-allowed' : 'pointer',
-                        minHeight: '140px',
+                        minHeight: '200px',
                         display: 'flex',
                         flexDirection: 'column',
                         alignItems: 'center',
                         justifyContent: 'center',
                         gap: '0.5rem',
-                        transition: 'background 0.15s, border-color 0.15s',
+                        transition: 'background 0.15s, border-color 0.15s, transform 0.15s',
                         opacity: isCreating ? 0.6 : 1,
                       }}
-                      onMouseEnter={e => { if (!isCreating) { e.currentTarget.style.background = 'rgba(212,37,106,0.05)'; e.currentTarget.style.borderColor = 'rgba(212,37,106,0.3)' } }}
-                      onMouseLeave={e => { e.currentTarget.style.background = 'rgba(212,37,106,0.02)'; e.currentTarget.style.borderColor = 'rgba(212,37,106,0.12)' }}
+                      onMouseEnter={e => { if (!isCreating) { e.currentTarget.style.background = 'rgba(212,37,106,0.05)'; e.currentTarget.style.borderColor = 'rgba(212,37,106,0.3)'; e.currentTarget.style.transform = 'translateY(-2px)' } }}
+                      onMouseLeave={e => { e.currentTarget.style.background = 'rgba(212,37,106,0.02)'; e.currentTarget.style.borderColor = 'rgba(212,37,106,0.12)'; e.currentTarget.style.transform = 'translateY(0)' }}
                     >
-                      <div style={{ fontFamily: 'monospace', fontSize: '0.55rem', letterSpacing: '0.16em', color: 'rgba(240,235,225,0.2)' }}>{code}</div>
-                      <div style={{ fontSize: '1.25rem', color: 'rgba(212,37,106,0.3)' }}>{isCreating ? '...' : '+'}</div>
+                      <div style={{ fontFamily: 'monospace', fontSize: '0.7rem', letterSpacing: '0.18em', color: 'rgba(240,235,225,0.2)', textTransform: 'uppercase' }}>{code}</div>
+                      <div style={{ fontSize: '2rem', color: 'rgba(212,37,106,0.3)', lineHeight: 1 }}>{isCreating ? '...' : '+'}</div>
                       <div style={{ fontSize: '0.625rem', color: 'rgba(240,235,225,0.2)', textAlign: 'center', letterSpacing: '0.06em' }}>
                         {isCreating ? 'Creando...' : 'Crear episodio'}
                       </div>
