@@ -342,70 +342,105 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
           {!file && (
             <button
               onClick={() => {
-                const name = prompt('Nombre del personaje:')
+                const name = prompt('Nombre completo del personaje:')
                 if (!name?.trim()) return
-                const templateContent = `# ${name.trim()} — Canon Visual
+                const code = prompt('Código de documento (ej: LP-FP-18):') ?? 'LP-FP-XX'
+                const nameUpper = name.trim().toUpperCase()
+                const slug = name.trim().replace(/\s+/g, '_')
+                const today = new Date().toLocaleDateString('es-CL', { month: 'long', year: 'numeric' }).toUpperCase()
+                const templateContent = `BIBLIOTECA OFICIAL DE LOS PRODIGIOS
+${code.trim()}
+${nameUpper}
+VERSIÓN 1.0  |  ${today}  |  DOCUMENTO CANÓNICO
+Confidencial — Uso interno de desarrollo, guion, arte, producción y licencias
 
-## Datos básicos
-- **Nombre completo:** ${name.trim()}
-- **Edad:**
-- **Rol en la serie:**
+---
 
-## Rasgos físicos
-- **Complexión:**
-- **Altura:**
-- **Tez / tono de piel:**
-- **Pelo:** color, largo, textura, peinado
-- **Ojos:** color y forma
-- **Cejas:**
-- **Mandíbula / estructura facial:**
-- **Rasgos distintivos** (cicatrices, lunares, etc.):
+1. IDENTIDAD Y FUNCIÓN NARRATIVA
 
-## Vestuario canónico
-- **Outfit principal:**
-- **Colores dominantes:**
-- **Calzado:**
-- **Accesorios:**
+[¿Quién es? Edad, nacionalidad, rol en la serie. ¿Cómo llega a Casa Prodigio? ¿Cuál es su importancia narrativa central?]
 
-## Distinción física vs otros personajes
-> Esta sección es crítica para mantener consistencia entre personajes en generación de imágenes y video.
+2. APARIENCIA FÍSICA
 
-- **Vs. [Personaje A]:** [describe qué los diferencia físicamente]
-- **Vs. [Personaje B]:** [describe qué los diferencia físicamente]
+[Altura y contextura. Rasgos faciales. Tono de piel, cabello, ojos. Cómo viste habitualmente. Imagen que proyecta.]
 
-**Frase de ancla para prompts:**
-"Physically distinct from [X]: [rasgo 1], [rasgo 2], [rasgo 3]"
+3. HISTORIA Y ORIGEN FAMILIAR
 
-**Negative prompt base:**
-"NOT [otros personajes]: no [rasgo X], no [rasgo Y]"
+[De dónde viene. Composición familiar. Contexto socioeconómico. Experiencias formativas que explican quién es hoy.]
 
-## Paleta de color del personaje
-- **Color dominante:**
-- **Color de acento:**
-- **Hex principal:**
+4. PERSONALIDAD
 
-## Energía y postura
-- **Cómo se para y mueve:**
-- **Expresión facial característica:**
-- **Gestos típicos:**
+[Carácter. Cómo se comporta en distintos contextos. Qué lo impulsa. Cómo reacciona bajo presión. Qué lo hace único.]
 
-## Notas para generación de imagen
-- **Imagen de referencia aprobada:** (completar cuando exista)
-- **Modelo base preferido:**
-- **Palabras que lo anclan al universo visual:**
+5. FORTALEZAS
+
+[Sus mayores cualidades como persona y como deportista/miembro del equipo.]
+
+6. DEBILIDADES Y CONTRADICCIONES
+
+[Sus principales defectos. Las contradicciones internas. Lo que no sabe hacer o le cuesta profundamente.]
+
+7. MANÍAS Y HÁBITOS
+
+[Rutinas particulares. Comportamientos reconocibles. Lo que hace siempre o nunca.]
+
+8. ELEMENTO/S CARACTERÍSTICO/S
+
+[El objeto, rasgo o detalle visual que lo define y acompaña a lo largo de la serie.]
+
+9. FORMA DE HABLAR
+
+[Registro. Vocabulario. Frases típicas o muletillas. Cómo cambia según con quién habla.]
+
+10. TALENTO EN EL EQUIPO
+
+[Posición o rol. Estilo. Qué lo hace bueno. Qué le falta desarrollar. Cómo impacta al grupo.]
+
+11. CÓMO CELEBRA
+
+[Cómo reacciona ante un gol, un logro o una victoria importante.]
+
+12. REACCIÓN A LA DERROTA
+
+[Cómo procesa el fracaso, los errores propios y los ajenos.]
+
+13. RELACIÓN CON EL PROFE CASAS
+
+[Dinámica con el entrenador. Qué ve Casas en este personaje. Qué encuentra el personaje en Casas.]
+
+14. RELACIONES CON OTROS PERSONAJES
+
+[Vínculos principales con el resto del equipo. Tensiones. Alianzas. Quién lo complementa y quién lo desafía.]
+
+15. EL LLAMADO
+
+[Cómo llegó a Casa Prodigio. Qué dejó atrás. La decisión de partir y lo que eso costó.]
+
+16. ARCO DE PERSONAJE
+
+[Dónde empieza emocionalmente. Qué debe aprender. Cómo termina transformado al final de la serie.]
+
+17. GUÍA PARA GUIONISTAS
+
+[Reglas de comportamiento. Qué haría y qué jamás haría. Errores frecuentes al escribirlo. Cómo diferenciarlo en escena de otros personajes.]
+
+18. REGLA CANÓNICA DEL PERSONAJE
+
+[La esencia del personaje en 2-3 frases. El núcleo que no puede perderse en ninguna versión de la historia.]
 `
-                const blob = new Blob([templateContent], { type: 'text/markdown' })
-                const templateFile = new File([blob], `${name.trim().replace(/\s+/g, '_')}_canon.md`, { type: 'text/markdown' })
+                const blob = new Blob([templateContent], { type: 'text/plain' })
+                const templateFile = new File([blob], `${code.trim()}_Perfil_${slug}.txt`, { type: 'text/plain' })
                 setFile(templateFile)
-                setTitle(`${name.trim()} — Canon Visual`)
-                setDescription(`Documento canónico visual del personaje ${name.trim()}. Contiene rasgos físicos, vestuario, distinción vs otros personajes y notas para generación de imagen.`)
-                setCategories(['personajes', 'arte'])
+                setTitle(`Perfil de ${name.trim()}`)
+                setDescription(`Documento canónico oficial del personaje ${name.trim()}. Contiene historia, apariencia, personalidad, arco narrativo y guía para guionistas.`)
+                setCategories(['personajes'])
                 setAccentColor('#4A8FE8')
+                setAnalysisRan(true)
               }}
               style={{ width: '100%', padding: '0.625rem', background: 'rgba(74,143,232,0.06)', border: '1px solid rgba(74,143,232,0.2)', borderRadius: '2px', color: 'rgba(74,143,232,0.8)', fontSize: '0.8125rem', cursor: 'pointer', fontFamily: 'IBM Plex Sans, sans-serif', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a6 6 0 0112 0v2"/></svg>
-              Crear canon de personaje desde template
+              Crear perfil de personaje desde template
             </button>
           )}
 
