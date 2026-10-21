@@ -51,6 +51,27 @@ type Episode = {
 
 type WorkflowKey = 'write_script' | 'review_continuity' | 'improve_dialogue' | 'breakdown' | 'generate_scenes' | 'analyze_continuity' | null
 
+type AssetGap = {
+  id?: string
+  scene_ref: string
+  category: string
+  entity_name: string
+  entity_label: string
+  matrix_key: string
+  view_type: string
+  outfit: string | null
+  age_version: string | null
+  reason: string
+  status: string
+}
+
+type CanonIssue = {
+  scene_ref: string
+  entity: string
+  issue: string
+  severity: 'error' | 'warning'
+}
+
 // ── Constants ─────────────────────────────────────────────────────────────────
 
 const STATUS_LABELS: Record<EpisodeStatus, string> = {
@@ -149,7 +170,15 @@ export default function EpisodeBuilderPage() {
   const [activeWorkflow, setActiveWorkflow] = useState<WorkflowKey>(null)
 
   // Script mode vs structure mode
-  const [mode, setMode] = useState<'overview' | 'script' | 'structure'>('overview')
+  const [mode, setMode] = useState<'overview' | 'script' | 'structure' | 'produccion'>('overview')
+
+  // Script analysis
+  const [analyzingScript, setAnalyzingScript] = useState(false)
+  const [scriptGaps, setScriptGaps] = useState<AssetGap[]>([])
+  const [canonIssues, setCanonIssues] = useState<CanonIssue[]>([])
+  const [analysisSummary, setAnalysisSummary] = useState('')
+  const [analysisError, setAnalysisError] = useState('')
+  const [creatingGap, setCreatingGap] = useState<string | null>(null)
 
   // AI panel
   const [aiMessages, setAiMessages] = useState<{ role: 'user' | 'assistant'; content: string }[]>([])
@@ -183,8 +212,9 @@ export default function EpisodeBuilderPage() {
       fetch(`/api/episodes?id=${id}`).then(r => r.json()),
       fetch(`/api/episode-chat?episode_id=${id}`).then(r => r.json()),
       fetch(`/api/episode-continuity-log?episode_id=${id}`).then(r => r.json()),
+      fetch(`/api/episodes/${id}/analyze-script`).then(r => r.json()),
     ])
-      .then(([ep, chat, log]) => {
+      .then(([ep, chat, log, gaps]) => {
         if (ep.id) {
           setEpisode(ep)
           setScriptDraft(ep.script ?? '')
@@ -198,6 +228,7 @@ export default function EpisodeBuilderPage() {
           }
         }
         if (Array.isArray(log)) setContinuityLog(log)
+        if (Array.isArray(gaps)) setScriptGaps(gaps)
       })
       .catch(() => {})
       .finally(() => setLoading(false))
@@ -442,6 +473,63 @@ export default function EpisodeBuilderPage() {
     if (data.id) setEpisode(prev => prev ? { ...prev, script_finalized: true } : prev)
   }
 
+  async function analyzeScript() {
+    if (!episode || analyzingScript) return
+    setAnalyzingScript(true)
+    setAnalysisError('')
+    setAnalysisSummary('')
+    setCanonIssues([])
+    try {
+      const res = await fetch(`/api/episodes/${id}/analyze-script`, { method: 'POST' })
+      const data = await res.json()
+      if (!res.ok) {
+        setAnalysisError(data.error ?? 'Error en el análisis')
+        return
+      }
+      setScriptGaps(data.gaps ?? [])
+      setCanonIssues(data.canon_issues ?? [])
+      setAnalysisSummary(data.summary ?? '')
+    } catch {
+      setAnalysisError('Error al conectar con el servidor')
+    } finally {
+      setAnalyzingScript(false)
+    }
+  }
+
+  async function createGapSlot(gap: AssetGap, gapIndex: string) {
+    if (creatingGap) return
+    setCreatingGap(gapIndex)
+    try {
+      const res = await fetch('/api/assets/create-entity', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          category: gap.category,
+          entity_name: gap.entity_name,
+          entity_label: gap.entity_label,
+          matrix_key: gap.matrix_key,
+        }),
+      })
+      if (res.ok) {
+        // Mark gap as created in DB if it has an id
+        if (gap.id) {
+          await fetch(`/api/episodes/${id}/analyze-script`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ gap_id: gap.id, status: 'created' }),
+          }).catch(() => {})
+        }
+        setScriptGaps(prev => prev.map(g =>
+          g.entity_name === gap.entity_name && g.view_type === gap.view_type
+            ? { ...g, status: 'created' }
+            : g
+        ))
+      }
+    } catch { /* ignore */ } finally {
+      setCreatingGap(null)
+    }
+  }
+
   function activateWorkflow(key: WorkflowKey) {
     setActiveWorkflow(key)
     setAiMessages([])
@@ -501,9 +589,10 @@ export default function EpisodeBuilderPage() {
         {/* Mode tabs */}
         <div data-tutorial="episode-tabs" style={{ display: 'flex', gap: '2px', background: '#120D28', borderRadius: '3px', padding: '2px', flexShrink: 0 }}>
           {[
-            { key: 'overview', label: 'Vista general', tutorialAttr: 'episode-overview' },
-            { key: 'script',   label: 'Guión',         tutorialAttr: 'episode-script-tab' },
-            { key: 'structure', label: 'Estructura',   tutorialAttr: 'episode-structure-tab' },
+            { key: 'overview',   label: 'Vista general', tutorialAttr: 'episode-overview' },
+            { key: 'script',     label: 'Guión',         tutorialAttr: 'episode-script-tab' },
+            { key: 'structure',  label: 'Estructura',    tutorialAttr: 'episode-structure-tab' },
+            { key: 'produccion', label: 'Producción',    tutorialAttr: 'episode-produccion-tab' },
           ].map(tab => (
             <button
               key={tab.key}
@@ -842,6 +931,180 @@ export default function EpisodeBuilderPage() {
               )}
             </div>
           )}
+          {/* PRODUCCIÓN MODE */}
+          {mode === 'produccion' && (
+            <div>
+              {/* Header */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
+                <div>
+                  <div style={{ ...SECTION_HEADER, marginBottom: '4px' }}>Análisis de producción</div>
+                  <div style={{ fontSize: '0.6875rem', color: 'rgba(240,235,225,0.3)', lineHeight: 1.5 }}>
+                    Claude analiza el guión, cruza con la biblia y detecta qué assets visuales faltan por crear.
+                  </div>
+                </div>
+                <button
+                  onClick={analyzeScript}
+                  disabled={analyzingScript || !scriptDraft || scriptDraft.trim().length < 50}
+                  style={{
+                    padding: '8px 16px',
+                    background: analyzingScript ? 'rgba(155,111,212,0.15)' : 'rgba(155,111,212,0.2)',
+                    border: '1px solid rgba(155,111,212,0.5)',
+                    borderRadius: '4px',
+                    color: analyzingScript ? 'rgba(155,111,212,0.5)' : '#9B6FD4',
+                    fontSize: '0.8125rem',
+                    fontWeight: 600,
+                    cursor: analyzingScript || !scriptDraft || scriptDraft.trim().length < 50 ? 'not-allowed' : 'pointer',
+                    fontFamily: 'IBM Plex Sans, sans-serif',
+                    flexShrink: 0,
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {analyzingScript ? '⟳ Analizando...' : '⟳ Analizar guión'}
+                </button>
+              </div>
+
+              {/* No script warning */}
+              {(!scriptDraft || scriptDraft.trim().length < 50) && (
+                <div style={{ background: 'rgba(245,165,42,0.06)', border: '1px solid rgba(245,165,42,0.15)', borderRadius: '4px', padding: '1rem', fontSize: '0.8125rem', color: 'rgba(240,235,225,0.4)', marginBottom: '1.5rem' }}>
+                  El episodio necesita un guión cargado para poder analizarlo. Ve a la pestaña Guión y escribe o pega el texto.
+                </div>
+              )}
+
+              {/* Error */}
+              {analysisError && (
+                <div style={{ background: 'rgba(212,37,106,0.08)', border: '1px solid rgba(212,37,106,0.2)', borderRadius: '4px', padding: '0.875rem 1rem', fontSize: '0.8125rem', color: '#D4256A', marginBottom: '1.5rem' }}>
+                  {analysisError}
+                </div>
+              )}
+
+              {/* Summary */}
+              {analysisSummary && (
+                <div style={{ background: 'rgba(155,111,212,0.07)', border: '1px solid rgba(155,111,212,0.15)', borderRadius: '4px', padding: '0.875rem 1rem', fontSize: '0.8125rem', color: 'rgba(240,235,225,0.7)', lineHeight: 1.6, marginBottom: '1.5rem' }}>
+                  {analysisSummary}
+                </div>
+              )}
+
+              {/* Canon issues */}
+              {canonIssues.length > 0 && (
+                <div style={{ marginBottom: '1.5rem' }}>
+                  <div style={{ ...SECTION_HEADER }}>Issues de canon ({canonIssues.length})</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    {canonIssues.map((issue, i) => (
+                      <div key={i} style={{
+                        background: issue.severity === 'error' ? 'rgba(212,37,106,0.07)' : 'rgba(245,165,42,0.06)',
+                        border: `1px solid ${issue.severity === 'error' ? 'rgba(212,37,106,0.2)' : 'rgba(245,165,42,0.15)'}`,
+                        borderLeft: `3px solid ${issue.severity === 'error' ? '#D4256A' : '#F5A52A'}`,
+                        borderRadius: '3px',
+                        padding: '0.625rem 0.875rem',
+                        display: 'flex',
+                        gap: '0.75rem',
+                        alignItems: 'flex-start',
+                      }}>
+                        <div style={{ flexShrink: 0, minWidth: '70px' }}>
+                          <div style={{ fontSize: '0.55rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: issue.severity === 'error' ? '#D4256A' : '#F5A52A', fontWeight: 600 }}>{issue.severity}</div>
+                          <div style={{ fontSize: '0.6rem', color: 'rgba(240,235,225,0.3)', marginTop: '2px' }}>{issue.scene_ref}</div>
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: '0.75rem', color: '#F0EBE1', fontWeight: 600, marginBottom: '2px' }}>{issue.entity}</div>
+                          <div style={{ fontSize: '0.75rem', color: 'rgba(240,235,225,0.55)', lineHeight: 1.5 }}>{issue.issue}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Asset gaps */}
+              {scriptGaps.length > 0 && (
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+                    <div style={{ ...SECTION_HEADER, marginBottom: 0 }}>Assets faltantes ({scriptGaps.filter(g => g.status === 'pending').length} pendientes)</div>
+                  </div>
+                  {/* Group by entity */}
+                  {(() => {
+                    const byEntity: Record<string, AssetGap[]> = {}
+                    for (const g of scriptGaps) {
+                      if (!byEntity[g.entity_name]) byEntity[g.entity_name] = []
+                      byEntity[g.entity_name].push(g)
+                    }
+                    return Object.entries(byEntity).map(([entityName, gaps]) => (
+                      <div key={entityName} style={{ marginBottom: '1rem', background: '#0D0920', border: '1px solid rgba(245,165,42,0.08)', borderRadius: '4px', overflow: 'hidden' }}>
+                        {/* Entity header */}
+                        <div style={{ padding: '0.625rem 0.875rem', background: 'rgba(245,165,42,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
+                          <div>
+                            <span style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '0.9rem', letterSpacing: '0.06em', color: '#F0EBE1' }}>{gaps[0].entity_label}</span>
+                            <span style={{ fontSize: '0.6rem', color: 'rgba(240,235,225,0.3)', marginLeft: '8px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>{gaps[0].category}</span>
+                          </div>
+                          <span style={{ fontSize: '0.6rem', color: 'rgba(240,235,225,0.25)', fontFamily: 'monospace' }}>{gaps.filter(g => g.status === 'pending').length} faltantes</span>
+                        </div>
+                        {/* Gaps list */}
+                        <div style={{ padding: '0.5rem' }}>
+                          {gaps.map((gap, gi) => {
+                            const gapKey = `${gap.entity_name}-${gap.view_type}-${gi}`
+                            const isDone = gap.status !== 'pending'
+                            return (
+                              <div key={gapKey} style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '0.5rem',
+                                padding: '6px 8px',
+                                borderRadius: '3px',
+                                background: isDone ? 'rgba(78,205,196,0.05)' : 'transparent',
+                                marginBottom: '2px',
+                                opacity: isDone ? 0.6 : 1,
+                              }}>
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
+                                    <span style={{ fontSize: '0.75rem', color: isDone ? '#4ECDC4' : '#F0EBE1', fontWeight: 600 }}>{gap.view_type}</span>
+                                    {gap.outfit && <span style={{ fontSize: '0.6rem', color: 'rgba(240,235,225,0.35)' }}>· {gap.outfit}</span>}
+                                    {gap.age_version && <span style={{ fontSize: '0.6rem', color: 'rgba(240,235,225,0.35)' }}>· {gap.age_version}</span>}
+                                  </div>
+                                  <div style={{ fontSize: '0.625rem', color: 'rgba(240,235,225,0.3)', lineHeight: 1.4 }}>
+                                    <span style={{ color: 'rgba(155,111,212,0.6)' }}>{gap.scene_ref}</span> — {gap.reason}
+                                  </div>
+                                </div>
+                                {isDone ? (
+                                  <span style={{ fontSize: '0.7rem', color: '#4ECDC4', flexShrink: 0 }}>✓ creado</span>
+                                ) : (
+                                  <button
+                                    onClick={() => createGapSlot(gap, gapKey)}
+                                    disabled={creatingGap === gapKey}
+                                    style={{
+                                      padding: '4px 8px',
+                                      background: 'rgba(78,205,196,0.12)',
+                                      border: '1px solid rgba(78,205,196,0.3)',
+                                      borderRadius: '3px',
+                                      color: '#4ECDC4',
+                                      fontSize: '0.65rem',
+                                      fontWeight: 600,
+                                      cursor: creatingGap === gapKey ? 'not-allowed' : 'pointer',
+                                      fontFamily: 'IBM Plex Sans, sans-serif',
+                                      flexShrink: 0,
+                                      whiteSpace: 'nowrap',
+                                    }}
+                                  >
+                                    {creatingGap === gapKey ? '...' : '+ Crear slots'}
+                                  </button>
+                                )}
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    ))
+                  })()}
+                </div>
+              )}
+
+              {/* Empty state */}
+              {!analyzingScript && !analysisError && scriptGaps.length === 0 && canonIssues.length === 0 && scriptDraft && scriptDraft.trim().length >= 50 && (
+                <div style={{ color: 'rgba(240,235,225,0.2)', fontSize: '0.8125rem', textAlign: 'center', marginTop: '3rem', lineHeight: 1.8 }}>
+                  Presiona "Analizar guión" para detectar<br />assets faltantes y validar el canon.
+                </div>
+              )}
+            </div>
+          )}
+
         </div>
 
         {/* ── RIGHT PANEL — AI ASSISTANT ─────────────────────────────── */}

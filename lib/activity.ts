@@ -4,7 +4,7 @@ export type ActivityAction =
   | 'doc.upload' | 'doc.delete' | 'doc.edit'
   | 'asset.upload' | 'asset.approve' | 'asset.reject' | 'asset.delete' | 'asset.bulk_approve'
   | 'entity.create' | 'entity.delete'
-  | 'episode.create' | 'episode.edit'
+  | 'episode.create' | 'episode.edit' | 'episode.analyze_script'
   | 'artwork.create' | 'artwork.edit'
 
 export type ActivityEntityType =
