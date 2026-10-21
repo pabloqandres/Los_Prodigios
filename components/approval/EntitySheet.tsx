@@ -282,7 +282,11 @@ function SlotRow({
       {/* Thumbnail / uploader + reference */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
       <div style={{ height: '80px', borderRadius: '4px', overflow: 'hidden', position: 'relative', background: '#06040F', flexShrink: 0 }}>
-        {thumbUrl ? (
+        {showReplace ? (
+          <div style={{ padding: '4px', height: '100%', boxSizing: 'border-box' }}>
+            <SlotUploader slot={slot} onUploaded={(s) => { setShowReplace(false); onUpdated(s) }} />
+          </div>
+        ) : thumbUrl ? (
           <>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <a href={thumbUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'block', width: '100%', height: '100%' }} title="Ver imagen completa">
@@ -305,14 +309,7 @@ function SlotRow({
             )}
           </>
         ) : showUploader ? (
-          <div>
-            <SlotUploader slot={slot} onUploaded={(s) => { setShowReplace(false); onUpdated(s) }} />
-            {showReplace && (
-              <button onClick={() => setShowReplace(false)} style={{ marginTop: 4, background: 'none', border: 'none', fontSize: '0.6rem', color: 'rgba(240,235,225,0.3)', cursor: 'pointer', padding: 0 }}>
-                Cancelar
-              </button>
-            )}
-          </div>
+          <SlotUploader slot={slot} onUploaded={onUpdated} />
         ) : (
           <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <span style={{ fontSize: '0.5625rem', color: 'rgba(240,235,225,0.2)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Sin imagen</span>
@@ -354,12 +351,12 @@ function SlotRow({
             >
               Ver imagen →
             </a>
-            {isReviewer && !showReplace && (
+            {isReviewer && (
               <button
-                onClick={() => setShowReplace(true)}
-                style={{ fontSize: '0.6rem', color: 'rgba(245,165,42,0.7)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}
+                onClick={() => setShowReplace(r => !r)}
+                style={{ fontSize: '0.6rem', color: showReplace ? 'rgba(240,235,225,0.3)' : 'rgba(245,165,42,0.7)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}
               >
-                Reemplazar
+                {showReplace ? 'Cancelar' : 'Reemplazar'}
               </button>
             )}
           </div>
