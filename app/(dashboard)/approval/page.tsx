@@ -252,7 +252,7 @@ function NewEntityModal({
 // ── Category accordion ─────────────────────────────────────────────────────────
 function CategoryAccordion({
   category, slots, userEmail, isOpen, onToggle, onSeed, seeding,
-  onSlotUpdated, onSlotDeleted, onEntityCreated,
+  onSlotUpdated, onSlotDeleted, onEntityCreated, onEntityDeleted,
 }: {
   category: string
   slots: AssetSlotWithApprovals[]
@@ -264,6 +264,7 @@ function CategoryAccordion({
   onSlotUpdated: (updated: AssetSlotWithApprovals) => void
   onSlotDeleted: (id: string) => void
   onEntityCreated: () => void
+  onEntityDeleted: (entity_name: string) => void
 }) {
   const [activeEntity, setActiveEntity] = useState<{ entity_name: string; entity_label: string } | null>(null)
   const [showNewEntity, setShowNewEntity] = useState(false)
@@ -447,6 +448,7 @@ function CategoryAccordion({
           onClose={() => setActiveEntity(null)}
           onSlotUpdated={onSlotUpdated}
           onSlotDeleted={onSlotDeleted}
+          onEntityDeleted={(entity_name) => { onEntityDeleted(entity_name); setActiveEntity(null) }}
         />
       )}
 
@@ -492,6 +494,10 @@ export default function ApprovalPage() {
 
   function handleSlotDeleted(id: string) {
     setSlots(prev => prev.filter(s => s.id !== id))
+  }
+
+  function handleEntityDeleted(entity_name: string) {
+    setSlots(prev => prev.filter(s => s.entity_name !== entity_name))
   }
 
   async function handleSeed() {
@@ -583,6 +589,7 @@ export default function ApprovalPage() {
               onSlotUpdated={handleSlotUpdated}
               onSlotDeleted={handleSlotDeleted}
               onEntityCreated={fetchSlots}
+              onEntityDeleted={handleEntityDeleted}
             />
           ))}
         </div>

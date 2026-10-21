@@ -22,6 +22,7 @@ interface Props {
   onClose: () => void
   onSlotUpdated: (updated: AssetSlotWithApprovals) => void
   onSlotDeleted: (id: string) => void
+  onEntityDeleted: (entity_name: string) => void
 }
 
 
@@ -469,7 +470,7 @@ function SlotRow({
 }
 
 // ── Main EntitySheet ───────────────────────────────────────────────────────────
-export default function EntitySheet({ entity, category, slots, userEmail, onClose, onSlotUpdated, onSlotDeleted }: Props) {
+export default function EntitySheet({ entity, category, slots, userEmail, onClose, onSlotUpdated, onSlotDeleted, onEntityDeleted }: Props) {
   const [canonFields, setCanonFields] = useState<Record<string, string>>({})
   const [docId, setDocId] = useState<string | null>(null)
   const [loadingDoc, setLoadingDoc] = useState(true)
@@ -482,7 +483,26 @@ export default function EntitySheet({ entity, category, slots, userEmail, onClos
   const [validationResults, setValidationResults] = useState<Record<string, ValidationResult>>({})
   const [validationSlots, setValidationSlots] = useState<Record<string, AssetSlotWithApprovals>>({})
   const [bulkMode, setBulkMode] = useState(false)
+  const [confirmDelete, setConfirmDelete] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const overlayRef = useRef<HTMLDivElement>(null)
+
+  const isAdmin = userEmail === 'pabloqandres@gmail.com'
+
+  async function handleDeleteEntity() {
+    if (!confirmDelete) { setConfirmDelete(true); return }
+    setDeleting(true)
+    try {
+      const res = await fetch(`/api/assets/entity/${encodeURIComponent(entity.entity_name)}`, { method: 'DELETE' })
+      if (res.ok) {
+        onEntityDeleted(entity.entity_name)
+        onClose()
+      }
+    } finally {
+      setDeleting(false)
+      setConfirmDelete(false)
+    }
+  }
 
   // ── Load persisted prompts from fresh slot data ────────────────────────────
   useEffect(() => {
@@ -699,6 +719,26 @@ export default function EntitySheet({ entity, category, slots, userEmail, onClos
               <div style={{ height: '100%', width: `${pct}%`, background: pct === 100 ? '#4ECDC4' : 'linear-gradient(90deg,#F5A52A,#4ECDC4)', transition: 'width 0.4s' }} />
             </div>
           </div>
+          {/* Delete entity (admin only) */}
+          {isAdmin && (
+            <button
+              onClick={handleDeleteEntity}
+              disabled={deleting}
+              style={{
+                padding: '0.375rem 0.875rem',
+                background: confirmDelete ? 'rgba(212,37,106,0.2)' : 'rgba(212,37,106,0.07)',
+                border: `1px solid ${confirmDelete ? 'rgba(212,37,106,0.7)' : 'rgba(212,37,106,0.2)'}`,
+                borderRadius: 5,
+                color: confirmDelete ? '#D4256A' : 'rgba(212,37,106,0.5)',
+                fontSize: '0.6875rem', fontWeight: 700, cursor: 'pointer',
+                fontFamily: 'IBM Plex Sans, sans-serif', letterSpacing: '0.06em',
+                textTransform: 'uppercase', flexShrink: 0, transition: 'all 0.15s',
+              }}
+              onMouseLeave={() => !deleting && setConfirmDelete(false)}
+            >
+              {deleting ? '…' : confirmDelete ? '¿Confirmar eliminación?' : '✕ Eliminar entidad'}
+            </button>
+          )}
           {/* Close */}
           <button
             onClick={onClose}
