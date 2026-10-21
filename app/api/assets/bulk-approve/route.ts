@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getToken } from 'next-auth/jwt'
 import { createServerClient } from '@/lib/supabase'
 import { REVIEWERS, makeApprovedFileName } from '@/lib/approval-config'
+import { logActivity } from '@/lib/activity'
 
 export const runtime = 'nodejs'
 export const maxDuration = 60
@@ -130,6 +131,16 @@ export async function POST(req: NextRequest) {
   const voted = results.filter(r => r.status === 'voted').length
   const fullyApproved = results.filter(r => r.status === 'fully_approved').length
   const errors = results.filter(r => r.status === 'error').length
+
+  if (voted > 0 || fullyApproved > 0) {
+    await logActivity({
+      action: 'asset.bulk_approve',
+      entity_type: 'asset_slot',
+      entity_label: `Aprobación masiva (${slot_ids.length} slots)`,
+      detail: `${fullyApproved} aprobados, ${voted} en revisión — revisor: ${reviewerName}`,
+      user_email: email,
+    })
+  }
 
   return NextResponse.json({
     results,
