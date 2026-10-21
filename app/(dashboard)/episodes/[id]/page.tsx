@@ -1121,7 +1121,7 @@ export default function EpisodeBuilderPage() {
                         <div style={{ padding: '0.5rem' }}>
                           {gaps.map((gap, gi) => {
                             const gapKey = `${gap.entity_name}-${gap.view_type}-${gi}`
-                            const isDone = gap.status !== 'pending'
+                            const isDone = gap.status === 'created' || gap.status === 'linked' || gap.status === 'skipped'
                             return (
                               <div key={gapKey} style={{
                                 display: 'flex',
