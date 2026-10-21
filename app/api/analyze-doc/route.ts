@@ -46,7 +46,7 @@ Reglas para "categories" (máximo 4, solo estas): personajes, arte, guion, conti
 
 Reglas para assets:
 - "needs_assets": true si el documento describe un elemento visual concreto que necesitará imágenes de referencia aprobadas: un personaje, locación, prop, criatura, mascota, personaje secundario, O un equipo rival. false si es un documento conceptual, de reglas narrativas, guión, marketing, o cualquier cosa que NO requiera arte visual aprobado.
-- "asset_category": una de: personajes, locaciones, props, criaturas, secundarios, mascotas, rivales, hawks. Usa "rivales" para equipos rivales como EQUIPO. Usa "hawks" si describe jugadores o cuerpo técnico de Hawks. Usa "secundarios" para personajes de apoyo sin arco propio. Solo si needs_assets es true.
+- "asset_category": una de: personajes, locaciones, props, criaturas, secundarios, mascotas, rivales, hawks. IMPORTANTE: "hawks" es SOLO para el equipo rival Hawks FC y su cuerpo técnico específicamente. Personajes del equipo principal Los Prodigios (jugadores, entrenadores, staff) van en "personajes". Usa "rivales" para otros equipos rivales como equipo. Usa "secundarios" para personajes de apoyo sin arco propio. Solo si needs_assets es true.
 - "asset_matrix_key": determina QUÉ TIPO DE SLOTS DE ARTE se generarán. Analiza el ROL del personaje en el documento:
     * "personajes" → jugadores activos (juegan partidos, tienen poses de fútbol, uniformes de partido)
     * "entrenadores" → entrenadores, DTs, preparadores físicos (están en banca, dan indicaciones, no juegan)
