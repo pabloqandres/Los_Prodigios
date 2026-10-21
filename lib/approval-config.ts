@@ -115,6 +115,27 @@ export const SLOT_MATRIX: Record<string, SlotMatrixRow[]> = {
     { view_type: 'Paleta cromática', outfit: null,             age_versions: ['Swatches oficiales'] },
     { view_type: 'Botines',          outfit: null,             age_versions: ['Detalle'] },
   ],
+  entrenadores: [
+    // ── VISTAS GENERALES ─────────────────────────────────────────────────────
+    { view_type: 'Vista general',  outfit: 'Casual',             age_versions: ['Frente', 'Perfil D', 'Perfil I', 'Espalda'] },
+    // ── VERSIÓN JOVEN (flashback como jugador) ────────────────────────────────
+    { view_type: 'Versión etaria', outfit: 'Casual',             age_versions: ['Versión joven (jugador)'] },
+    // ── 3/4 ──────────────────────────────────────────────────────────────────
+    { view_type: '3/4',            outfit: 'Casual',             age_versions: ['Izquierda', 'Derecha'] },
+    // ── EXPRESIONES ───────────────────────────────────────────────────────────
+    { view_type: 'Expresión',      outfit: null,                 age_versions: ['Neutral', 'Alegría', 'Enojo', 'Tristeza', 'Sorpresa', 'Concentración', 'Orgullo', 'Preocupación'] },
+    // ── OUTFIT TÉCNICO (ropa de entrenador, NO uniforme de partido) ───────────
+    { view_type: 'Outfit técnico', outfit: 'Ropa de entrenador', age_versions: ['Frente', 'Espalda'] },
+    // ── ACCIÓN EN BANCA / PIZARRÓN ───────────────────────────────────────────
+    { view_type: 'Acción banca',   outfit: 'Ropa de entrenador', age_versions: ['Dando indicaciones', 'Pizarrón táctico', 'Celebración contenida', 'Tenso en banca'] },
+    { view_type: 'Acción',         outfit: 'Casual',             age_versions: ['Gesto característico', 'Pose de reposo', 'Leyendo libreta'] },
+    // ── OUTFIT CASUAL — variantes ─────────────────────────────────────────────
+    { view_type: 'Outfit casual',  outfit: 'Variante 1',         age_versions: ['Frente'] },
+    { view_type: 'Outfit casual',  outfit: 'Variante 2',         age_versions: ['Frente'] },
+    { view_type: 'Outfit casual',  outfit: 'Variante 3 (frío)',  age_versions: ['Frente'] },
+    // ── ACCESORIOS / ELEMENTOS DEL PERSONAJE ─────────────────────────────────
+    { view_type: 'Accesorio',      outfit: null,                 age_versions: [] }, // usa entityDef.accessories
+  ],
 }
 
 export const ENTITIES: Record<string, EntityDef[]> = {
@@ -213,27 +234,6 @@ export const ENTITIES: Record<string, EntityDef[]> = {
   ],
   rivales: [
     // Equipos rivales de temporadas futuras se agregan aquí
-  ],
-  entrenadores: [
-    // ── VISTAS GENERALES ─────────────────────────────────────────────────────
-    { view_type: 'Vista general',  outfit: 'Casual',             age_versions: ['Frente', 'Perfil D', 'Perfil I', 'Espalda'] },
-    // ── VERSIÓN JOVEN (flashback como jugador) ────────────────────────────────
-    { view_type: 'Versión etaria', outfit: 'Casual',             age_versions: ['Versión joven (jugador)'] },
-    // ── 3/4 ──────────────────────────────────────────────────────────────────
-    { view_type: '3/4',            outfit: 'Casual',             age_versions: ['Izquierda', 'Derecha'] },
-    // ── EXPRESIONES ───────────────────────────────────────────────────────────
-    { view_type: 'Expresión',      outfit: null,                 age_versions: ['Neutral', 'Alegría', 'Enojo', 'Tristeza', 'Sorpresa', 'Concentración', 'Orgullo', 'Preocupación'] },
-    // ── OUTFIT TÉCNICO (ropa de entrenador, NO uniforme de partido) ───────────
-    { view_type: 'Outfit técnico', outfit: 'Ropa de entrenador', age_versions: ['Frente', 'Espalda'] },
-    // ── ACCIÓN EN BANCA / PIZARRÓN ───────────────────────────────────────────
-    { view_type: 'Acción banca',   outfit: 'Ropa de entrenador', age_versions: ['Dando indicaciones', 'Pizarrón táctico', 'Celebración contenida', 'Tenso en banca'] },
-    { view_type: 'Acción',         outfit: 'Casual',             age_versions: ['Gesto característico', 'Pose de reposo', 'Leyendo libreta'] },
-    // ── OUTFIT CASUAL — variantes ─────────────────────────────────────────────
-    { view_type: 'Outfit casual',  outfit: 'Variante 1',         age_versions: ['Frente'] },
-    { view_type: 'Outfit casual',  outfit: 'Variante 2',         age_versions: ['Frente'] },
-    { view_type: 'Outfit casual',  outfit: 'Variante 3 (frío)',  age_versions: ['Frente'] },
-    // ── ACCESORIOS / ELEMENTOS DEL PERSONAJE ─────────────────────────────────
-    { view_type: 'Accesorio',      outfit: null,                 age_versions: [] }, // usa entityDef.accessories
   ],
   simbolos: [
     // ── NUEVA CORONA ──────────────────────────────────────────────────────────
