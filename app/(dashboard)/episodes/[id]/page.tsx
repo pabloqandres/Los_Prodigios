@@ -90,13 +90,13 @@ const STATUS_COLORS: Record<EpisodeStatus, string> = {
   completed: '#D4256A',
 }
 
-const WORKFLOWS: { key: WorkflowKey; icon: string; label: string; desc: string; accent: string }[] = [
-  { key: 'write_script',        icon: '✍', label: 'Escribir guión',         desc: 'El AI te asiste con el workflow oficial de guión — estructura, diálogos, formato estándar.',    accent: '#F5A52A' },
-  { key: 'review_continuity',   icon: '🔍', label: 'Revisar continuidad',    desc: 'Cruza el episodio contra el canon establecido. Detecta inconsistencias antes de producir.',  accent: '#D4256A' },
-  { key: 'improve_dialogue',    icon: '💬', label: 'Mejorar diálogos',       desc: 'Analiza la voz de cada personaje. Asegura que hablen como en sus fichas canónicas.',         accent: '#9B6FD4' },
-  { key: 'breakdown',           icon: '📋', label: 'Breakdown de producción', desc: 'Extrae personajes, locaciones y props escena por escena. Listo para el equipo de arte.',     accent: '#4ECDC4' },
-  { key: 'generate_scenes',     icon: '🎬', label: 'Generar estructura',     desc: 'El AI propone una estructura de actos y escenas desde el logline o sinopsis del episodio.',   accent: '#4A8FE8' },
-  { key: 'analyze_continuity',  icon: '🗂', label: 'Log de continuidad',     desc: 'Genera el log de cambios canónicos del episodio para actualizar el sistema de continuidad.', accent: '#E87A4A' },
+const WORKFLOWS: { key: WorkflowKey; icon: React.ReactNode; label: string; desc: string; accent: string }[] = [
+  { key: 'write_script',        icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 13L10.5 3.5a1.5 1.5 0 0 1 2.121 2.121L5 13H3v-2z" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/><path d="M9 5l2 2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>, label: 'Escribir guión',         desc: 'El AI te asiste con el workflow oficial de guión — estructura, diálogos, formato estándar.',    accent: '#F5A52A' },
+  { key: 'review_continuity',   icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="4.5" stroke="currentColor" strokeWidth="1.2"/><path d="M10.5 10.5L13 13" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>, label: 'Revisar continuidad',    desc: 'Cruza el episodio contra el canon establecido. Detecta inconsistencias antes de producir.',  accent: '#D4256A' },
+  { key: 'improve_dialogue',    icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 4h10a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H5l-3 2V5a1 1 0 0 1 1-1z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/></svg>, label: 'Mejorar diálogos',       desc: 'Analiza la voz de cada personaje. Asegura que hablen como en sus fichas canónicas.',         accent: '#9B6FD4' },
+  { key: 'breakdown',           icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 4h8M4 8h6M4 12h4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>, label: 'Breakdown de producción', desc: 'Extrae personajes, locaciones y props escena por escena. Listo para el equipo de arte.',     accent: '#4ECDC4' },
+  { key: 'generate_scenes',     icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.2"/><path d="M6.5 6.5L10 8l-3.5 1.5V6.5z" fill="currentColor"/></svg>, label: 'Generar estructura',     desc: 'El AI propone una estructura de actos y escenas desde el logline o sinopsis del episodio.',   accent: '#4A8FE8' },
+  { key: 'analyze_continuity',  icon: <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 4h10v1.5H3zM3 7.5h10V9H3zM3 11h6v1.5H3z" fill="currentColor" opacity=".7"/></svg>, label: 'Log de continuidad',     desc: 'Genera el log de cambios canónicos del episodio para actualizar el sistema de continuidad.', accent: '#E87A4A' },
 ]
 
 // ── Shared styles ─────────────────────────────────────────────────────────────
@@ -745,7 +745,7 @@ export default function EpisodeBuilderPage() {
                     onMouseEnter={e => { if (activeWorkflow !== wf.key) { e.currentTarget.style.borderColor = wf.accent; e.currentTarget.style.background = `${wf.accent}08` } }}
                     onMouseLeave={e => { if (activeWorkflow !== wf.key) { e.currentTarget.style.borderColor = 'rgba(245,165,42,0.08)'; e.currentTarget.style.background = '#0D0920' } }}
                   >
-                    <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>{wf.icon}</div>
+                    <div style={{ width: '28px', height: '28px', marginBottom: '0.5rem', color: wf.accent, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{wf.icon}</div>
                     <div style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '0.9rem', letterSpacing: '0.06em', color: activeWorkflow === wf.key ? wf.accent : '#F0EBE1', marginBottom: '0.375rem' }}>{wf.label}</div>
                     <div style={{ fontSize: '0.6875rem', color: 'rgba(240,235,225,0.4)', lineHeight: 1.5 }}>{wf.desc}</div>
                   </div>
@@ -831,7 +831,8 @@ export default function EpisodeBuilderPage() {
                     onClick={() => activateWorkflow('write_script')}
                     style={{ padding: '4px 10px', background: 'rgba(245,165,42,0.12)', border: '1px solid rgba(245,165,42,0.3)', borderRadius: '3px', color: '#F5A52A', fontSize: '0.7rem', cursor: 'pointer', fontFamily: 'IBM Plex Sans, sans-serif' }}
                   >
-                    ✍ Asistente
+                    <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style={{ marginRight: '4px', verticalAlign: 'middle' }}><path d="M3 13L10.5 3.5a1.5 1.5 0 0 1 2.121 2.121L5 13H3v-2z" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/><path d="M9 5l2 2" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/></svg>
+                    Asistente
                   </button>
                   {!episode.script_finalized && (
                     <button
@@ -899,7 +900,8 @@ export default function EpisodeBuilderPage() {
                   onClick={() => activateWorkflow('generate_scenes')}
                   style={{ padding: '5px 12px', background: 'rgba(74,143,232,0.15)', border: '1px solid rgba(74,143,232,0.4)', borderRadius: '3px', color: '#4A8FE8', fontSize: '0.75rem', cursor: 'pointer', fontFamily: 'IBM Plex Sans, sans-serif' }}
                 >
-                  🎬 Generar estructura con AI
+                  <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style={{ marginRight: '4px', verticalAlign: 'middle' }}><rect x="2" y="3" width="12" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.2"/><path d="M6.5 6.5L10 8l-3.5 1.5V6.5z" fill="currentColor"/></svg>
+                  Generar estructura con AI
                 </button>
               </div>
 
@@ -952,8 +954,8 @@ export default function EpisodeBuilderPage() {
                               onBlur={e => updateSceneField(scene.id, 'title', e.target.value)}
                               style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: '#F0EBE1', fontFamily: 'IBM Plex Sans, sans-serif', fontSize: '0.8125rem' }}
                             />
-                            {scene.location_name && <span style={{ fontSize: '0.6rem', color: 'rgba(240,235,225,0.3)', flexShrink: 0 }}>📍 {scene.location_name}</span>}
-                            {scene.duration_est && <span style={{ fontSize: '0.6rem', color: 'rgba(240,235,225,0.3)', flexShrink: 0 }}>⏱ {scene.duration_est}s</span>}
+                            {scene.location_name && <span style={{ fontSize: '0.6rem', color: 'rgba(240,235,225,0.3)', flexShrink: 0, display: 'flex', alignItems: 'center', gap: '3px' }}><svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M6 1a3.5 3.5 0 0 1 3.5 3.5c0 2.5-3.5 6.5-3.5 6.5S2.5 7 2.5 4.5A3.5 3.5 0 0 1 6 1z" stroke="currentColor" strokeWidth="1.1"/><circle cx="6" cy="4.5" r="1.2" fill="currentColor"/></svg>{scene.location_name}</span>}
+                            {scene.duration_est && <span style={{ fontSize: '0.6rem', color: 'rgba(240,235,225,0.3)', flexShrink: 0, display: 'flex', alignItems: 'center', gap: '3px' }}><svg width="10" height="10" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="4.5" stroke="currentColor" strokeWidth="1.1"/><path d="M6 3.5V6l1.5 1.5" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/></svg>{scene.duration_est}s</span>}
                             <span style={{ fontSize: '0.7rem', color: 'rgba(240,235,225,0.2)', flexShrink: 0 }}>{expandedScene === scene.id ? '▲' : '▼'}</span>
                             <button
                               onClick={e => { e.stopPropagation(); deleteScene(scene.id) }}
