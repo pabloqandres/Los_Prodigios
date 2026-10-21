@@ -479,14 +479,11 @@ export default function EpisodeBuilderPage() {
     if (importingDoc) return
     setImportingDoc(true)
     try {
-      // 1. Get signed upload URL — sanitize filename for Supabase Storage
-      const safeName = file.name
-        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')  // remove accents
-        .replace(/[^a-zA-Z0-9._-]/g, '_')                  // replace spaces/special chars
+      // 1. Get signed upload URL (server sanitizes the path automatically)
       const pathRes = await fetch('/api/assets/upload-signed-url', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ path: `scripts/${id}/${safeName}` }),
+        body: JSON.stringify({ path: `scripts/${id}/${file.name}` }),
       })
       const { signed_url, path } = await pathRes.json()
       if (!signed_url) throw new Error('No se pudo obtener URL de subida')

@@ -11,8 +11,17 @@ export async function POST(req: NextRequest) {
   const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET })
   if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { path } = await req.json()
-  if (!path) return NextResponse.json({ error: 'path requerido' }, { status: 400 })
+  const { path: rawPath } = await req.json()
+  if (!rawPath) return NextResponse.json({ error: 'path requerido' }, { status: 400 })
+
+  // Sanitize each path segment — remove accents, replace special chars with _
+  const path = rawPath
+    .split('/')
+    .map((seg: string) => seg
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-zA-Z0-9._-]/g, '_')
+    )
+    .join('/')
 
   const supabase = createServerClient()
   const { data, error } = await supabase.storage
