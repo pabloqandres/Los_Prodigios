@@ -173,6 +173,7 @@ function SlotRow({
   const [deleting, setDeleting] = useState(false)
   const [copiedFilename, setCopiedFilename] = useState(false)
   const [copiedPrompt, setCopiedPrompt] = useState(false)
+  const [showReplace, setShowReplace] = useState(false)
   const isReviewer  = !!REVIEWERS[userEmail]
   const myApproval  = slot.approvals?.find(a => a.reviewer_email === userEmail)
   const reviewerNames = Object.values(REVIEWERS)
@@ -189,7 +190,7 @@ function SlotRow({
     !myApproval &&
     !isCanonBlocked
   )
-  const showUploader = slot.status === 'pending' && !slot.pending_drive_file_id
+  const showUploader = (slot.status === 'pending' && !slot.pending_drive_file_id) || showReplace
   const canRemove = !!(slot.pending_drive_file_id && slot.status !== 'approved')
 
   const getBadgeStatus = (name: string): 'approved' | 'rejected' | 'pending' => {
@@ -304,7 +305,14 @@ function SlotRow({
             )}
           </>
         ) : showUploader ? (
-          <SlotUploader slot={slot} onUploaded={onUpdated} />
+          <div>
+            <SlotUploader slot={slot} onUploaded={(s) => { setShowReplace(false); onUpdated(s) }} />
+            {showReplace && (
+              <button onClick={() => setShowReplace(false)} style={{ marginTop: 4, background: 'none', border: 'none', fontSize: '0.6rem', color: 'rgba(240,235,225,0.3)', cursor: 'pointer', padding: 0 }}>
+                Cancelar
+              </button>
+            )}
+          </div>
         ) : (
           <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <span style={{ fontSize: '0.5625rem', color: 'rgba(240,235,225,0.2)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Sin imagen</span>
@@ -338,13 +346,23 @@ function SlotRow({
           {slot.version_label}
         </div>
         {slot.status === 'approved' && slot.approved_drive_file_id && storageUrl(slot.approved_drive_file_id) && (
-          <a
-            href={storageUrl(slot.approved_drive_file_id)!}
-            target="_blank" rel="noopener noreferrer"
-            style={{ fontSize: '0.6rem', color: '#4ECDC4', textDecoration: 'none', opacity: 0.7 }}
-          >
-            Ver imagen →
-          </a>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <a
+              href={storageUrl(slot.approved_drive_file_id)!}
+              target="_blank" rel="noopener noreferrer"
+              style={{ fontSize: '0.6rem', color: '#4ECDC4', textDecoration: 'none', opacity: 0.7 }}
+            >
+              Ver imagen →
+            </a>
+            {isReviewer && !showReplace && (
+              <button
+                onClick={() => setShowReplace(true)}
+                style={{ fontSize: '0.6rem', color: 'rgba(245,165,42,0.7)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}
+              >
+                Reemplazar
+              </button>
+            )}
+          </div>
         )}
         <div style={{
           display: 'inline-flex', alignItems: 'center',
