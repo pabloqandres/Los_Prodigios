@@ -14,127 +14,84 @@ export interface EntityDef {
 }
 
 export const SLOT_MATRIX: Record<string, SlotMatrixRow[]> = {
+  // ── JUGADORES PRINCIPALES ─────────────────────────────────────────────────
+  // Paquete base Cinema Studio. Vistas adicionales se crean por demanda de guión.
   personajes: [
-    // ── VISTAS GENERALES (turnabout casual) ──────────────────────────────────
-    { view_type: 'Vista general',    outfit: 'Casual',              age_versions: ['Frente', 'Perfil D', 'Perfil I', 'Espalda'] },
+    { view_type: 'Identidad facial',   outfit: null,                  age_versions: ['Frontal', '3/4'] },
+    { view_type: 'Cuerpo completo',    outfit: 'Casual',              age_versions: ['Frontal', '3/4', 'Espalda'] },
+    { view_type: 'Lámina expresiones', outfit: null,                  age_versions: ['Completa'] },
+    { view_type: 'Uniforme partido',   outfit: 'Titular',             age_versions: ['Frontal', 'Espalda'] },
+    { view_type: 'Outfit casual',      outfit: 'Variante principal',  age_versions: ['Frontal'] },
+    { view_type: 'Acción',            outfit: 'Uniforme titular',    age_versions: ['Celebración', 'Jugada característica'] },
+    { view_type: 'Accesorio',         outfit: null,                  age_versions: [] },
+  ],
 
-    // ── EDADES (junto al canon base) ─────────────────────────────────────────
-    { view_type: 'Versión etaria',   outfit: 'Casual',              age_versions: ['Versión infantil'] },
-
-    // ── 3/4 ──────────────────────────────────────────────────────────────────
-    { view_type: '3/4',              outfit: 'Casual',              age_versions: ['Izquierda', 'Derecha'] },
-
-    // ── EXPRESIONES ───────────────────────────────────────────────────────────
-    { view_type: 'Expresión',        outfit: null, age_versions: ['Neutral', 'Alegría', 'Enojo', 'Tristeza', 'Sorpresa', 'Concentración', 'Miedo', 'Llanto', 'Orgullo'] },
-
-    // ── OUTFIT DEPORTIVO — variantes ──────────────────────────────────────────
-    { view_type: 'Outfit deportivo', outfit: 'Uniforme partido',    age_versions: ['Frente', 'Espalda'] },
-    { view_type: 'Outfit deportivo', outfit: 'Uniforme entreno',    age_versions: ['Frente', 'Espalda'] },
-    { view_type: 'Outfit deportivo', outfit: 'Uniforme alternativo',age_versions: ['Frente'] },
-    { view_type: 'Outfit deportivo', outfit: 'Ropa de arco',        age_versions: ['Frente'] },
-
-    // ── POSES DE ACCIÓN ───────────────────────────────────────────────────────
-    { view_type: 'Acción',           outfit: 'Uniforme partido',    age_versions: ['Dribling', 'Tiro', 'Celebración', 'Sprint', 'Caída', 'Salto', 'Recepción'] },
-    { view_type: 'Acción',           outfit: 'Casual',              age_versions: ['Gesto característico', 'Pose de reposo'] },
-
-    // ── OUTFIT CASUAL — variantes ─────────────────────────────────────────────
-    { view_type: 'Outfit casual',    outfit: 'Variante 1',          age_versions: ['Frente'] },
-    { view_type: 'Outfit casual',    outfit: 'Variante 2',          age_versions: ['Frente'] },
-    { view_type: 'Outfit casual',    outfit: 'Variante 3 (frío)',   age_versions: ['Frente'] },
-    { view_type: 'Outfit casual',    outfit: 'Variante 4 (casa)',   age_versions: ['Frente'] },
-
-    // ── ACCESORIOS / ELEMENTOS DEL PERSONAJE ─────────────────────────────────
-    { view_type: 'Accesorio',        outfit: null, age_versions: ['Zapatillas (detalle)', 'Collar / colgante', 'Pulsera', 'Mochila', 'Rodillera / vendaje'] },
-  ],
-  locaciones: [
-    // Exterior con variaciones de luz
-    { view_type: 'Exterior',          outfit: null, age_versions: ['Día', 'Tarde dorada', 'Atardecer', 'Noche', 'Lluvia', 'Neblina'] },
-    // Interior con variaciones de luz
-    { view_type: 'Interior',          outfit: null, age_versions: ['Día natural', 'Luz artificial', 'Noche', 'Contraluz ventana'] },
-    // Planos específicos
-    { view_type: 'Plano general',     outfit: null, age_versions: ['Día', 'Noche'] },
-    { view_type: 'Detalle ambiental', outfit: null, age_versions: ['Textura', 'Elemento narrativo', 'Atmosphere shot'] },
-    { view_type: 'POV personaje',     outfit: null, age_versions: ['Entrando', 'Desde dentro'] },
-  ],
-  props: [
-    // Vistas básicas
-    { view_type: 'Vista frontal',     outfit: null, age_versions: ['Limpio', 'Usado/desgastado'] },
-    { view_type: 'Vista lateral',     outfit: null, age_versions: ['v1'] },
-    { view_type: 'Vista superior',    outfit: null, age_versions: ['v1'] },
-    // Detalles
-    { view_type: 'Detalle',           outfit: null, age_versions: ['Textura', 'Logo/marca', 'Elemento clave'] },
-    // En uso
-    { view_type: 'En contexto',       outfit: null, age_versions: ['En manos personaje', 'En escena', 'Close-up dramático'] },
-  ],
-  criaturas: [
-    { view_type: 'Frente',           outfit: null, age_versions: ['Pose neutral', 'Alerta', 'Agresiva'] },
-    { view_type: 'Lateral',          outfit: null, age_versions: ['Caminando', 'Quieto'] },
-    { view_type: 'Expresión',        outfit: null, age_versions: ['Neutral', 'Amenazante', 'Curiosa'] },
-    { view_type: 'Acción',           outfit: null, age_versions: ['Movimiento característico'] },
-    { view_type: 'Escala',           outfit: null, age_versions: ['Junto a personaje humano'] },
-  ],
-  secundarios: [
-    { view_type: 'Frente',           outfit: 'Outfit característico', age_versions: ['v1'] },
-    { view_type: '3/4',              outfit: 'Outfit característico', age_versions: ['v1'] },
-    { view_type: 'Expresión',        outfit: null, age_versions: ['Neutral', 'Alegría', 'Enojo', 'Sorpresa'] },
-    { view_type: 'Acción',           outfit: null, age_versions: ['Momento característico'] },
-    { view_type: 'Accesorio',        outfit: null, age_versions: [] }, // age_versions vacío → solo aplica si la entidad define accessories
-  ],
-  mascotas: [
-    { view_type: 'Frente',           outfit: null, age_versions: ['Pose neutral', 'Alerta', 'Feliz'] },
-    { view_type: 'Lateral',          outfit: null, age_versions: ['Caminando', 'Quieto'] },
-    { view_type: 'Expresión',        outfit: null, age_versions: ['Curioso', 'Asustado', 'Juguetón'] },
-    { view_type: 'Acción',           outfit: null, age_versions: ['Corriendo', 'Saltando'] },
-  ],
-  simbolos: [
-    { view_type: 'Ficha técnica',    outfit: null, age_versions: ['v1'] },
-  ],
-  hawks: [
-    // Misma estructura que personajes — son rivales principales con desarrollo de arco propio
-    { view_type: 'Vista general',    outfit: 'Uniforme Hawks',          age_versions: ['Frente', 'Perfil D', 'Perfil I', 'Espalda'] },
-    { view_type: '3/4',              outfit: 'Uniforme Hawks',          age_versions: ['Izquierda', 'Derecha'] },
-    { view_type: 'Expresión',        outfit: null,                      age_versions: ['Neutral', 'Alegría', 'Enojo', 'Tristeza', 'Sorpresa', 'Concentración', 'Miedo', 'Orgullo'] },
-    { view_type: 'Outfit deportivo', outfit: 'Uniforme Hawks titular',  age_versions: ['Frente', 'Espalda'] },
-    { view_type: 'Outfit deportivo', outfit: 'Uniforme Hawks entreno',  age_versions: ['Frente'] },
-    { view_type: 'Acción',           outfit: 'Uniforme Hawks titular',  age_versions: ['Sprint', 'Tiro / acción característica', 'Celebración', 'Caída', 'Salto'] },
-    { view_type: 'Outfit casual',    outfit: 'Variante 1',              age_versions: ['Frente'] },
-    { view_type: 'Accesorio',        outfit: null,                      age_versions: [] },
-  ],
-  rivales: [
-    // Uniforme titular
-    { view_type: 'Uniforme titular', outfit: 'Camiseta',       age_versions: ['Frente', 'Espalda', 'Detalle cuello', 'Detalle número'] },
-    { view_type: 'Uniforme titular', outfit: 'Short y medias', age_versions: ['Frente', 'Detalle lateral'] },
-    { view_type: 'Conjunto titular', outfit: null,             age_versions: ['Jugador de campo'] },
-    // Uniforme arquero
-    { view_type: 'Uniforme arquero', outfit: 'Camiseta',       age_versions: ['Frente', 'Espalda'] },
-    { view_type: 'Uniforme arquero', outfit: 'Short y medias', age_versions: ['Frente'] },
-    { view_type: 'Uniforme arquero', outfit: 'Guantes',        age_versions: ['Detalle'] },
-    { view_type: 'Conjunto arquero', outfit: null,             age_versions: ['Vista conjunto'] },
-    // Identidad visual
-    { view_type: 'Emblema',          outfit: null,             age_versions: ['Limpio sobre fondo', 'Bordado en camiseta'] },
-    { view_type: 'Paleta cromática', outfit: null,             age_versions: ['Swatches oficiales'] },
-    { view_type: 'Botines',          outfit: null,             age_versions: ['Detalle'] },
-  ],
+  // ── ENTRENADORES / DT ────────────────────────────────────────────────────
   entrenadores: [
-    // ── VISTAS GENERALES ─────────────────────────────────────────────────────
-    { view_type: 'Vista general',  outfit: 'Casual',             age_versions: ['Frente', 'Perfil D', 'Perfil I', 'Espalda'] },
-    // ── VERSIÓN JOVEN (flashback como jugador) ────────────────────────────────
-    { view_type: 'Versión etaria', outfit: 'Casual',             age_versions: ['Versión joven (jugador)'] },
-    // ── 3/4 ──────────────────────────────────────────────────────────────────
-    { view_type: '3/4',            outfit: 'Casual',             age_versions: ['Izquierda', 'Derecha'] },
-    // ── EXPRESIONES ───────────────────────────────────────────────────────────
-    { view_type: 'Expresión',      outfit: null,                 age_versions: ['Neutral', 'Alegría', 'Enojo', 'Tristeza', 'Sorpresa', 'Concentración', 'Orgullo', 'Preocupación'] },
-    // ── OUTFIT TÉCNICO (ropa de entrenador, NO uniforme de partido) ───────────
-    { view_type: 'Outfit técnico', outfit: 'Ropa de entrenador', age_versions: ['Frente', 'Espalda'] },
-    // ── ACCIÓN EN BANCA / PIZARRÓN ───────────────────────────────────────────
-    { view_type: 'Acción banca',   outfit: 'Ropa de entrenador', age_versions: ['Dando indicaciones', 'Pizarrón táctico', 'Celebración contenida', 'Tenso en banca'] },
-    { view_type: 'Acción',         outfit: 'Casual',             age_versions: ['Gesto característico', 'Pose de reposo', 'Leyendo libreta'] },
-    // ── OUTFIT CASUAL — variantes ─────────────────────────────────────────────
-    { view_type: 'Outfit casual',  outfit: 'Variante 1',         age_versions: ['Frente'] },
-    { view_type: 'Outfit casual',  outfit: 'Variante 2',         age_versions: ['Frente'] },
-    { view_type: 'Outfit casual',  outfit: 'Variante 3 (frío)',  age_versions: ['Frente'] },
-    // ── ACCESORIOS / ELEMENTOS DEL PERSONAJE ─────────────────────────────────
-    { view_type: 'Accesorio',      outfit: null,                 age_versions: [] }, // usa entityDef.accessories
+    { view_type: 'Identidad facial',   outfit: null,                  age_versions: ['Frontal', '3/4'] },
+    { view_type: 'Cuerpo completo',    outfit: 'Casual',              age_versions: ['Frontal', '3/4', 'Espalda'] },
+    { view_type: 'Lámina expresiones', outfit: null,                  age_versions: ['Completa'] },
+    { view_type: 'Outfit técnico',     outfit: 'Ropa de entrenador',  age_versions: ['Frontal', 'Espalda'] },
+    { view_type: 'Outfit casual',      outfit: 'Variante principal',  age_versions: ['Frontal'] },
+    { view_type: 'Acción banca',       outfit: 'Ropa de entrenador',  age_versions: ['Gesto característico'] },
+    { view_type: 'Accesorio',         outfit: null,                  age_versions: [] },
+  ],
+
+  // ── PERSONAJES SECUNDARIOS ────────────────────────────────────────────────
+  secundarios: [
+    { view_type: 'Identidad facial',   outfit: null,                    age_versions: ['Frontal', '3/4'] },
+    { view_type: 'Cuerpo completo',    outfit: 'Outfit característico', age_versions: ['Frontal'] },
+    { view_type: 'Lámina expresiones', outfit: null,                    age_versions: ['Completa'] },
+    { view_type: 'Accesorio',         outfit: null,                    age_versions: [] },
+  ],
+
+  // ── HAWKS FC — JUGADORES ─────────────────────────────────────────────────
+  hawks: [
+    { view_type: 'Identidad facial',   outfit: null,                 age_versions: ['Frontal', '3/4'] },
+    { view_type: 'Cuerpo completo',    outfit: 'Uniforme Hawks',     age_versions: ['Frontal', '3/4', 'Espalda'] },
+    { view_type: 'Lámina expresiones', outfit: null,                 age_versions: ['Completa'] },
+    { view_type: 'Uniforme partido',   outfit: 'Hawks titular',      age_versions: ['Frontal', 'Espalda'] },
+    { view_type: 'Acción',            outfit: 'Uniforme Hawks',     age_versions: ['Jugada característica'] },
+    { view_type: 'Accesorio',         outfit: null,                 age_versions: [] },
+  ],
+
+  // ── LOCACIONES ────────────────────────────────────────────────────────────
+  // Vista maestra + 2 complementarias. Variantes de luz/estado por demanda.
+  locaciones: [
+    { view_type: 'Vista maestra',        outfit: null, age_versions: ['Día'] },
+    { view_type: 'Vista complementaria', outfit: null, age_versions: ['Ángulo A', 'Ángulo B'] },
+  ],
+
+  // ── PROPS & OBJETOS ───────────────────────────────────────────────────────
+  props: [
+    { view_type: 'Vista maestra',   outfit: null, age_versions: ['Frontal'] },
+    { view_type: 'Vista lateral',   outfit: null, age_versions: ['v1'] },
+    { view_type: 'En contexto',     outfit: null, age_versions: ['En manos / en escena'] },
+  ],
+
+  // ── CRIATURAS ─────────────────────────────────────────────────────────────
+  criaturas: [
+    { view_type: 'Identidad',              outfit: null, age_versions: ['Frontal neutral'] },
+    { view_type: 'Vista lateral',          outfit: null, age_versions: ['Quieto'] },
+    { view_type: 'Expresión característica', outfit: null, age_versions: ['Principal'] },
+  ],
+
+  // ── MASCOTAS ─────────────────────────────────────────────────────────────
+  mascotas: [
+    { view_type: 'Identidad',              outfit: null, age_versions: ['Frontal neutral'] },
+    { view_type: 'Vista lateral',          outfit: null, age_versions: ['Quieto'] },
+    { view_type: 'Expresión característica', outfit: null, age_versions: ['Principal'] },
+  ],
+
+  // ── EQUIPOS RIVALES ───────────────────────────────────────────────────────
+  rivales: [
+    { view_type: 'Uniforme titular', outfit: 'Conjunto completo', age_versions: ['Frontal', 'Espalda'] },
+    { view_type: 'Emblema',          outfit: null,                age_versions: ['Limpio sobre fondo'] },
+  ],
+
+  // ── SÍMBOLOS & GRÁFICA OFICIAL ────────────────────────────────────────────
+  simbolos: [
+    { view_type: 'Ficha técnica', outfit: null, age_versions: ['v1'] },
   ],
 }
 
