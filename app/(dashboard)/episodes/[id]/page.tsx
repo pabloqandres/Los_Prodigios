@@ -174,11 +174,14 @@ export default function EpisodeBuilderPage() {
 
   // Script analysis
   const [analyzingScript, setAnalyzingScript] = useState(false)
+  const [analyzeProgress, setAnalyzeProgress] = useState(0)
+  const [analyzeStep, setAnalyzeStep] = useState('')
   const [scriptGaps, setScriptGaps] = useState<AssetGap[]>([])
   const [canonIssues, setCanonIssues] = useState<CanonIssue[]>([])
   const [analysisSummary, setAnalysisSummary] = useState('')
   const [analysisError, setAnalysisError] = useState('')
   const [creatingGap, setCreatingGap] = useState<string | null>(null)
+  const progressTimer = useRef<ReturnType<typeof setInterval> | null>(null)
 
   // AI panel
   const [aiMessages, setAiMessages] = useState<{ role: 'user' | 'assistant'; content: string }[]>([])
@@ -516,6 +519,7 @@ export default function EpisodeBuilderPage() {
       setAnalysisError('')
       setAnalysisSummary('')
       setCanonIssues([])
+      startProgressAnimation()
       try {
         const res = await fetch(`/api/episodes/${id}/analyze-script`, { method: 'POST' })
         const data = await res.json()
@@ -523,13 +527,14 @@ export default function EpisodeBuilderPage() {
           setScriptGaps(data.gaps ?? [])
           setCanonIssues(data.canon_issues ?? [])
           setAnalysisSummary(data.summary ?? '')
+          stopProgressAnimation(true)
         } else {
           setAnalysisError(data.error ?? 'Error en el análisis')
+          stopProgressAnimation(false)
         }
       } catch {
         setAnalysisError('Error al conectar con el servidor')
-      } finally {
-        setAnalyzingScript(false)
+        stopProgressAnimation(false)
       }
     } catch (e) {
       alert(`Error al importar: ${e instanceof Error ? e.message : String(e)}`)
@@ -539,26 +544,65 @@ export default function EpisodeBuilderPage() {
     }
   }
 
+  function startProgressAnimation() {
+    const STEPS = [
+      { pct: 8,  label: 'Leyendo guión...' },
+      { pct: 22, label: 'Cargando biblia canónica...' },
+      { pct: 38, label: 'Validando continuidad...' },
+      { pct: 55, label: 'Identificando personajes y locaciones...' },
+      { pct: 70, label: 'Detectando gaps de assets...' },
+      { pct: 83, label: 'Generando reporte...' },
+      { pct: 92, label: 'Casi listo...' },
+    ]
+    let stepIdx = 0
+    setAnalyzeProgress(0)
+    setAnalyzeStep(STEPS[0].label)
+
+    progressTimer.current = setInterval(() => {
+      if (stepIdx < STEPS.length - 1) {
+        stepIdx++
+        setAnalyzeProgress(STEPS[stepIdx].pct)
+        setAnalyzeStep(STEPS[stepIdx].label)
+      }
+    }, 5000)
+  }
+
+  function stopProgressAnimation(success: boolean) {
+    if (progressTimer.current) clearInterval(progressTimer.current)
+    progressTimer.current = null
+    if (success) {
+      setAnalyzeProgress(100)
+      setAnalyzeStep('Análisis completado')
+    }
+    setTimeout(() => {
+      setAnalyzeProgress(0)
+      setAnalyzeStep('')
+      setAnalyzingScript(false)
+    }, success ? 800 : 0)
+  }
+
   async function analyzeScript() {
     if (!episode || analyzingScript) return
     setAnalyzingScript(true)
     setAnalysisError('')
     setAnalysisSummary('')
     setCanonIssues([])
+    startProgressAnimation()
     try {
       const res = await fetch(`/api/episodes/${id}/analyze-script`, { method: 'POST' })
       const data = await res.json()
       if (!res.ok) {
         setAnalysisError(data.error ?? 'Error en el análisis')
+        stopProgressAnimation(false)
         return
       }
       setScriptGaps(data.gaps ?? [])
       setCanonIssues(data.canon_issues ?? [])
       setAnalysisSummary(data.summary ?? '')
+      stopProgressAnimation(true)
     } catch {
       setAnalysisError('Error al conectar con el servidor')
-    } finally {
-      setAnalyzingScript(false)
+      stopProgressAnimation(false)
     }
   }
 
@@ -1047,6 +1091,49 @@ export default function EpisodeBuilderPage() {
                   {analyzingScript ? 'Analizando...' : 'Analizar guión'}
                 </button>
               </div>
+
+              {/* Progress bar */}
+              {analyzingScript && (
+                <div style={{ marginBottom: '1.5rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                    <span style={{ fontSize: '0.75rem', color: '#9B6FD4', fontWeight: 600 }}>{analyzeStep}</span>
+                    <span style={{ fontSize: '0.7rem', color: 'rgba(155,111,212,0.5)', fontFamily: 'monospace' }}>{analyzeProgress}%</span>
+                  </div>
+                  <div style={{ height: '3px', background: 'rgba(155,111,212,0.12)', borderRadius: '2px', overflow: 'hidden' }}>
+                    <div style={{
+                      height: '100%',
+                      width: `${analyzeProgress}%`,
+                      background: 'linear-gradient(90deg, #9B6FD4, #4A8FE8)',
+                      borderRadius: '2px',
+                      transition: 'width 4.5s cubic-bezier(0.4, 0, 0.2, 1)',
+                      boxShadow: '0 0 8px rgba(155,111,212,0.6)',
+                    }} />
+                  </div>
+                  <div style={{ display: 'flex', gap: '6px', marginTop: '12px', flexWrap: 'wrap' }}>
+                    {['Leyendo guión', 'Validando canon', 'Detectando gaps', 'Generando reporte'].map((step, i) => {
+                      const stepPct = [8, 38, 70, 92][i]
+                      const done = analyzeProgress >= stepPct
+                      return (
+                        <div key={step} style={{
+                          display: 'flex', alignItems: 'center', gap: '5px',
+                          padding: '4px 10px',
+                          background: done ? 'rgba(155,111,212,0.12)' : 'rgba(255,255,255,0.03)',
+                          border: `1px solid ${done ? 'rgba(155,111,212,0.3)' : 'rgba(255,255,255,0.06)'}`,
+                          borderRadius: '20px',
+                          transition: 'all 0.4s ease',
+                        }}>
+                          {done ? (
+                            <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><polyline points="1.5 5 4 7.5 8.5 2.5" stroke="#9B6FD4" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                          ) : (
+                            <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'rgba(255,255,255,0.15)' }} />
+                          )}
+                          <span style={{ fontSize: '0.6rem', color: done ? '#9B6FD4' : 'rgba(240,235,225,0.25)', letterSpacing: '0.06em' }}>{step}</span>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
 
               {/* No script warning */}
               {(!scriptDraft || scriptDraft.trim().length < 50) && (
