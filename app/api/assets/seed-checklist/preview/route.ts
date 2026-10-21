@@ -12,17 +12,20 @@ export async function GET(req: NextRequest) {
 
   const entity_name = req.nextUrl.searchParams.get('entity_name') ?? ''
   const category    = req.nextUrl.searchParams.get('category') ?? ''
+  const matrix_key_param = req.nextUrl.searchParams.get('matrix_key') ?? ''
 
   if (!entity_name || !category) {
     return NextResponse.json({ error: 'entity_name and category required' }, { status: 400 })
   }
 
-  const matrix = SLOT_MATRIX[category] ?? []
-
-  // Find entity def (for per-entity accessory overrides)
+  // Find entity def (for per-entity matrix_key and accessory overrides)
   const entityDef = Object.values(ENTITIES)
     .flat()
     .find(e => e.entity_name === entity_name)
+
+  // Priority: entityDef.matrix_key > query matrix_key > category
+  const matrixKey = entityDef?.matrix_key ?? matrix_key_param ?? category
+  const matrix = SLOT_MATRIX[matrixKey] ?? SLOT_MATRIX[category] ?? []
 
   let total = 0
   for (const row of matrix) {
@@ -32,5 +35,5 @@ export async function GET(req: NextRequest) {
     total += ageVersions.length
   }
 
-  return NextResponse.json({ total, category, entity_name })
+  return NextResponse.json({ total, category, matrix_key: matrixKey, entity_name })
 }

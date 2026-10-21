@@ -251,7 +251,7 @@ function NewEntityModal({
 
 // ── Category accordion ─────────────────────────────────────────────────────────
 function CategoryAccordion({
-  category, slots, userEmail, isOpen, onToggle, onSeed, seeding,
+  category, slots, userEmail, isOpen, onToggle,
   onSlotUpdated, onSlotDeleted, onEntityCreated, onEntityDeleted,
 }: {
   category: string
@@ -259,8 +259,6 @@ function CategoryAccordion({
   userEmail: string
   isOpen: boolean
   onToggle: () => void
-  onSeed: () => void
-  seeding: boolean
   onSlotUpdated: (updated: AssetSlotWithApprovals) => void
   onSlotDeleted: (id: string) => void
   onEntityCreated: () => void
@@ -379,19 +377,9 @@ function CategoryAccordion({
                   </div>
                 </>
               ) : (
-                <button
-                  onClick={e => { e.stopPropagation(); onSeed() }}
-                  disabled={seeding}
-                  style={{
-                    padding: '5px 12px', background: `${style.color}18`,
-                    border: `1px solid ${style.color}33`, borderRadius: 4,
-                    color: style.color, fontSize: '0.75rem', fontWeight: 600,
-                    cursor: seeding ? 'not-allowed' : 'pointer',
-                    fontFamily: 'IBM Plex Sans, sans-serif',
-                  }}
-                >
-                  {seeding ? 'Inicializando...' : 'Inicializar'}
-                </button>
+                <div style={{ fontSize: '0.6875rem', color: 'rgba(240,235,225,0.2)', fontStyle: 'italic' }}>
+                  Sin entidades
+                </div>
               )}
             </div>
           </div>
@@ -469,8 +457,7 @@ export default function ApprovalPage() {
   const { data: session } = useSession()
   const [slots, setSlots]     = useState<AssetSlotWithApprovals[]>([])
   const [loading, setLoading] = useState(true)
-  const [seeding, setSeeding] = useState(false)
-  const [seedMsg, setSeedMsg] = useState<string | null>(null)
+
   const [openCats, setOpenCats] = useState<Record<string, boolean>>(
     Object.fromEntries(CATEGORY_ORDER.map(c => [c, true]))
   )
@@ -498,20 +485,6 @@ export default function ApprovalPage() {
 
   function handleEntityDeleted(entity_name: string) {
     setSlots(prev => prev.filter(s => s.entity_name !== entity_name))
-  }
-
-  async function handleSeed() {
-    if (seeding) return
-    setSeeding(true)
-    setSeedMsg(null)
-    try {
-      const res = await fetch('/api/assets/seed-checklist', { method: 'POST' })
-      const data = await res.json()
-      setSeedMsg(data.message ?? 'Listo')
-      fetchSlots()
-    } finally {
-      setSeeding(false)
-    }
   }
 
   // Group slots by category
@@ -545,22 +518,8 @@ export default function ApprovalPage() {
             >
               Cerrar todo
             </button>
-            <button
-              onClick={handleSeed}
-              disabled={seeding}
-              style={{
-                padding: '0.5rem 1rem',
-                background: seeding ? 'rgba(245,165,42,0.06)' : 'rgba(245,165,42,0.08)',
-                border: '1px solid rgba(245,165,42,0.2)', borderRadius: '3px',
-                color: '#F5A52A', fontSize: '0.8125rem', fontWeight: 600,
-                cursor: seeding ? 'not-allowed' : 'pointer', fontFamily: 'IBM Plex Sans, sans-serif',
-              }}
-            >
-              {seeding ? 'Inicializando...' : '⚙ Inicializar Checklist'}
-            </button>
           </div>
         </div>
-        {seedMsg && <div style={{ marginTop: '0.5rem', fontSize: '0.8125rem', color: '#4ECDC4' }}>{seedMsg}</div>}
         <p style={{ fontSize: '0.9375rem', color: 'rgba(240,235,225,0.4)', marginTop: '0.5rem' }}>
           Revisión y aprobación doble de todos los assets canónicos de Los Prodigios
         </p>
@@ -584,8 +543,6 @@ export default function ApprovalPage() {
               userEmail={userEmail}
               isOpen={openCats[category] ?? true}
               onToggle={() => setOpenCats(prev => ({ ...prev, [category]: !prev[category] }))}
-              onSeed={handleSeed}
-              seeding={seeding}
               onSlotUpdated={handleSlotUpdated}
               onSlotDeleted={handleSlotDeleted}
               onEntityCreated={fetchSlots}
