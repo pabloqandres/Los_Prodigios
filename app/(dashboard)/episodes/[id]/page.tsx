@@ -509,6 +509,28 @@ export default function EpisodeBuilderPage() {
       })
       setSavedMsg(true)
       setTimeout(() => setSavedMsg(false), 2000)
+
+      // 5. Auto-analyze — switch to produccion tab first so user sees progress
+      setMode('produccion')
+      setAnalyzingScript(true)
+      setAnalysisError('')
+      setAnalysisSummary('')
+      setCanonIssues([])
+      try {
+        const res = await fetch(`/api/episodes/${id}/analyze-script`, { method: 'POST' })
+        const data = await res.json()
+        if (res.ok) {
+          setScriptGaps(data.gaps ?? [])
+          setCanonIssues(data.canon_issues ?? [])
+          setAnalysisSummary(data.summary ?? '')
+        } else {
+          setAnalysisError(data.error ?? 'Error en el análisis')
+        }
+      } catch {
+        setAnalysisError('Error al conectar con el servidor')
+      } finally {
+        setAnalyzingScript(false)
+      }
     } catch (e) {
       alert(`Error al importar: ${e instanceof Error ? e.message : String(e)}`)
     } finally {
