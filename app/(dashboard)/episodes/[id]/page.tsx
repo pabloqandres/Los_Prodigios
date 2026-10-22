@@ -728,9 +728,20 @@ El original_text debe ser una cita LITERAL del guión para ubicarlo automáticam
         }
         setEpisodeProposals(prev => prev.map(p => p.id === proposal.id ? updated : p))
       } else {
-        // Second approval: merge text into script
-        const newScript = scriptDraft.replace(proposal.original_text, proposal.proposed_text)
-        const applied = newScript !== scriptDraft
+        // Second approval: merge text into script (normalize whitespace to handle import differences)
+        const mergeIntoScript = (script: string, orig: string, proposed: string): string | null => {
+          if (script.includes(orig)) return script.replace(orig, proposed)
+          const n = (s: string) => s.replace(/\r\n/g, '\n').replace(/\r/g, '\n')
+          const ns = n(script), no = n(orig)
+          if (ns.includes(no)) return ns.replace(no, proposed)
+          const t = (s: string) => s.split('\n').map((l: string) => l.trimEnd()).join('\n')
+          const ts = t(ns), to = t(no)
+          if (ts.includes(to)) return ts.replace(to, proposed)
+          return null
+        }
+        const merged = mergeIntoScript(scriptDraft, proposal.original_text, proposal.proposed_text)
+        const newScript = merged ?? scriptDraft
+        const applied = merged !== null
         if (applied) {
           await fetch(`/api/episodes?id=${id}`, {
             method: 'PATCH',
@@ -1654,21 +1665,16 @@ El original_text debe ser una cita LITERAL del guión para ubicarlo automáticam
                   )
                 }
 
-                // Find proposal position in script — handles whitespace/tab differences
-                const findProposalInScript = (script: string, origText: string): { idx: number; len: number } => {
-                  // 1. Exact match
-                  const exact = script.indexOf(origText)
-                  if (exact !== -1) return { idx: exact, len: origText.length }
-
-                  // 2. Line-by-line trimmed search — find first distinctive line
+                // Position card at scene marker (location_hint) — e.g. "ESC 15"
+                const findSceneInScript = (script: string, locationHint: string | null): { idx: number; len: number } => {
+                  if (!locationHint) return { idx: -1, len: 0 }
                   const scriptLines = script.split('\n')
-                  const needleLines = origText.split('\n').map(l => l.trim()).filter(l => l.length > 12)
-                  for (const needle of needleLines.slice(0, 3)) {
-                    for (let li = 0; li < scriptLines.length; li++) {
-                      if (scriptLines[li].trim() === needle || scriptLines[li].trim().startsWith(needle.slice(0, 25))) {
-                        const charPos = scriptLines.slice(0, li).reduce((sum, l) => sum + l.length + 1, 0)
-                        return { idx: charPos, len: scriptLines[li].length }
-                      }
+                  const hintUpper = locationHint.toUpperCase()
+                  for (let li = 0; li < scriptLines.length; li++) {
+                    const lineUpper = scriptLines[li].toUpperCase()
+                    if (lineUpper.includes(hintUpper) || lineUpper.replace(/\s+/g, ' ').includes(hintUpper.replace(/\s+/g, ' '))) {
+                      const charPos = scriptLines.slice(0, li).reduce((sum, l) => sum + l.length + 1, 0)
+                      return { idx: charPos, len: scriptLines[li].length }
                     }
                   }
                   return { idx: -1, len: 0 }
@@ -1676,8 +1682,7 @@ El original_text debe ser una cita LITERAL del guión para ubicarlo automáticam
 
                 // Build script parts with inline proposal cards
                 const withPos = [...pendingProposals]
-                  .filter(p => p.original_text)
-                  .map(p => ({ proposal: p, ...findProposalInScript(scriptDraft, p.original_text!) }))
+                  .map(p => ({ proposal: p, ...findSceneInScript(scriptDraft, p.location_hint) }))
                   .sort((a, b) => a.idx - b.idx)
 
                 type Part = { type: 'text'; content: string } | { type: 'proposal'; proposal: ScriptProposal }
@@ -1685,7 +1690,7 @@ El original_text debe ser una cita LITERAL del guión para ubicarlo automáticam
                 let cursor = scriptDraft
 
                 for (const { proposal } of withPos) {
-                  const { idx: relIdx, len: relLen } = findProposalInScript(cursor, proposal.original_text!)
+                  const { idx: relIdx, len: relLen } = findSceneInScript(cursor, proposal.location_hint)
                   if (relIdx === -1) continue
                   if (relIdx > 0) parts.push({ type: 'text', content: cursor.slice(0, relIdx) })
                   parts.push({ type: 'proposal', proposal })
