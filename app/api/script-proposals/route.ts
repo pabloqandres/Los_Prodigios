@@ -80,7 +80,8 @@ export async function POST(request: NextRequest) {
     .single()
 
   if (proposalError || !proposal) {
-    return NextResponse.json({ error: proposalError?.message ?? 'Error al crear propuesta' }, { status: 500 })
+    console.error('[script-proposals POST] insert error:', JSON.stringify(proposalError))
+    return NextResponse.json({ error: proposalError?.message ?? 'Error al crear propuesta', details: proposalError }, { status: 500 })
   }
 
   // Update the linked finding's status to 'in_review' if it was 'pending'

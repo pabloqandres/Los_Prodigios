@@ -696,6 +696,9 @@ El original_text debe ser una cita LITERAL del guión para ubicarlo automáticam
         setEpisodeProposals(prev => [data, ...prev])
         setDetectedProposal(null)
         if (selectedFinding) updateFindingStatus(selectedFinding, 'in_review')
+      } else {
+        console.error('[saveDetectedProposal] error:', data)
+        alert(`Error al guardar propuesta: ${data?.error ?? res.status}\n${JSON.stringify(data?.details ?? '')}`)
       }
     } finally {
       setSavingProposal(false)
