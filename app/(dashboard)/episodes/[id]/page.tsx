@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
+import { storageUrl } from '@/lib/supabase'
 
 const PDFDownloadSection = dynamic(() => import('@/components/PDFDownloadSection'), { ssr: false })
 
@@ -44,6 +45,7 @@ type Episode = {
   script_version: number
   script_finalized: boolean
   script_pdf_url: string | null
+  hero_image_path: string | null
   status: EpisodeStatus
   acts: Act[]
   scenes: Scene[]
@@ -218,6 +220,8 @@ export default function EpisodeBuilderPage() {
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const scriptFileRef = useRef<HTMLInputElement>(null)
   const [importingDoc, setImportingDoc] = useState(false)
+  const heroFileRef = useRef<HTMLInputElement>(null)
+  const [heroUploading, setHeroUploading] = useState(false)
 
   // Scene being expanded
   const [expandedScene, setExpandedScene] = useState<string | null>(null)
@@ -655,6 +659,39 @@ export default function EpisodeBuilderPage() {
     }
   }
 
+  async function uploadHeroImage(file: File) {
+    if (heroUploading) return
+    setHeroUploading(true)
+    const url = URL.createObjectURL(file)
+    const img = new Image()
+    img.onload = async () => {
+      const MAX = 1920
+      let { width, height } = img
+      if (width > MAX || height > MAX) {
+        const r = Math.min(MAX / width, MAX / height)
+        width = Math.round(width * r); height = Math.round(height * r)
+      }
+      const canvas = document.createElement('canvas')
+      canvas.width = width; canvas.height = height
+      canvas.getContext('2d')!.drawImage(img, 0, 0, width, height)
+      URL.revokeObjectURL(url)
+      const b64 = canvas.toDataURL('image/jpeg', 0.88).split(',')[1]
+      try {
+        const res = await fetch(`/api/episodes/${id}/hero-image`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ b64, mimeType: 'image/jpeg' }),
+        })
+        const data = await res.json()
+        if (data.hero_image_path) {
+          setEpisode(prev => prev ? { ...prev, hero_image_path: data.hero_image_path } : prev)
+        }
+      } catch { /* ignore */ } finally { setHeroUploading(false) }
+    }
+    img.onerror = () => { URL.revokeObjectURL(url); setHeroUploading(false) }
+    img.src = url
+  }
+
   function startProgressAnimation() {
     const STEPS = [
       { pct: 8,  label: 'Leyendo guión...' },
@@ -855,39 +892,201 @@ export default function EpisodeBuilderPage() {
 
           {/* OVERVIEW MODE */}
           {mode === 'overview' && (
-            <div>
-              {/* Episode metadata */}
-              <div style={{ ...SECTION_HEADER }}>Datos del episodio</div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
-                {[
-                  { field: 'logline', label: 'Logline', placeholder: 'Una oración que resume el conflicto central del episodio...', rows: 2 },
-                  { field: 'theme', label: 'Tema central', placeholder: 'El tema que explora este episodio...', rows: 2 },
-                  { field: 'cold_open', label: 'Cold Open', placeholder: 'Lo que ocurre antes de los créditos...', rows: 3 },
-                  { field: 'tag', label: 'Tag / Gancho final', placeholder: 'El cierre o gancho post-créditos...', rows: 3 },
-                ].map(({ field, label, placeholder, rows }) => (
-                  <div key={field}>
-                    <div style={FIELD_LABEL}>{label}</div>
-                    <textarea
-                      key={`${episode.id}-${field}`}
-                      defaultValue={(episode as Record<string, unknown>)[field] as string ?? ''}
-                      placeholder={placeholder}
-                      rows={rows}
-                      onBlur={e => saveField(field, e.target.value)}
-                      style={{ ...INPUT, lineHeight: 1.5 }}
-                    />
+            <div style={{ paddingBottom: '2rem' }}>
+
+              {/* ── HERO CARD ─────────────────────────────────────────── */}
+              <input ref={heroFileRef} type="file" accept="image/*" style={{ display: 'none' }}
+                onChange={e => { const f = e.target.files?.[0]; if (f) uploadHeroImage(f) }} />
+              <div
+                style={{
+                  position: 'relative',
+                  width: 'calc(100% + 3rem)',
+                  marginLeft: '-1.5rem',
+                  marginTop: '-1.5rem',
+                  height: '240px',
+                  marginBottom: '1.5rem',
+                  overflow: 'hidden',
+                  background: episode.hero_image_path ? 'transparent' : 'linear-gradient(135deg, #120D28 0%, #1A1235 50%, #0D0920 100%)',
+                  cursor: 'default',
+                }}
+              >
+                {/* Background image */}
+                {episode.hero_image_path && (
+                  <img
+                    src={storageUrl(episode.hero_image_path) ?? ''}
+                    alt=""
+                    style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }}
+                  />
+                )}
+
+                {/* Gradient overlays */}
+                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(8,6,15,0.95) 0%, rgba(8,6,15,0.4) 50%, rgba(8,6,15,0.2) 100%)' }} />
+                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(8,6,15,0.3) 0%, transparent 60%)' }} />
+
+                {/* Top-left: code */}
+                <div style={{ position: 'absolute', top: '1.25rem', left: '1.5rem', fontFamily: 'monospace', fontSize: '0.7rem', letterSpacing: '0.18em', color: statusColor, fontWeight: 700 }}>
+                  {code}{episode.script_finalized ? '-FINAL' : episode.script_version > 1 ? `-G${String(episode.script_version).padStart(2,'0')}` : ''}
+                </div>
+
+                {/* Top-right: upload button */}
+                <button
+                  onClick={() => heroFileRef.current?.click()}
+                  disabled={heroUploading}
+                  style={{
+                    position: 'absolute', top: '1rem', right: '1rem',
+                    background: 'rgba(8,6,15,0.7)', border: '1px solid rgba(240,235,225,0.12)',
+                    borderRadius: '4px', color: 'rgba(240,235,225,0.5)',
+                    cursor: heroUploading ? 'not-allowed' : 'pointer',
+                    padding: '6px 10px', display: 'flex', alignItems: 'center', gap: '5px',
+                    fontSize: '0.65rem', fontFamily: 'IBM Plex Sans, sans-serif',
+                    backdropFilter: 'blur(8px)',
+                  }}
+                >
+                  {heroUploading ? (
+                    <svg width="12" height="12" viewBox="0 0 32 32" style={{ animation: 'spin 1s linear infinite' }}><circle cx="16" cy="16" r="12" stroke="currentColor" strokeWidth="3" fill="none" opacity=".3"/><path d="M16 4 A12 12 0 0 1 28 16" stroke="currentColor" strokeWidth="3" fill="none" strokeLinecap="round"/></svg>
+                  ) : (
+                    <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M2 11v2a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-2" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/><path d="M8 3v7M5 6l3-3 3 3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                  )}
+                  {episode.hero_image_path ? 'Cambiar imagen' : 'Subir imagen'}
+                </button>
+
+                {/* Bottom: title + status */}
+                <div style={{ position: 'absolute', bottom: '1.25rem', left: '1.5rem', right: '1.5rem' }}>
+                  <div style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '2rem', letterSpacing: '0.05em', color: '#F0EBE1', lineHeight: 1.1, marginBottom: '0.5rem', textShadow: '0 2px 12px rgba(0,0,0,0.8)' }}>
+                    {episode.title || <span style={{ opacity: 0.25 }}>Sin título</span>}
                   </div>
-                ))}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: statusColor, background: `${statusColor}18`, border: `1px solid ${statusColor}44`, borderRadius: '20px', padding: '2px 10px' }}>
+                      {({ draft:'Borrador', outline:'Outline', script:'Guión', in_production:'En producción', completed:'Completado' })[episode.status]}
+                    </span>
+                    <span style={{ fontSize: '0.6rem', color: 'rgba(240,235,225,0.3)', fontFamily: 'monospace' }}>
+                      T{episode.season} · EP {episode.episode_number}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Placeholder pattern when no image */}
+                {!episode.hero_image_path && (
+                  <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
+                    <div style={{ textAlign: 'center', opacity: 0.08 }}>
+                      <svg width="64" height="64" viewBox="0 0 64 64" fill="none"><rect x="4" y="12" width="56" height="40" rx="4" stroke="white" strokeWidth="2"/><circle cx="22" cy="26" r="5" stroke="white" strokeWidth="2"/><path d="M4 40l14-12 10 10 10-8 22 18" stroke="white" strokeWidth="2" strokeLinejoin="round"/></svg>
+                    </div>
+                  </div>
+                )}
               </div>
-              <div style={{ marginBottom: '1.5rem' }}>
-                <div style={FIELD_LABEL}>Sinopsis</div>
+
+              {/* ── STAT CARDS ────────────────────────────────────────── */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.75rem', marginBottom: '2rem' }}>
+
+                {/* Script card */}
+                <div
+                  onClick={() => setMode('script')}
+                  style={{ background: '#0D0920', border: '1px solid rgba(245,165,42,0.1)', borderRadius: '6px', padding: '1rem', cursor: 'pointer', transition: 'all 0.15s' }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(245,165,42,0.35)'; e.currentTarget.style.background = 'rgba(245,165,42,0.04)' }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(245,165,42,0.1)'; e.currentTarget.style.background = '#0D0920' }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style={{ color: '#F5A52A' }}><rect x="4" y="2" width="16" height="20" rx="2" stroke="currentColor" strokeWidth="1.5"/><path d="M8 8h8M8 12h8M8 16h5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>
+                    <svg width="12" height="12" viewBox="0 0 16 16" fill="none" style={{ color: 'rgba(240,235,225,0.2)', marginTop: '2px' }}><path d="M4 8h8M9 5l3 3-3 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                  </div>
+                  <div style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '0.8rem', letterSpacing: '0.1em', color: 'rgba(240,235,225,0.4)', marginBottom: '4px' }}>GUIÓN</div>
+                  {scriptDraft.trim().length > 50 ? (
+                    <>
+                      <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#F5A52A', fontFamily: 'monospace', letterSpacing: '0.06em', marginBottom: '2px' }}>
+                        {episode.script_finalized ? 'FINAL' : `G${String(episode.script_version).padStart(2,'0')}`}
+                      </div>
+                      <div style={{ fontSize: '0.65rem', color: 'rgba(240,235,225,0.35)' }}>
+                        {scriptDraft.split('\n').length} líneas · ~{Math.max(1, Math.round(scriptDraft.length / 1500))} min
+                      </div>
+                    </>
+                  ) : (
+                    <div style={{ fontSize: '0.75rem', color: 'rgba(240,235,225,0.2)' }}>Sin guión</div>
+                  )}
+                </div>
+
+                {/* Structure card */}
+                <div
+                  onClick={() => setMode('structure')}
+                  style={{ background: '#0D0920', border: '1px solid rgba(212,37,106,0.1)', borderRadius: '6px', padding: '1rem', cursor: 'pointer', transition: 'all 0.15s' }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(212,37,106,0.35)'; e.currentTarget.style.background = 'rgba(212,37,106,0.04)' }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(212,37,106,0.1)'; e.currentTarget.style.background = '#0D0920' }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style={{ color: '#D4256A' }}><rect x="2" y="6" width="5" height="12" rx="1.5" stroke="currentColor" strokeWidth="1.5"/><rect x="9.5" y="4" width="5" height="16" rx="1.5" stroke="currentColor" strokeWidth="1.5"/><rect x="17" y="8" width="5" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.5"/></svg>
+                    <svg width="12" height="12" viewBox="0 0 16 16" fill="none" style={{ color: 'rgba(240,235,225,0.2)', marginTop: '2px' }}><path d="M4 8h8M9 5l3 3-3 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                  </div>
+                  <div style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '0.8rem', letterSpacing: '0.1em', color: 'rgba(240,235,225,0.4)', marginBottom: '4px' }}>ESTRUCTURA</div>
+                  {episode.scenes.length > 0 ? (
+                    <>
+                      <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#D4256A', marginBottom: '2px' }}>{episode.scenes.length}</div>
+                      <div style={{ fontSize: '0.65rem', color: 'rgba(240,235,225,0.35)' }}>
+                        {episode.acts.length} actos · {episode.scenes.length} escenas
+                      </div>
+                    </>
+                  ) : (
+                    <div style={{ fontSize: '0.75rem', color: 'rgba(240,235,225,0.2)' }}>Sin estructura</div>
+                  )}
+                </div>
+
+                {/* Assets card */}
+                <div
+                  onClick={() => setMode('produccion')}
+                  style={{ background: '#0D0920', border: '1px solid rgba(155,111,212,0.1)', borderRadius: '6px', padding: '1rem', cursor: 'pointer', transition: 'all 0.15s' }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(155,111,212,0.35)'; e.currentTarget.style.background = 'rgba(155,111,212,0.04)' }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(155,111,212,0.1)'; e.currentTarget.style.background = '#0D0920' }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style={{ color: '#9B6FD4' }}><rect x="3" y="3" width="8" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.5" strokeDasharray="2 2"/></svg>
+                    <svg width="12" height="12" viewBox="0 0 16 16" fill="none" style={{ color: 'rgba(240,235,225,0.2)', marginTop: '2px' }}><path d="M4 8h8M9 5l3 3-3 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                  </div>
+                  <div style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '0.8rem', letterSpacing: '0.1em', color: 'rgba(240,235,225,0.4)', marginBottom: '4px' }}>ASSETS</div>
+                  {scriptGaps.length > 0 ? (
+                    <>
+                      <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginBottom: '6px' }}>
+                        <span style={{ fontSize: '1.1rem', fontWeight: 700, color: '#9B6FD4' }}>{scriptGaps.filter(g => g.status !== 'pending').length}</span>
+                        <span style={{ fontSize: '0.75rem', color: 'rgba(240,235,225,0.3)' }}>/ {scriptGaps.length}</span>
+                      </div>
+                      <div style={{ height: '3px', background: 'rgba(155,111,212,0.15)', borderRadius: '2px', overflow: 'hidden' }}>
+                        <div style={{ height: '100%', width: `${Math.round(scriptGaps.filter(g => g.status !== 'pending').length / scriptGaps.length * 100)}%`, background: '#9B6FD4', borderRadius: '2px', transition: 'width 0.5s ease' }} />
+                      </div>
+                    </>
+                  ) : (
+                    <div style={{ fontSize: '0.75rem', color: 'rgba(240,235,225,0.2)' }}>Sin analizar</div>
+                  )}
+                </div>
+              </div>
+
+              {/* ── METADATA FIELDS ───────────────────────────────────── */}
+              <div style={{ marginBottom: '1rem' }}>
+                <div style={FIELD_LABEL}>Logline</div>
                 <textarea
-                  key={`${episode.id}-synopsis`}
-                  defaultValue={episode.synopsis ?? ''}
-                  placeholder="Resumen narrativo del episodio (2–3 párrafos)..."
-                  rows={5}
-                  onBlur={e => saveField('synopsis', e.target.value)}
-                  style={{ ...INPUT, lineHeight: 1.6 }}
+                  key={`${episode.id}-logline`}
+                  defaultValue={episode.logline ?? ''}
+                  placeholder="Una oración que resume el conflicto central del episodio..."
+                  rows={2}
+                  onBlur={e => saveField('logline', e.target.value)}
+                  style={{ ...INPUT, lineHeight: 1.5 }}
                 />
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                <div>
+                  <div style={FIELD_LABEL}>Tema central</div>
+                  <textarea key={`${episode.id}-theme`} defaultValue={episode.theme ?? ''} placeholder="El tema que explora este episodio..." rows={2} onBlur={e => saveField('theme', e.target.value)} style={{ ...INPUT, lineHeight: 1.5 }} />
+                </div>
+                <div>
+                  <div style={FIELD_LABEL}>Sinopsis</div>
+                  <textarea key={`${episode.id}-synopsis`} defaultValue={episode.synopsis ?? ''} placeholder="Resumen narrativo del episodio..." rows={2} onBlur={e => saveField('synopsis', e.target.value)} style={{ ...INPUT, lineHeight: 1.5 }} />
+                </div>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div>
+                  <div style={FIELD_LABEL}>Cold Open</div>
+                  <textarea key={`${episode.id}-cold_open`} defaultValue={episode.cold_open ?? ''} placeholder="Lo que ocurre antes de los créditos..." rows={3} onBlur={e => saveField('cold_open', e.target.value)} style={{ ...INPUT, lineHeight: 1.5 }} />
+                </div>
+                <div>
+                  <div style={FIELD_LABEL}>Tag / Gancho final</div>
+                  <textarea key={`${episode.id}-tag`} defaultValue={episode.tag ?? ''} placeholder="El cierre o gancho post-créditos..." rows={3} onBlur={e => saveField('tag', e.target.value)} style={{ ...INPUT, lineHeight: 1.5 }} />
+                </div>
               </div>
             </div>
           )}
