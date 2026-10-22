@@ -692,8 +692,9 @@ El original_text debe ser una cita LITERAL del guión para ubicarlo automáticam
         }),
       })
       const data = await res.json()
+      console.log('[saveDetectedProposal] response:', JSON.stringify(data))
       if (res.ok) {
-        setEpisodeProposals(prev => [data, ...prev])
+        setEpisodeProposals(prev => { console.log('[proposals after save]', [data, ...prev].length, 'items'); return [data, ...prev] })
         setDetectedProposal(null)
         if (selectedFinding) updateFindingStatus(selectedFinding, 'in_review')
       } else {
