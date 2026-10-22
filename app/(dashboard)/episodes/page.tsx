@@ -35,7 +35,7 @@ const STATUS_COLORS: Record<string, string> = {
   outline: '#F5A52A',
   script: '#9B6FD4',
   in_production: '#4ECDC4',
-  completed: '#D4256A',
+  completed: '#C8855A',
 }
 
 const MARQUEE = Array(8).fill('EPISODIOS\u2003—\u2003LOS PRODIGIOS\u2003—\u2003T1→T5\u2003—\u200350 EP\u2003—\u2003').join('')
@@ -98,20 +98,20 @@ export default function EpisodesPage() {
     <div style={{ width: '100%', fontFamily: 'IBM Plex Sans, sans-serif' }}>
 
       {/* Hero */}
-      <div style={{ position: 'relative', background: '#08060F', overflow: 'hidden' }}>
+      <div style={{ position: 'relative', background: '#181521', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
-          <div style={{ position: 'absolute', top: '-40px', left: '-20px', width: '500px', height: '300px', borderRadius: '50%', background: 'radial-gradient(ellipse, rgba(212,37,106,0.10) 0%, transparent 70%)', filter: 'blur(50px)' }} />
+          <div style={{ position: 'absolute', top: '-40px', left: '-20px', width: '500px', height: '300px', borderRadius: '50%', background: 'radial-gradient(ellipse, rgba(200,133,90,0.10) 0%, transparent 70%)', filter: 'blur(50px)' }} />
           <div style={{ position: 'absolute', top: '20px', right: '-40px', width: '400px', height: '280px', borderRadius: '50%', background: 'radial-gradient(ellipse, rgba(155,111,212,0.08) 0%, transparent 70%)', filter: 'blur(55px)' }} />
         </div>
-        <div style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(rgba(212,37,106,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(212,37,106,0.025) 1px, transparent 1px)', backgroundSize: '60px 60px', pointerEvents: 'none' }} />
-        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '40%', background: 'linear-gradient(transparent, #08060F)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(rgba(200,133,90,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(200,133,90,0.025) 1px, transparent 1px)', backgroundSize: '60px 60px', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '40%', background: 'linear-gradient(transparent, #181521)', pointerEvents: 'none' }} />
 
         <div style={{ position: 'relative', padding: '2.5rem 2.5rem 0' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
             <span style={{ fontFamily: 'monospace', fontSize: '0.625rem', letterSpacing: '0.14em', color: 'rgba(240,235,225,0.28)', textTransform: 'uppercase' }}>SERIE_01 · TEMPORADAS_1–5</span>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#D4256A' }} />
-              <span style={{ fontFamily: 'monospace', fontSize: '0.625rem', letterSpacing: '0.18em', color: '#D4256A', textTransform: 'uppercase' }}>EN_PRODUCCIÓN</span>
+              <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#C8855A' }} />
+              <span style={{ fontFamily: 'monospace', fontSize: '0.625rem', letterSpacing: '0.18em', color: '#C8855A', textTransform: 'uppercase' }}>EN_PRODUCCIÓN</span>
             </div>
           </div>
 
@@ -124,13 +124,13 @@ export default function EpisodesPage() {
             <span style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: 'clamp(1.5rem, 3vw, 2.5rem)', letterSpacing: '0.04em', color: 'rgba(240,235,225,0.55)', lineHeight: 1 }}>
               {completedCount} de 50 completados
             </span>
-            <div style={{ flex: 1, height: '1px', background: 'linear-gradient(90deg, rgba(212,37,106,0.3), transparent)' }} />
+            <div style={{ flex: 1, height: '1px', background: 'linear-gradient(90deg, rgba(200,133,90,0.3), transparent)' }} />
           </div>
         </div>
       </div>
 
       {/* Marquee */}
-      <div style={{ background: '#D4256A', overflow: 'hidden', padding: '0.55rem 0' }}>
+      <div style={{ background: '#C8855A', overflow: 'hidden', padding: '0.55rem 0' }}>
         <div style={{ display: 'inline-block', whiteSpace: 'nowrap', animation: 'marquee 32s linear infinite' }}>
           <span style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '0.9rem', letterSpacing: '0.12em', color: '#F0EBE1' }}>{MARQUEE}</span>
         </div>
@@ -145,10 +145,10 @@ export default function EpisodesPage() {
             <div key={season} style={{ marginBottom: '3rem' }}>
               {/* Season header */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.25rem' }}>
-                <div style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '1.5rem', letterSpacing: '0.1em', color: '#D4256A' }}>
+                <div style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '1.5rem', letterSpacing: '0.1em', color: '#C8855A' }}>
                   TEMPORADA {String(season).padStart(2, '0')}
                 </div>
-                <div style={{ flex: 1, height: '1px', background: 'rgba(212,37,106,0.15)' }} />
+                <div style={{ flex: 1, height: '1px', background: 'rgba(200,133,90,0.15)' }} />
                 <div style={{ fontFamily: 'monospace', fontSize: '0.6rem', letterSpacing: '0.12em', color: 'rgba(240,235,225,0.2)' }}>
                   {episodes.filter(e => e.season === season && e.status === 'completed').length} / 10 completados
                 </div>
@@ -169,9 +169,9 @@ export default function EpisodesPage() {
                         key={ep}
                         onClick={() => router.push(`/episodes/${episode.id}`)}
                         style={{
-                          background: img ? 'transparent' : '#0D0920',
+                          background: img ? 'transparent' : '#211E2D',
                           borderRadius: '8px',
-                          border: `1px solid rgba(212,37,106,0.10)`,
+                          border: `1px solid rgba(200,133,90,0.10)`,
                           borderTop: `2px solid ${statusColor}`,
                           cursor: 'pointer',
                           transition: 'transform 0.15s, box-shadow 0.15s',
@@ -181,14 +181,14 @@ export default function EpisodesPage() {
                           position: 'relative',
                           overflow: 'hidden',
                         }}
-                        onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = `0 8px 28px rgba(212,37,106,0.18)`; const btn = e.currentTarget.querySelector('.delete-btn') as HTMLElement; if (btn) btn.style.opacity = '1' }}
+                        onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = `0 8px 28px rgba(200,133,90,0.18)`; const btn = e.currentTarget.querySelector('.delete-btn') as HTMLElement; if (btn) btn.style.opacity = '1' }}
                         onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; const btn = e.currentTarget.querySelector('.delete-btn') as HTMLElement; if (btn) btn.style.opacity = '0' }}
                       >
                         {/* Background image */}
                         {img && (
                           <>
                             <img src={img} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }} />
-                            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(8,6,15,0.96) 0%, rgba(8,6,15,0.55) 55%, rgba(8,6,15,0.2) 100%)' }} />
+                            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(24,21,33,0.96) 0%, rgba(24,21,33,0.55) 55%, rgba(24,21,33,0.2) 100%)' }} />
                           </>
                         )}
 
@@ -202,13 +202,13 @@ export default function EpisodesPage() {
                               title="Eliminar episodio"
                               style={{
                                 position: 'absolute', top: 0, right: 0,
-                                background: 'rgba(212,37,106,0.12)', border: '1px solid rgba(212,37,106,0.2)',
-                                borderRadius: '4px', color: '#D4256A', cursor: 'pointer',
+                                background: 'rgba(200,133,90,0.12)', border: '1px solid rgba(200,133,90,0.2)',
+                                borderRadius: '4px', color: '#C8855A', cursor: 'pointer',
                                 width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center',
                                 opacity: 0, transition: 'opacity 0.15s, background 0.15s',
                               }}
-                              onMouseEnter={e => { e.stopPropagation(); e.currentTarget.style.background = 'rgba(212,37,106,0.3)' }}
-                              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(212,37,106,0.12)' }}
+                              onMouseEnter={e => { e.stopPropagation(); e.currentTarget.style.background = 'rgba(200,133,90,0.3)' }}
+                              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(200,133,90,0.12)' }}
                             >
                               {deleting === episode.id ? '…' : (
                                 <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 3.5h9M5 3.5V2.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5v1M10.5 3.5l-.7 7a.5.5 0 0 1-.5.45H3.7a.5.5 0 0 1-.5-.45l-.7-7" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
@@ -233,7 +233,7 @@ export default function EpisodesPage() {
                             }}>
                               {STATUS_LABELS[episode.status]}
                             </span>
-                            <span style={{ fontSize: '0.6rem', color: '#D4256A', fontWeight: 700 }}>Abrir →</span>
+                            <span style={{ fontSize: '0.6rem', color: '#C8855A', fontWeight: 700 }}>Abrir →</span>
                           </div>
                         </div>
                       </div>
@@ -246,9 +246,9 @@ export default function EpisodesPage() {
                       key={ep}
                       onClick={() => !isCreating && createEpisode(season, ep)}
                       style={{
-                        background: 'rgba(212,37,106,0.02)',
+                        background: 'rgba(200,133,90,0.02)',
                         borderRadius: '8px',
-                        border: '1px dashed rgba(212,37,106,0.12)',
+                        border: '1px dashed rgba(200,133,90,0.12)',
                         padding: '1.25rem',
                         cursor: isCreating ? 'not-allowed' : 'pointer',
                         minHeight: '200px',
@@ -260,11 +260,11 @@ export default function EpisodesPage() {
                         transition: 'background 0.15s, border-color 0.15s, transform 0.15s',
                         opacity: isCreating ? 0.6 : 1,
                       }}
-                      onMouseEnter={e => { if (!isCreating) { e.currentTarget.style.background = 'rgba(212,37,106,0.05)'; e.currentTarget.style.borderColor = 'rgba(212,37,106,0.3)'; e.currentTarget.style.transform = 'translateY(-2px)' } }}
-                      onMouseLeave={e => { e.currentTarget.style.background = 'rgba(212,37,106,0.02)'; e.currentTarget.style.borderColor = 'rgba(212,37,106,0.12)'; e.currentTarget.style.transform = 'translateY(0)' }}
+                      onMouseEnter={e => { if (!isCreating) { e.currentTarget.style.background = 'rgba(200,133,90,0.05)'; e.currentTarget.style.borderColor = 'rgba(200,133,90,0.3)'; e.currentTarget.style.transform = 'translateY(-2px)' } }}
+                      onMouseLeave={e => { e.currentTarget.style.background = 'rgba(200,133,90,0.02)'; e.currentTarget.style.borderColor = 'rgba(200,133,90,0.12)'; e.currentTarget.style.transform = 'translateY(0)' }}
                     >
                       <div style={{ fontFamily: 'monospace', fontSize: '0.7rem', letterSpacing: '0.18em', color: 'rgba(240,235,225,0.2)', textTransform: 'uppercase' }}>{code}</div>
-                      <div style={{ fontSize: '2rem', color: 'rgba(212,37,106,0.3)', lineHeight: 1 }}>{isCreating ? '...' : '+'}</div>
+                      <div style={{ fontSize: '2rem', color: 'rgba(200,133,90,0.3)', lineHeight: 1 }}>{isCreating ? '...' : '+'}</div>
                       <div style={{ fontSize: '0.625rem', color: 'rgba(240,235,225,0.2)', textAlign: 'center', letterSpacing: '0.06em' }}>
                         {isCreating ? 'Creando...' : 'Crear episodio'}
                       </div>
