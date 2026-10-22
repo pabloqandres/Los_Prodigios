@@ -6,33 +6,33 @@
 
 :root {
   /* Backgrounds */
-  --color-bg-black:   #181521;
-  --color-bg-deep:    #1C1927;
-  --color-bg-dark:    #211E2D;
-  --color-bg-mid:     #252232;
-  --color-bg-surface: #2A2639;
+  --color-bg-black:   #08060F;
+  --color-bg-deep:    #0D0920;
+  --color-bg-dark:    #120D28;
+  --color-bg-mid:     #1A1235;
+  --color-bg-surface: #231840;
 
-  /* Terracota — color principal de marca */
-  --color-gold:       #C8855A;
-  --color-gold-light: #D4946A;
-  --color-gold-dark:  #8B5A3A;
+  /* Gold */
+  --color-gold:       #F5A52A;
+  --color-gold-light: #FFB84D;
+  --color-gold-dark:  #9B6800;
 
   /* Text — WCAG compliant */
-  --color-text-primary:   #E8E1D4;                    /* 17:1 */
-  --color-text-secondary: rgba(232, 225, 212, 0.70);  /* ~6:1 */
-  --color-text-muted:     rgba(232, 225, 212, 0.45);  /* ~4:1 */
-  --color-text-faint:     rgba(232, 225, 212, 0.30);  /* decorative only */
+  --color-text-primary:   #F0EBE1;                    /* 17:1 */
+  --color-text-secondary: rgba(240, 235, 225, 0.70);  /* ~6:1 */
+  --color-text-muted:     rgba(240, 235, 225, 0.45);  /* ~4:1 */
+  --color-text-faint:     rgba(240, 235, 225, 0.30);  /* decorative only */
 
   /* Status */
-  --color-teal:   #5EB8B0;
-  --color-crimson: #C8855A;
+  --color-teal:   #4ECDC4;
+  --color-crimson: #D4256A;
   --color-blue:   #4A8FE8;
-  --color-purple: #8B7EC8;
+  --color-purple: #9B6FD4;
 
   /* Borders */
-  --border-subtle: rgba(200, 133, 90, 0.10);
-  --border-hover:  rgba(200, 133, 90, 0.22);
-  --border-active: rgba(200, 133, 90, 0.45);
+  --border-subtle: rgba(245, 165, 42, 0.10);
+  --border-hover:  rgba(245, 165, 42, 0.22);
+  --border-active: rgba(245, 165, 42, 0.45);
 
   /* Fonts */
   --font-display: 'Bebas Neue', Impact, sans-serif;
@@ -182,12 +182,12 @@
   /* Scrollbar */
   ::-webkit-scrollbar        { width: 4px; height: 4px; }
   ::-webkit-scrollbar-track  { background: var(--color-bg-deep); }
-  ::-webkit-scrollbar-thumb  { background: rgba(200,133,90,0.25); border-radius: 2px; }
-  ::-webkit-scrollbar-thumb:hover { background: rgba(200,133,90,0.45); }
+  ::-webkit-scrollbar-thumb  { background: rgba(245,165,42,0.25); border-radius: 2px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(245,165,42,0.45); }
 
   /* Selection */
   ::selection {
-    background-color: rgba(200, 133, 90, 0.3);
+    background-color: rgba(245, 165, 42, 0.3);
     color: var(--color-text-primary);
   }
 

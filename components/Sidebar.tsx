@@ -229,8 +229,8 @@ export function Sidebar() {
         width: '240px',
         minWidth: '240px',
         height: '100vh',
-        background: '#1C1927',
-        borderRight: '1px solid rgba(200,133,90,0.08)',
+        background: '#131313',
+        borderRight: '1px solid rgba(223,248,24,0.10)',
         display: 'flex',
         flexDirection: 'column',
         position: 'fixed',
@@ -249,21 +249,21 @@ export function Sidebar() {
             NUPPA!
           </div>
         </div>
-        <div style={{ fontFamily: 'IBM Plex Sans, sans-serif', fontSize: '0.6875rem', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(200,133,90,0.55)', marginTop: '0.25rem', fontWeight: 600 }}>
+        <div style={{ fontFamily: 'IBM Plex Sans, sans-serif', fontSize: '0.6875rem', letterSpacing: '0.18em', textTransform: 'uppercase', color: '#DFF818', marginTop: '0.25rem', fontWeight: 600 }}>
           Los Prodigios
         </div>
         {/* Accent line */}
-        <div style={{ height: '1px', background: 'linear-gradient(90deg, rgba(200,133,90,0.4) 0%, rgba(200,133,90,0.05) 70%, transparent 100%)', margin: '1rem 0 0' }} />
+        <div style={{ height: '1px', background: 'linear-gradient(90deg, rgba(223,248,24,0.5) 0%, rgba(223,248,24,0.05) 70%, transparent 100%)', margin: '1rem 0 0' }} />
       </div>
 
       {/* User block */}
       {session?.user && (
-        <div style={{ padding: '0.875rem 1.25rem 0.875rem', borderBottom: '1px solid rgba(200,133,90,0.07)', display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
+        <div style={{ padding: '0.875rem 1.25rem 0.875rem', borderBottom: '1px solid rgba(223,248,24,0.07)', display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
           <div style={{ position: 'relative', flexShrink: 0 }}>
             {session.user.image ? (
-              <Image src={session.user.image} alt={session.user.name ?? 'User'} width={32} height={32} style={{ borderRadius: '50%', border: '1.5px solid rgba(200,133,90,0.3)' }} />
+              <Image src={session.user.image} alt={session.user.name ?? 'User'} width={32} height={32} style={{ borderRadius: '50%', border: '1.5px solid rgba(223,248,24,0.25)' }} />
             ) : (
-              <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(200,133,90,0.15)', border: '1.5px solid rgba(200,133,90,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8125rem', fontWeight: 700, color: '#C8855A' }}>
+              <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(223,248,24,0.15)', border: '1.5px solid rgba(223,248,24,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8125rem', fontWeight: 700, color: '#DFF818' }}>
                 {(session.user.name ?? session.user.email ?? '?')[0].toUpperCase()}
               </div>
             )}
@@ -301,26 +301,26 @@ export function Sidebar() {
                     padding: '0.4375rem 1.25rem 0.4375rem calc(1.25rem - 2px)',
                     fontSize: '0.875rem',
                     fontWeight: active ? 600 : 400,
-                    color: active ? '#1C1927' : 'rgba(232,225,212,0.60)',
-                    background: active ? '#C8855A' : 'transparent',
-                    borderLeft: `2px solid ${active ? '#C8855A' : 'transparent'}`,
+                    color: active ? '#DFF818' : 'rgba(240,235,225,0.60)',
+                    background: active ? 'rgba(223,248,24,0.08)' : 'transparent',
+                    borderLeft: `2px solid ${active ? '#DFF818' : 'transparent'}`,
                     transition: 'color 0.12s ease, background 0.12s ease, border-color 0.12s ease',
                     textDecoration: 'none',
                   }}
                   onMouseEnter={(e) => {
                     if (!active) {
-                      e.currentTarget.style.color = '#E8E1D4'
-                      e.currentTarget.style.background = 'rgba(200,133,90,0.06)'
+                      e.currentTarget.style.color = '#F0EBE1'
+                      e.currentTarget.style.background = 'rgba(223,248,24,0.04)'
                     }
                   }}
                   onMouseLeave={(e) => {
                     if (!active) {
-                      e.currentTarget.style.color = 'rgba(232,225,212,0.60)'
+                      e.currentTarget.style.color = 'rgba(240,235,225,0.60)'
                       e.currentTarget.style.background = 'transparent'
                     }
                   }}
                 >
-                  <span style={{ color: active ? '#1C1927' : 'rgba(232,225,212,0.40)', flexShrink: 0, transition: 'color 0.12s ease' }}>
+                  <span style={{ color: active ? '#DFF818' : 'rgba(240,235,225,0.40)', flexShrink: 0, transition: 'color 0.12s ease' }}>
                     {item.icon}
                   </span>
                   {item.label}
@@ -332,11 +332,11 @@ export function Sidebar() {
       </nav>
 
       {/* Production context */}
-      <div style={{ padding: '0.75rem 1.25rem', borderTop: '1px solid rgba(200,133,90,0.07)' }}>
+      <div style={{ padding: '0.75rem 1.25rem', borderTop: '1px solid rgba(223,248,24,0.07)' }}>
         <div style={{
           position: 'relative',
-          background: 'rgba(200,133,90,0.05)',
-          border: '1px solid rgba(200,133,90,0.09)',
+          background: 'rgba(223,248,24,0.04)',
+          border: '1px solid rgba(223,248,24,0.09)',
           borderRadius: '4px',
           padding: '0.875rem 1rem',
           overflow: 'hidden',
@@ -349,8 +349,8 @@ export function Sidebar() {
             fontFamily: 'Bebas Neue, Impact, sans-serif',
             fontSize: '3.75rem',
             letterSpacing: '-0.02em',
-            color: '#C8855A',
-            opacity: 0.07,
+            color: '#DFF818',
+            opacity: 0.04,
             lineHeight: 1,
             userSelect: 'none',
             pointerEvents: 'none',
@@ -371,7 +371,7 @@ export function Sidebar() {
             fontFamily: 'Bebas Neue, Impact, sans-serif',
             fontSize: '1.0625rem',
             letterSpacing: '0.06em',
-            color: '#C8855A',
+            color: '#DFF818',
             lineHeight: 1,
             marginBottom: '0.15rem',
           }}>
@@ -394,20 +394,20 @@ export function Sidebar() {
                 0 / 50
               </span>
             </div>
-            <div style={{ height: '2px', background: 'rgba(200,133,90,0.08)', borderRadius: '1px', overflow: 'hidden' }}>
-              <div style={{ height: '100%', width: '0%', background: 'linear-gradient(90deg, #C8855A, #D4946A)', borderRadius: '1px' }} />
+            <div style={{ height: '2px', background: 'rgba(223,248,24,0.08)', borderRadius: '1px', overflow: 'hidden' }}>
+              <div style={{ height: '100%', width: '0%', background: 'linear-gradient(90deg, #DFF818, #EAFF4D)', borderRadius: '1px' }} />
             </div>
           </div>
         </div>
       </div>
 
       {/* Tutorial + Sign out */}
-      <div style={{ padding: '0.75rem 1.25rem', borderTop: '1px solid rgba(200,133,90,0.07)' }}>
+      <div style={{ padding: '0.75rem 1.25rem', borderTop: '1px solid rgba(223,248,24,0.07)' }}>
         <a
           href="/projects"
-          style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', width: '100%', padding: '0.375rem 0', background: 'none', border: 'none', color: 'rgba(232,225,212,0.40)', fontSize: '0.8125rem', cursor: 'pointer', transition: 'color 0.12s ease', marginBottom: '0.25rem', textDecoration: 'none' }}
-          onMouseEnter={(e) => { e.currentTarget.style.color = '#C8855A' }}
-          onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(232,225,212,0.40)' }}
+          style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', width: '100%', padding: '0.375rem 0', background: 'none', border: 'none', color: 'rgba(242,238,234,0.40)', fontSize: '0.8125rem', cursor: 'pointer', transition: 'color 0.12s ease', marginBottom: '0.25rem', textDecoration: 'none' }}
+          onMouseEnter={(e) => { e.currentTarget.style.color = '#DFF818' }}
+          onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(242,238,234,0.40)' }}
         >
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M19 12H5M5 12l7-7M5 12l7 7"/></svg>
           Proyectos
@@ -417,9 +417,9 @@ export function Sidebar() {
             localStorage.removeItem('bit_tutorial_done')
             window.dispatchEvent(new Event('tutorial:restart'))
           }}
-          style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', width: '100%', padding: '0.375rem 0', background: 'none', border: 'none', color: 'rgba(232,225,212,0.40)', fontSize: '0.8125rem', cursor: 'pointer', transition: 'color 0.12s ease', marginBottom: '0.25rem' }}
-          onMouseEnter={(e) => { e.currentTarget.style.color = '#C8855A' }}
-          onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(232,225,212,0.40)' }}
+          style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', width: '100%', padding: '0.375rem 0', background: 'none', border: 'none', color: 'rgba(240,235,225,0.40)', fontSize: '0.8125rem', cursor: 'pointer', transition: 'color 0.12s ease', marginBottom: '0.25rem' }}
+          onMouseEnter={(e) => { e.currentTarget.style.color = '#DFF818' }}
+          onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(240,235,225,0.40)' }}
         >
           <IconGecko />
           Tutorial Plataforma
