@@ -722,6 +722,10 @@ El original_text debe ser una cita LITERAL del guión para ubicarlo automáticam
           body: JSON.stringify({ action: 'first_approval' }),
         })
         const updated = await res.json()
+        if (!res.ok) {
+          alert(`Error al aprobar: ${updated?.error ?? res.status}`)
+          return
+        }
         setEpisodeProposals(prev => prev.map(p => p.id === proposal.id ? updated : p))
       } else {
         // Second approval: merge text into script
@@ -1650,21 +1654,40 @@ El original_text debe ser una cita LITERAL del guión para ubicarlo automáticam
                   )
                 }
 
+                // Find proposal position — try exact, then first 2 non-empty lines
+                const findProposalInScript = (script: string, origText: string): { idx: number; len: number } => {
+                  const exact = script.indexOf(origText)
+                  if (exact !== -1) return { idx: exact, len: origText.length }
+                  // Fallback: match on first 2 non-empty lines
+                  const anchor = origText.split('\n').filter(l => l.trim().length > 10).slice(0, 2).join('\n')
+                  if (anchor) {
+                    const ai = script.indexOf(anchor)
+                    if (ai !== -1) return { idx: ai, len: anchor.length }
+                  }
+                  return { idx: -1, len: 0 }
+                }
+
                 // Build script parts with inline proposal cards
-                const sorted = [...pendingProposals]
+                const withPos = [...pendingProposals]
                   .filter(p => p.original_text)
-                  .sort((a, b) => scriptDraft.indexOf(a.original_text!) - scriptDraft.indexOf(b.original_text!))
+                  .map(p => ({ proposal: p, ...findProposalInScript(scriptDraft, p.original_text!) }))
+                  .sort((a, b) => a.idx - b.idx)
 
                 type Part = { type: 'text'; content: string } | { type: 'proposal'; proposal: ScriptProposal }
                 const parts: Part[] = []
                 let cursor = scriptDraft
 
-                for (const proposal of sorted) {
-                  const idx = cursor.indexOf(proposal.original_text!)
+                for (const { proposal, idx, len } of withPos) {
                   if (idx === -1) continue
-                  if (idx > 0) parts.push({ type: 'text', content: cursor.slice(0, idx) })
+                  // Adjust idx relative to remaining cursor
+                  const relIdx = cursor.indexOf(proposal.original_text!) !== -1
+                    ? cursor.indexOf(proposal.original_text!)
+                    : cursor.indexOf(proposal.original_text!.split('\n').filter(l => l.trim().length > 10)[0] ?? '__nomatch__')
+                  if (relIdx === -1) continue
+                  const relLen = cursor.indexOf(proposal.original_text!) !== -1 ? proposal.original_text!.length : len
+                  if (relIdx > 0) parts.push({ type: 'text', content: cursor.slice(0, relIdx) })
                   parts.push({ type: 'proposal', proposal })
-                  cursor = cursor.slice(idx + proposal.original_text!.length)
+                  cursor = cursor.slice(relIdx + relLen)
                 }
                 if (cursor) parts.push({ type: 'text', content: cursor })
 
