@@ -166,7 +166,7 @@ type ScriptProposal = {
   original_text: string | null
   proposed_text: string | null
   location_hint: string | null
-  status: 'pending' | 'approved' | 'discarded' | 'reverted'
+  status: 'draft' | 'pending' | 'approved' | 'discarded' | 'reverted' | null
   created_at: string
 }
 
@@ -692,9 +692,8 @@ El original_text debe ser una cita LITERAL del guión para ubicarlo automáticam
         }),
       })
       const data = await res.json()
-      console.log('[saveDetectedProposal] response:', JSON.stringify(data))
       if (res.ok) {
-        setEpisodeProposals(prev => { console.log('[proposals after save]', [data, ...prev].length, 'items'); return [data, ...prev] })
+        setEpisodeProposals(prev => [data, ...prev])
         setDetectedProposal(null)
         if (selectedFinding) updateFindingStatus(selectedFinding, 'in_review')
       } else {
@@ -1481,14 +1480,14 @@ El original_text debe ser una cita LITERAL del guión para ubicarlo automáticam
           {mode === 'script' && (
             <div>
               {/* PENDING NUPPA PROPOSALS */}
-              {episodeProposals.filter(p => p.status === 'pending' || !p.status).length > 0 && (
+              {episodeProposals.filter(p => p.status === 'pending' || p.status === 'draft' || !p.status).length > 0 && (
                 <div style={{ marginBottom: '1.5rem' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '0.75rem' }}>
                     <span style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '0.9rem', letterSpacing: '0.1em', color: '#9B6FD4' }}>
-                      ✦ PROPUESTAS DE NUPPA — {episodeProposals.filter(p => p.status === 'pending' || !p.status).length} pendiente{episodeProposals.filter(p => p.status === 'pending' || !p.status).length > 1 ? 's' : ''}
+                      ✦ PROPUESTAS DE NUPPA — {episodeProposals.filter(p => p.status === 'pending' || p.status === 'draft' || !p.status).length} pendiente{episodeProposals.filter(p => p.status === 'pending' || p.status === 'draft' || !p.status).length > 1 ? 's' : ''}
                     </span>
                   </div>
-                  {episodeProposals.filter(p => p.status === 'pending' || !p.status).map(proposal => (
+                  {episodeProposals.filter(p => p.status === 'pending' || p.status === 'draft' || !p.status).map(proposal => (
                     <div key={proposal.id} style={{ background: 'rgba(155,111,212,0.05)', border: '1px solid rgba(155,111,212,0.2)', borderRadius: '8px', overflow: 'hidden', marginBottom: '0.75rem' }}>
                       <div style={{ padding: '0.75rem 1rem', background: 'rgba(155,111,212,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                         <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#9B6FD4', background: 'rgba(155,111,212,0.15)', borderRadius: '20px', padding: '2px 10px' }}>
