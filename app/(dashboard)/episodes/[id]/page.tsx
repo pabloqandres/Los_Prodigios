@@ -1693,7 +1693,7 @@ El original_text debe ser una cita LITERAL del guión para ubicarlo automáticam
 
                 // Proposals not found in script — append at end
                 const foundIds = new Set(parts.filter(p => p.type === 'proposal').map(p => (p as { type: 'proposal'; proposal: ScriptProposal }).proposal.id))
-                for (const proposal of sorted) {
+                for (const { proposal } of withPos) {
                   if (!foundIds.has(proposal.id)) parts.push({ type: 'proposal', proposal })
                 }
 
