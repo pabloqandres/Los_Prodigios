@@ -11,19 +11,30 @@ export async function POST(request: NextRequest) {
   if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   try {
-    const body = await request.json()
-    const { storage_path, filename } = body as { storage_path: string; filename: string }
+    const contentType = request.headers.get('content-type') ?? ''
+    let buffer: Buffer
+    let filename: string
 
-    if (!storage_path) return NextResponse.json({ error: 'storage_path requerido' }, { status: 400 })
+    if (contentType.includes('multipart/form-data')) {
+      // Direct file upload via FormData
+      const formData = await request.formData()
+      const file = formData.get('file') as File | null
+      if (!file) return NextResponse.json({ error: 'archivo requerido' }, { status: 400 })
+      filename = file.name
+      buffer = Buffer.from(await file.arrayBuffer())
+    } else {
+      // Legacy: download from Supabase Storage by storage_path
+      const body = await request.json()
+      const { storage_path, filename: fn } = body as { storage_path: string; filename: string }
+      if (!storage_path) return NextResponse.json({ error: 'storage_path requerido' }, { status: 400 })
+      filename = fn ?? storage_path
+      const supabase = createServerClient()
+      const { data, error } = await supabase.storage.from('assets').download(storage_path)
+      if (error || !data) return NextResponse.json({ error: `Error descargando archivo: ${error?.message}` }, { status: 500 })
+      buffer = Buffer.from(await data.arrayBuffer())
+    }
 
-    // Download from Supabase Storage (server-to-server, no body size limit)
-    const supabase = createServerClient()
-    const { data, error } = await supabase.storage.from('assets').download(storage_path)
-    if (error || !data) return NextResponse.json({ error: `Error descargando archivo: ${error?.message}` }, { status: 500 })
-
-    const buffer = Buffer.from(await data.arrayBuffer())
-    const name = (filename ?? storage_path).toLowerCase()
-
+    const name = filename.toLowerCase()
     let text = ''
     if (name.endsWith('.docx')) {
       const result = await mammoth.extractRawText({ buffer })

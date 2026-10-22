@@ -31,9 +31,10 @@ export async function GET(request: NextRequest) {
       .order('act_number')
 
     const actIds = (acts ?? []).map(a => a.id)
-    const { data: scenes } = actIds.length > 0
-      ? await supabase.from('scenes').select('*, scene_characters(*)').in('act_id', actIds).order('scene_number')
-      : { data: [] }
+    const { data: scenes, error: scenesError } = actIds.length > 0
+      ? await supabase.from('scenes').select('*').in('act_id', actIds).order('scene_number')
+      : { data: [], error: null }
+    if (scenesError) console.error('scenes query error:', scenesError.message)
 
     return NextResponse.json({ ...episode, acts: acts ?? [], scenes: scenes ?? [] })
   }

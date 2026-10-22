@@ -277,6 +277,7 @@ export default function EpisodeBuilderPage() {
   const [savingProposal, setSavingProposal] = useState(false)
   const [episodeProposals, setEpisodeProposals] = useState<ScriptProposal[]>([])
   const [approvingProposal, setApprovingProposal] = useState<string | null>(null)
+  const [nuppaHighlights, setNuppaHighlights] = useState<string[]>([])
 
   // Script mode vs structure mode
   const [mode, setMode] = useState<'overview' | 'script' | 'structure' | 'produccion'>('overview')
@@ -460,7 +461,15 @@ El original_text debe ser cita LITERAL del guión (para ubicarlo automáticament
   useEffect(() => {
     fetch(`/api/script-proposals?episode_id=${id}`)
       .then(r => r.json())
-      .then(data => { if (Array.isArray(data)) setEpisodeProposals(data) })
+      .then(data => {
+        if (Array.isArray(data)) {
+          setEpisodeProposals(data)
+          const approved = data
+            .filter((p: ScriptProposal) => p.status === 'approved' && p.proposed_text)
+            .map((p: ScriptProposal) => p.proposed_text as string)
+          if (approved.length > 0) setNuppaHighlights(approved)
+        }
+      })
       .catch(() => {})
 
     Promise.all([
@@ -755,6 +764,9 @@ El original_text debe ser cita LITERAL del guión (para ubicarlo automáticament
           body: JSON.stringify({ status: 'approved', final_text: proposal.proposed_text }),
         })
         setEpisodeProposals(prev => prev.map(p => p.id === proposal.id ? { ...p, status: 'approved', change_type: null } : p))
+        if (applied && proposal.proposed_text) {
+          setNuppaHighlights(prev => [...prev, proposal.proposed_text as string])
+        }
         if (!applied) alert('El texto original no se encontró exactamente — aplica el cambio manualmente.')
       }
     } finally {
@@ -1255,41 +1267,57 @@ El original_text debe ser cita LITERAL del guión (para ubicarlo automáticament
   }
 
   // Render a block of script text with typography hierarchy
-  function renderStyledScriptText(text: string, keyPrefix: string) {
+  function renderStyledScriptText(text: string, keyPrefix: string, highlights?: string[]) {
     const lines = text.split('\n')
+
+    // Pre-compute set of trimmed lines that belong to a NUPPA highlight
+    const highlightedLines = new Set<string>()
+    if (highlights && highlights.length > 0) {
+      for (const h of highlights) {
+        h.split('\n').forEach(hl => {
+          const t = hl.trim()
+          if (t.length >= 15) highlightedLines.add(t)
+        })
+      }
+    }
+
     return lines.map((line, i) => {
       const type = classifyScriptLine(line)
       const lineId = `${keyPrefix}-line-${i}`
       const trimmed = line.trim()
+      const isNuppa = highlightedLines.has(trimmed)
+      const nuppaStyle: React.CSSProperties = isNuppa
+        ? { borderLeft: '2px solid rgba(78,205,196,0.5)', paddingLeft: '8px', marginLeft: '-10px', background: 'rgba(78,205,196,0.04)' }
+        : {}
 
       if (type === 'blank') return <div key={lineId} id={lineId} style={{ height: '0.6em' }} />
 
       if (type === 'scene-header') return (
-        <div key={lineId} id={lineId} style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '1rem', letterSpacing: '0.12em', color: '#F0EBE1', marginTop: '2em', marginBottom: '0.2em', paddingBottom: '0.3em', borderBottom: '1px solid rgba(240,235,225,0.1)' }}>
+        <div key={lineId} id={lineId} style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '1rem', letterSpacing: '0.12em', color: isNuppa ? '#4ECDC4' : '#F0EBE1', marginTop: '2em', marginBottom: '0.2em', paddingBottom: '0.3em', borderBottom: '1px solid rgba(240,235,225,0.1)', ...nuppaStyle }}>
           {trimmed}
         </div>
       )
 
       if (type === 'section-label') return (
-        <div key={lineId} id={lineId} style={{ fontSize: '0.6rem', letterSpacing: '0.18em', color: 'rgba(240,235,225,0.3)', fontWeight: 700, textTransform: 'uppercase' as const, marginTop: '0.8em', marginBottom: '0.1em' }}>
+        <div key={lineId} id={lineId} style={{ fontSize: '0.6rem', letterSpacing: '0.18em', color: isNuppa ? 'rgba(78,205,196,0.6)' : 'rgba(240,235,225,0.3)', fontWeight: 700, textTransform: 'uppercase' as const, marginTop: '0.8em', marginBottom: '0.1em', ...nuppaStyle }}>
           {trimmed}
         </div>
       )
 
       if (type === 'meta-info') return (
-        <div key={lineId} id={lineId} style={{ fontSize: '0.78rem', color: 'rgba(240,235,225,0.55)', fontStyle: 'italic', fontFamily: 'Courier New, monospace', lineHeight: 1.5 }}>
+        <div key={lineId} id={lineId} style={{ fontSize: '0.78rem', color: isNuppa ? 'rgba(78,205,196,0.8)' : 'rgba(240,235,225,0.55)', fontStyle: 'italic', fontFamily: 'Courier New, monospace', lineHeight: 1.5, ...nuppaStyle }}>
           {trimmed}
         </div>
       )
 
       if (type === 'stage-direction') return (
-        <div key={lineId} id={lineId} style={{ fontSize: '0.78rem', color: 'rgba(240,235,225,0.35)', fontStyle: 'italic', fontFamily: 'Courier New, monospace', lineHeight: 1.6, paddingLeft: '1em' }}>
+        <div key={lineId} id={lineId} style={{ fontSize: '0.78rem', color: isNuppa ? 'rgba(78,205,196,0.7)' : 'rgba(240,235,225,0.35)', fontStyle: 'italic', fontFamily: 'Courier New, monospace', lineHeight: 1.6, paddingLeft: isNuppa ? '8px' : '1em', ...nuppaStyle }}>
           {trimmed}
         </div>
       )
 
       if (type === 'title') return (
-        <div key={lineId} id={lineId} style={{ fontSize: '0.7rem', letterSpacing: '0.14em', color: 'rgba(240,235,225,0.4)', fontWeight: 600, marginBottom: '0.2em' }}>
+        <div key={lineId} id={lineId} style={{ fontSize: '0.7rem', letterSpacing: '0.14em', color: isNuppa ? 'rgba(78,205,196,0.7)' : 'rgba(240,235,225,0.4)', fontWeight: 600, marginBottom: '0.2em', ...nuppaStyle }}>
           {trimmed}
         </div>
       )
@@ -1299,9 +1327,9 @@ El original_text debe ser cita LITERAL del guión (para ubicarlo automáticament
         const speaker = trimmed.slice(0, colonIdx)
         const speech = trimmed.slice(colonIdx + 1)
         return (
-          <div key={lineId} id={lineId} style={{ fontSize: '0.82rem', fontFamily: 'Courier New, monospace', lineHeight: 1.7, color: 'rgba(240,235,225,0.9)' }}>
-            <span style={{ color: '#9B6FD4', fontWeight: 700, letterSpacing: '0.04em' }}>{speaker}</span>
-            <span style={{ color: 'rgba(240,235,225,0.5)' }}>:</span>
+          <div key={lineId} id={lineId} style={{ fontSize: '0.82rem', fontFamily: 'Courier New, monospace', lineHeight: 1.7, color: isNuppa ? '#4ECDC4' : 'rgba(240,235,225,0.9)', ...nuppaStyle }}>
+            <span style={{ color: isNuppa ? '#4ECDC4' : '#9B6FD4', fontWeight: 700, letterSpacing: '0.04em' }}>{speaker}</span>
+            <span style={{ color: isNuppa ? 'rgba(78,205,196,0.5)' : 'rgba(240,235,225,0.5)' }}>:</span>
             <span>{speech}</span>
           </div>
         )
@@ -1309,7 +1337,7 @@ El original_text debe ser cita LITERAL del guión (para ubicarlo automáticament
 
       // action
       return (
-        <div key={lineId} id={lineId} style={{ fontSize: '0.82rem', fontFamily: 'Courier New, monospace', color: 'rgba(240,235,225,0.7)', lineHeight: 1.7 }}>
+        <div key={lineId} id={lineId} style={{ fontSize: '0.82rem', fontFamily: 'Courier New, monospace', color: isNuppa ? '#4ECDC4' : 'rgba(240,235,225,0.7)', lineHeight: 1.7, ...nuppaStyle }}>
           {line}
         </div>
       )
@@ -1796,18 +1824,34 @@ El original_text debe ser cita LITERAL del guión (para ubicarlo automáticament
                       ) : (
                         <div style={{ ...SCRIPT_INPUT, height: 'auto', minHeight: '60vh', overflow: 'visible', padding: '20px 24px', cursor: 'text' }} onClick={() => {}}>
                           {pendingProposals.length === 0 ? (
-                            renderStyledScriptText(scriptDraft, 'main')
+                            renderStyledScriptText(scriptDraft, 'main', nuppaHighlights)
                           ) : (() => {
                             // Build parts with inline proposal cards
                             const findScenePos = (script: string, hint: string | null) => {
                               if (!hint) return { idx: -1, len: 0 }
                               const scriptLines = script.split('\n')
-                              const hintUpper = hint.toUpperCase()
+                              const hintUpper = hint.toUpperCase().trim()
+                              // Exact / substring match first
                               for (let li = 0; li < scriptLines.length; li++) {
                                 const lineUpper = scriptLines[li].toUpperCase()
                                 if (lineUpper.includes(hintUpper) || lineUpper.replace(/\s+/g, ' ').includes(hintUpper.replace(/\s+/g, ' '))) {
                                   const charPos = scriptLines.slice(0, li).reduce((sum, l) => sum + l.length + 1, 0)
                                   return { idx: charPos, len: scriptLines[li].length }
+                                }
+                              }
+                              // Fallback: extract scene number from hint ("ESC 06" → 6) and match any ESCENA XX line
+                              const numMatch = hintUpper.match(/\d+/)
+                              if (numMatch) {
+                                const targetNum = parseInt(numMatch[0])
+                                for (let li = 0; li < scriptLines.length; li++) {
+                                  const lt = scriptLines[li].toUpperCase().trim()
+                                  if (/^ESCENA\s+\d+/.test(lt)) {
+                                    const lNum = lt.match(/\d+/)
+                                    if (lNum && parseInt(lNum[0]) === targetNum) {
+                                      const charPos = scriptLines.slice(0, li).reduce((sum, l) => sum + l.length + 1, 0)
+                                      return { idx: charPos, len: scriptLines[li].length }
+                                    }
+                                  }
                                 }
                               }
                               return { idx: -1, len: 0 }
@@ -1836,7 +1880,7 @@ El original_text debe ser cita LITERAL del guión (para ubicarlo automáticament
 
                             return parts.map((part, i) => {
                               if (part.type === 'text') {
-                                return <div key={i}>{renderStyledScriptText(part.content, `part-${i}`)}</div>
+                                return <div key={i}>{renderStyledScriptText(part.content, `part-${i}`, nuppaHighlights)}</div>
                               }
                               const { proposal } = part
                               const isAwaiting = proposal.final_text?.startsWith('__approved_by__')
