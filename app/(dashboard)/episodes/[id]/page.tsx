@@ -191,6 +191,7 @@ export default function EpisodeBuilderPage() {
 
   // Active workflow
   const [activeWorkflow, setActiveWorkflow] = useState<WorkflowKey>(null)
+  const [aiPanelOpen, setAiPanelOpen] = useState(false)
 
   // Script mode vs structure mode
   const [mode, setMode] = useState<'overview' | 'script' | 'structure' | 'produccion'>('overview')
@@ -752,6 +753,7 @@ export default function EpisodeBuilderPage() {
 
   function activateWorkflow(key: WorkflowKey) {
     setActiveWorkflow(key)
+    setAiPanelOpen(true)
     setAiMessages([])
     setAiInput('')
     if (key === 'write_script') setMode('script')
@@ -809,21 +811,38 @@ export default function EpisodeBuilderPage() {
         {/* Mode tabs */}
         <div data-tutorial="episode-tabs" style={{ display: 'flex', gap: '2px', background: '#120D28', borderRadius: '3px', padding: '2px', flexShrink: 0 }}>
           {[
-            { key: 'overview',   label: 'Vista general', tutorialAttr: 'episode-overview' },
-            { key: 'script',     label: 'Guión',         tutorialAttr: 'episode-script-tab' },
-            { key: 'structure',  label: 'Estructura',    tutorialAttr: 'episode-structure-tab' },
-            { key: 'produccion', label: 'Producción',    tutorialAttr: 'episode-produccion-tab' },
-          ].map(tab => (
-            <button
-              key={tab.key}
-              data-tutorial={tab.tutorialAttr}
-              onClick={() => setMode(tab.key as typeof mode)}
-              style={{ padding: '4px 10px', background: mode === tab.key ? 'rgba(212,37,106,0.2)' : 'transparent', border: 'none', borderRadius: '2px', color: mode === tab.key ? '#D4256A' : 'rgba(240,235,225,0.4)', fontSize: '0.75rem', cursor: 'pointer', fontFamily: 'IBM Plex Sans, sans-serif', whiteSpace: 'nowrap' }}
-            >
-              {tab.label}
-            </button>
-          ))}
+            { key: 'overview',   label: 'Datos',      tutorialAttr: 'episode-overview' },
+            { key: 'script',     label: 'Guión',       tutorialAttr: 'episode-script-tab' },
+            { key: 'structure',  label: 'Estructura',  tutorialAttr: 'episode-structure-tab' },
+            { key: 'produccion', label: 'Producción',  tutorialAttr: 'episode-produccion-tab' },
+          ].map(tab => {
+            const dot = tab.key === 'script' ? (scriptDraft.trim().length > 50 ? '#4ECDC4' : null)
+              : tab.key === 'structure' ? (episode.scenes.length > 0 ? '#4ECDC4' : null)
+              : tab.key === 'produccion' ? (scriptGaps.length > 0 || canonIssues.length > 0 ? (canonIssues.some(i => i.severity === 'error') ? '#D4256A' : '#F5A52A') : null)
+              : null
+            return (
+              <button
+                key={tab.key}
+                data-tutorial={tab.tutorialAttr}
+                onClick={() => setMode(tab.key as typeof mode)}
+                style={{ padding: '4px 10px', background: mode === tab.key ? 'rgba(212,37,106,0.2)' : 'transparent', border: 'none', borderRadius: '2px', color: mode === tab.key ? '#D4256A' : 'rgba(240,235,225,0.4)', fontSize: '0.75rem', cursor: 'pointer', fontFamily: 'IBM Plex Sans, sans-serif', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '5px' }}
+              >
+                {tab.label}
+                {dot && <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: dot, flexShrink: 0 }} />}
+              </button>
+            )
+          })}
         </div>
+
+        {/* AI panel toggle */}
+        <button
+          onClick={() => setAiPanelOpen(o => !o)}
+          style={{ padding: '4px 10px', background: aiPanelOpen ? 'rgba(78,205,196,0.15)' : 'rgba(255,255,255,0.04)', border: `1px solid ${aiPanelOpen ? 'rgba(78,205,196,0.4)' : 'rgba(255,255,255,0.08)'}`, borderRadius: '3px', color: aiPanelOpen ? '#4ECDC4' : 'rgba(240,235,225,0.35)', fontSize: '0.75rem', cursor: 'pointer', fontFamily: 'IBM Plex Sans, sans-serif', flexShrink: 0, display: 'flex', alignItems: 'center', gap: '5px' }}
+        >
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" strokeWidth="1.2"/><path d="M8 7v4M8 5.5v.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>
+          AI
+          {aiMessages.length > 0 && <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#4ECDC4', flexShrink: 0 }} />}
+        </button>
 
         {savedMsg && <span style={{ fontSize: '0.7rem', color: '#4ECDC4', flexShrink: 0 }}>✓ Guardado</span>}
       </div>
@@ -837,31 +856,6 @@ export default function EpisodeBuilderPage() {
           {/* OVERVIEW MODE */}
           {mode === 'overview' && (
             <div>
-              {/* Workflow cards */}
-              <div style={{ ...SECTION_HEADER }}>Workflows del episodio</div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '0.75rem', marginBottom: '2rem' }}>
-                {WORKFLOWS.map(wf => (
-                  <div
-                    key={wf.key}
-                    onClick={() => activateWorkflow(wf.key)}
-                    style={{
-                      background: activeWorkflow === wf.key ? `${wf.accent}14` : '#0D0920',
-                      border: `1px solid ${activeWorkflow === wf.key ? wf.accent : 'rgba(245,165,42,0.08)'}`,
-                      borderRadius: '4px',
-                      padding: '1rem',
-                      cursor: 'pointer',
-                      transition: 'all 0.15s',
-                    }}
-                    onMouseEnter={e => { if (activeWorkflow !== wf.key) { e.currentTarget.style.borderColor = wf.accent; e.currentTarget.style.background = `${wf.accent}08` } }}
-                    onMouseLeave={e => { if (activeWorkflow !== wf.key) { e.currentTarget.style.borderColor = 'rgba(245,165,42,0.08)'; e.currentTarget.style.background = '#0D0920' } }}
-                  >
-                    <div style={{ width: '28px', height: '28px', marginBottom: '0.5rem', color: wf.accent, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{wf.icon}</div>
-                    <div style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '0.9rem', letterSpacing: '0.06em', color: activeWorkflow === wf.key ? wf.accent : '#F0EBE1', marginBottom: '0.375rem' }}>{wf.label}</div>
-                    <div style={{ fontSize: '0.6875rem', color: 'rgba(240,235,225,0.4)', lineHeight: 1.5 }}>{wf.desc}</div>
-                  </div>
-                ))}
-              </div>
-
               {/* Episode metadata */}
               <div style={{ ...SECTION_HEADER }}>Datos del episodio</div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
@@ -987,10 +981,31 @@ export default function EpisodeBuilderPage() {
                   )}
                 </div>
               </div>
-              {/* Script format guide */}
-              <div style={{ background: 'rgba(245,165,42,0.04)', border: '1px solid rgba(245,165,42,0.08)', borderRadius: '3px', padding: '8px 12px', marginBottom: '0.75rem', fontSize: '0.6rem', color: 'rgba(240,235,225,0.3)', lineHeight: 1.6, fontFamily: 'Courier New, monospace' }}>
-                INT./EXT. LOCACIÓN — DÍA/NOCHE &nbsp;·&nbsp; PERSONAJE (centrado) &nbsp;·&nbsp; diálogo indentado &nbsp;·&nbsp; (acotación) bajo nombre
-              </div>
+              {(!scriptDraft || scriptDraft.trim().length < 100) && (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '4rem 2rem', gap: '1.5rem', textAlign: 'center' }}>
+                  <svg width="48" height="48" viewBox="0 0 48 48" fill="none" style={{ color: 'rgba(240,235,225,0.1)' }}><rect x="8" y="6" width="32" height="36" rx="3" stroke="currentColor" strokeWidth="2"/><path d="M16 16h16M16 22h16M16 28h10" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
+                  <div>
+                    <div style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '1.25rem', letterSpacing: '0.08em', color: 'rgba(240,235,225,0.3)', marginBottom: '6px' }}>Sin guión aún</div>
+                    <div style={{ fontSize: '0.8rem', color: 'rgba(240,235,225,0.2)', lineHeight: 1.6 }}>Importa un Word o empieza a escribir directamente</div>
+                  </div>
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <button
+                      onClick={() => scriptFileRef.current?.click()}
+                      disabled={importingDoc}
+                      style={{ padding: '10px 20px', background: 'rgba(78,205,196,0.12)', border: '1px solid rgba(78,205,196,0.35)', borderRadius: '4px', color: '#4ECDC4', fontSize: '0.875rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'IBM Plex Sans, sans-serif', display: 'flex', alignItems: 'center', gap: '6px' }}
+                    >
+                      <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 3v8M5 6l3-3 3 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/><path d="M3 13h10" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>
+                      {importingDoc ? 'Importando...' : 'Importar Word'}
+                    </button>
+                    <button
+                      onClick={() => document.querySelector<HTMLTextAreaElement>('textarea[spellcheck="false"]')?.focus()}
+                      style={{ padding: '10px 20px', background: 'rgba(245,165,42,0.08)', border: '1px solid rgba(245,165,42,0.25)', borderRadius: '4px', color: 'rgba(245,165,42,0.7)', fontSize: '0.875rem', cursor: 'pointer', fontFamily: 'IBM Plex Sans, sans-serif' }}
+                    >
+                      Escribir desde cero
+                    </button>
+                  </div>
+                </div>
+              )}
               <textarea
                 value={scriptDraft}
                 onChange={e => handleScriptChange(e.target.value)}
@@ -1516,6 +1531,7 @@ export default function EpisodeBuilderPage() {
         </div>
 
         {/* ── RIGHT PANEL — AI ASSISTANT ─────────────────────────────── */}
+        {aiPanelOpen && (
         <div data-tutorial="episode-ai-panel" style={{ width: '380px', flexShrink: 0, borderLeft: '1px solid rgba(212,37,106,0.12)', display: 'flex', flexDirection: 'column', background: '#0A0719' }}>
 
           {/* AI panel header */}
@@ -1657,6 +1673,7 @@ export default function EpisodeBuilderPage() {
             </button>
           </div>
         </div>
+        )}
       </div>
     </div>
   )
