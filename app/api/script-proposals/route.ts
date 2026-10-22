@@ -102,21 +102,11 @@ export async function PATCH(request: NextRequest) {
   if (!id) return NextResponse.json({ error: 'id requerido' }, { status: 400 })
 
   const body = await request.json()
-  const { status, final_text, discarded_reason } = body
-
-  if (!status) return NextResponse.json({ error: 'status requerido' }, { status: 400 })
-
-  const validStatuses = ['approved', 'discarded', 'reverted']
-  if (!validStatuses.includes(status)) {
-    return NextResponse.json(
-      { error: `status inválido. Valores permitidos: ${validStatuses.join(', ')}` },
-      { status: 400 }
-    )
-  }
+  const { status, action, final_text, discarded_reason } = body
 
   const supabase = createServerClient()
 
-  // Fetch current proposal to get finding_id
+  // Fetch current proposal
   const { data: existing, error: fetchError } = await supabase
     .from('script_proposals')
     .select('id, finding_id')
@@ -128,10 +118,31 @@ export async function PATCH(request: NextRequest) {
   }
 
   const now = new Date().toISOString()
-  const patch: Record<string, unknown> = {
-    status,
-    updated_at: now,
+
+  // --- Action: first_approval (no status change, just record first approver) ---
+  if (action === 'first_approval') {
+    const { data: updatedProposal, error: updateError } = await supabase
+      .from('script_proposals')
+      .update({ change_type: 'awaiting_second_approval', final_text: token.email, updated_at: now })
+      .eq('id', id)
+      .select('*')
+      .single()
+    if (updateError) return NextResponse.json({ error: updateError.message }, { status: 500 })
+    return NextResponse.json(updatedProposal)
   }
+
+  // --- Status update ---
+  if (!status) return NextResponse.json({ error: 'status o action requerido' }, { status: 400 })
+
+  const validStatuses = ['approved', 'discarded', 'reverted']
+  if (!validStatuses.includes(status)) {
+    return NextResponse.json(
+      { error: `status inválido. Valores permitidos: ${validStatuses.join(', ')}` },
+      { status: 400 }
+    )
+  }
+
+  const patch: Record<string, unknown> = { status, updated_at: now }
 
   if (status === 'approved') {
     patch.approved_at = now

@@ -165,9 +165,12 @@ type ScriptProposal = {
   episode_id: string
   original_text: string | null
   proposed_text: string | null
+  final_text: string | null   // reused: first approver email in awaiting_second_approval state
+  change_type: string | null  // 'awaiting_second_approval' after first approval
   location_hint: string | null
   status: 'draft' | 'pending' | 'approved' | 'discarded' | 'reverted' | null
   created_at: string
+  updated_at: string
 }
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -709,24 +712,38 @@ El original_text debe ser una cita LITERAL del guión para ubicarlo automáticam
     if (!proposal.original_text || !proposal.proposed_text) return
     setApprovingProposal(proposal.id)
     try {
-      const newScript = scriptDraft.replace(proposal.original_text, proposal.proposed_text)
-      const applied = newScript !== scriptDraft
-      if (applied) {
-        await fetch(`/api/episodes?id=${id}`, {
+      const isAwaitingSecond = proposal.change_type === 'awaiting_second_approval'
+
+      if (!isAwaitingSecond) {
+        // First approval: record approver, don't merge yet
+        const res = await fetch(`/api/script-proposals?id=${proposal.id}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ script: newScript }),
+          body: JSON.stringify({ action: 'first_approval' }),
         })
-        setScriptDraft(newScript)
-        setEpisode(prev => prev ? { ...prev, script: newScript } : prev)
+        const updated = await res.json()
+        setEpisodeProposals(prev => prev.map(p => p.id === proposal.id ? updated : p))
+      } else {
+        // Second approval: merge text into script
+        const newScript = scriptDraft.replace(proposal.original_text, proposal.proposed_text)
+        const applied = newScript !== scriptDraft
+        if (applied) {
+          await fetch(`/api/episodes?id=${id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ script: newScript }),
+          })
+          setScriptDraft(newScript)
+          setEpisode(prev => prev ? { ...prev, script: newScript } : prev)
+        }
+        await fetch(`/api/script-proposals?id=${proposal.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'approved', final_text: proposal.proposed_text }),
+        })
+        setEpisodeProposals(prev => prev.map(p => p.id === proposal.id ? { ...p, status: 'approved', change_type: null } : p))
+        if (!applied) alert('El texto original no se encontró exactamente — aplica el cambio manualmente.')
       }
-      await fetch(`/api/script-proposals?id=${proposal.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'approved', final_text: proposal.proposed_text }),
-      })
-      setEpisodeProposals(prev => prev.map(p => p.id === proposal.id ? { ...p, status: 'approved' } : p))
-      if (!applied) alert('Propuesta aprobada. El texto original no se encontró exactamente en el guión — aplica el cambio manualmente.')
     } finally {
       setApprovingProposal(null)
     }
@@ -1479,56 +1496,31 @@ El original_text debe ser una cita LITERAL del guión para ubicarlo automáticam
           {/* SCRIPT MODE */}
           {mode === 'script' && (
             <div>
-              {/* PENDING NUPPA PROPOSALS */}
+              {/* STICKY CHIPS BAR */}
               {(() => {
                 const pendingProposals = episodeProposals.filter(p => p.status === 'pending' || p.status === 'draft' || !p.status)
                 if (pendingProposals.length === 0) return null
                 return (
-                  <div style={{ marginBottom: '1.5rem' }}>
-                    {/* Summary bar — chips */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '1rem', flexWrap: 'wrap' }}>
-                      <span style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '0.8rem', letterSpacing: '0.1em', color: 'rgba(155,111,212,0.7)', flexShrink: 0 }}>
-                        ✦ NUPPA · {pendingProposals.length} propuesta{pendingProposals.length > 1 ? 's' : ''}
-                      </span>
-                      {pendingProposals.map((proposal, i) => (
+                  <div style={{ position: 'sticky', top: 0, zIndex: 20, background: 'rgba(12,8,26,0.92)', backdropFilter: 'blur(8px)', borderBottom: '1px solid rgba(155,111,212,0.15)', padding: '8px 0 8px', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                    <span style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '0.75rem', letterSpacing: '0.12em', color: 'rgba(155,111,212,0.6)', flexShrink: 0 }}>
+                      ✦ NUPPA
+                    </span>
+                    {pendingProposals.map((proposal, i) => {
+                      const isAwaiting = proposal.change_type === 'awaiting_second_approval'
+                      const findingTitle = currentAnalysis?.categories?.flatMap(c => c.findings)?.find(f => f.id === proposal.finding_id)?.title
+                      const label = [proposal.location_hint, findingTitle ? findingTitle.replace(/^[^:]+:\s*/, '').slice(0, 30) : null].filter(Boolean).join(' · ')
+                      return (
                         <button
                           key={proposal.id}
                           onClick={() => document.getElementById(`proposal-${proposal.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
-                          style={{ padding: '3px 10px', background: 'rgba(155,111,212,0.1)', border: '1px solid rgba(155,111,212,0.3)', borderRadius: '20px', color: '#9B6FD4', fontSize: '0.7rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'IBM Plex Sans, sans-serif', whiteSpace: 'nowrap' }}
+                          style={{ padding: '3px 10px', background: isAwaiting ? 'rgba(245,165,42,0.12)' : 'rgba(155,111,212,0.1)', border: `1px solid ${isAwaiting ? 'rgba(245,165,42,0.35)' : 'rgba(155,111,212,0.3)'}`, borderRadius: '20px', color: isAwaiting ? '#F5A52A' : '#9B6FD4', fontSize: '0.68rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'IBM Plex Sans, sans-serif', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '5px' }}
                         >
-                          {proposal.location_hint ?? `Propuesta ${i + 1}`}
+                          {isAwaiting && <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#F5A52A', flexShrink: 0 }} />}
+                          {label || `Propuesta ${i + 1}`}
+                          {isAwaiting && <span style={{ fontSize: '0.6rem', opacity: 0.7 }}>· 2ª aprobación</span>}
                         </button>
-                      ))}
-                    </div>
-
-                    {/* Full proposal cards */}
-                    {pendingProposals.map(proposal => (
-                      <div id={`proposal-${proposal.id}`} key={proposal.id} style={{ background: 'rgba(155,111,212,0.04)', border: '1px solid rgba(155,111,212,0.18)', borderRadius: '8px', overflow: 'hidden', marginBottom: '0.75rem' }}>
-                        <div style={{ padding: '0.6rem 1rem', background: 'rgba(155,111,212,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                          <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#9B6FD4', background: 'rgba(155,111,212,0.15)', borderRadius: '20px', padding: '2px 10px' }}>
-                            {proposal.location_hint ?? 'PROPUESTA NUPPA'}
-                          </span>
-                          <div style={{ display: 'flex', gap: '6px' }}>
-                            <button onClick={() => approveProposal(proposal)} disabled={approvingProposal === proposal.id} style={{ padding: '4px 14px', background: 'rgba(78,205,196,0.15)', border: '1px solid rgba(78,205,196,0.35)', borderRadius: '4px', color: '#4ECDC4', fontSize: '0.72rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'IBM Plex Sans, sans-serif' }}>
-                              {approvingProposal === proposal.id ? 'Aplicando...' : '✓ Incorporar'}
-                            </button>
-                            <button onClick={() => rejectProposalItem(proposal)} style={{ padding: '4px 10px', background: 'transparent', border: '1px solid rgba(240,235,225,0.08)', borderRadius: '4px', color: 'rgba(240,235,225,0.3)', fontSize: '0.72rem', cursor: 'pointer', fontFamily: 'IBM Plex Sans, sans-serif' }}>
-                              Descartar
-                            </button>
-                          </div>
-                        </div>
-                        <div style={{ padding: '0.75rem 1rem' }}>
-                          <div style={{ fontSize: '0.6rem', letterSpacing: '0.1em', color: 'rgba(240,235,225,0.2)', marginBottom: '4px', fontWeight: 600 }}>ORIGINAL</div>
-                          <div style={{ background: 'rgba(212,37,106,0.05)', borderLeft: '2px solid rgba(212,37,106,0.25)', padding: '8px 12px', borderRadius: '0 4px 4px 0', marginBottom: '8px', fontSize: '0.77rem', fontFamily: 'Courier New, monospace', color: 'rgba(240,235,225,0.55)', lineHeight: 1.7, textDecoration: 'line-through', textDecorationColor: 'rgba(212,37,106,0.35)', textDecorationThickness: '1px' }}>
-                            {proposal.original_text}
-                          </div>
-                          <div style={{ fontSize: '0.6rem', letterSpacing: '0.1em', color: 'rgba(240,235,225,0.2)', marginBottom: '4px', fontWeight: 600 }}>PROPUESTA NUPPA</div>
-                          <div style={{ background: 'rgba(78,205,196,0.05)', borderLeft: '2px solid rgba(78,205,196,0.3)', padding: '8px 12px', borderRadius: '0 4px 4px 0', fontSize: '0.77rem', fontFamily: 'Courier New, monospace', color: '#F0EBE1', lineHeight: 1.7 }}>
-                            {proposal.proposed_text}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
+                      )
+                    })}
                   </div>
                 )
               })()}
@@ -1643,13 +1635,121 @@ El original_text debe ser una cita LITERAL del guión para ubicarlo automáticam
                   </div>
                 </div>
               )}
-              <textarea
-                value={scriptDraft}
-                onChange={e => handleScriptChange(e.target.value)}
-                placeholder={`INT. CASA PRODIGIO — SALA COMÚN — DÍA\n\nMateo entra por la puerta trasera con la mochila al hombro. Nadie lo nota.\n\n\t\t\t\t\tSOFÍA\n\t\t\t(sin mirarle)\n\t\tLlegaste tarde otra vez.\n\n`}
-                style={SCRIPT_INPUT}
-                spellCheck={false}
-              />
+              {(() => {
+                const pendingProposals = episodeProposals.filter(p => p.status === 'pending' || p.status === 'draft' || !p.status)
+
+                if (pendingProposals.length === 0) {
+                  return (
+                    <textarea
+                      value={scriptDraft}
+                      onChange={e => handleScriptChange(e.target.value)}
+                      placeholder={`INT. CASA PRODIGIO — SALA COMÚN — DÍA\n\nMateo entra por la puerta trasera con la mochila al hombro. Nadie lo nota.\n\n\t\t\t\t\tSOFÍA\n\t\t\t(sin mirarle)\n\t\tLlegaste tarde otra vez.\n\n`}
+                      style={SCRIPT_INPUT}
+                      spellCheck={false}
+                    />
+                  )
+                }
+
+                // Build script parts with inline proposal cards
+                const sorted = [...pendingProposals]
+                  .filter(p => p.original_text)
+                  .sort((a, b) => scriptDraft.indexOf(a.original_text!) - scriptDraft.indexOf(b.original_text!))
+
+                type Part = { type: 'text'; content: string } | { type: 'proposal'; proposal: ScriptProposal }
+                const parts: Part[] = []
+                let cursor = scriptDraft
+
+                for (const proposal of sorted) {
+                  const idx = cursor.indexOf(proposal.original_text!)
+                  if (idx === -1) continue
+                  if (idx > 0) parts.push({ type: 'text', content: cursor.slice(0, idx) })
+                  parts.push({ type: 'proposal', proposal })
+                  cursor = cursor.slice(idx + proposal.original_text!.length)
+                }
+                if (cursor) parts.push({ type: 'text', content: cursor })
+
+                // Proposals not found in script — append at end
+                const foundIds = new Set(parts.filter(p => p.type === 'proposal').map(p => (p as { type: 'proposal'; proposal: ScriptProposal }).proposal.id))
+                for (const proposal of sorted) {
+                  if (!foundIds.has(proposal.id)) parts.push({ type: 'proposal', proposal })
+                }
+
+                return (
+                  <div style={{ ...SCRIPT_INPUT, height: 'auto', minHeight: '60vh', overflow: 'visible', padding: 0 }}>
+                    {parts.map((part, i) => {
+                      if (part.type === 'text') {
+                        return (
+                          <pre key={i} style={{ margin: 0, padding: '0 24px', fontFamily: 'Courier New, monospace', fontSize: '0.85rem', lineHeight: 1.8, color: 'rgba(240,235,225,0.85)', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                            {part.content}
+                          </pre>
+                        )
+                      }
+
+                      const { proposal } = part
+                      const isAwaiting = proposal.change_type === 'awaiting_second_approval'
+                      const firstApprover = isAwaiting ? proposal.final_text : null
+
+                      return (
+                        <div id={`proposal-${proposal.id}`} key={proposal.id} style={{ margin: '4px 0', borderLeft: `3px solid ${isAwaiting ? 'rgba(245,165,42,0.5)' : 'rgba(155,111,212,0.4)'}`, background: isAwaiting ? 'rgba(245,165,42,0.04)' : 'rgba(155,111,212,0.04)', borderRadius: '0 6px 6px 0' }}>
+                          {/* Card header */}
+                          <div style={{ padding: '8px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: `1px solid ${isAwaiting ? 'rgba(245,165,42,0.12)' : 'rgba(155,111,212,0.12)'}` }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <span style={{ fontSize: '0.68rem', fontWeight: 700, color: isAwaiting ? '#F5A52A' : '#9B6FD4', background: isAwaiting ? 'rgba(245,165,42,0.12)' : 'rgba(155,111,212,0.12)', borderRadius: '20px', padding: '2px 8px' }}>
+                                {proposal.location_hint ?? 'NUPPA'}
+                              </span>
+                              {isAwaiting && (
+                                <span style={{ fontSize: '0.66rem', color: 'rgba(245,165,42,0.7)' }}>
+                                  ✓ {firstApprover?.split('@')[0]} aprobó · esperando 2ª aprobación
+                                </span>
+                              )}
+                            </div>
+                            <div style={{ display: 'flex', gap: '6px' }}>
+                              {!isAwaiting ? (
+                                <button
+                                  onClick={() => approveProposal(proposal)}
+                                  disabled={approvingProposal === proposal.id}
+                                  style={{ padding: '3px 12px', background: 'rgba(155,111,212,0.15)', border: '1px solid rgba(155,111,212,0.35)', borderRadius: '4px', color: '#9B6FD4', fontSize: '0.68rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'IBM Plex Sans, sans-serif' }}
+                                >
+                                  {approvingProposal === proposal.id ? '...' : '✓ Aprobar'}
+                                </button>
+                              ) : (
+                                <button
+                                  onClick={() => approveProposal(proposal)}
+                                  disabled={approvingProposal === proposal.id}
+                                  style={{ padding: '3px 12px', background: 'rgba(78,205,196,0.15)', border: '1px solid rgba(78,205,196,0.4)', borderRadius: '4px', color: '#4ECDC4', fontSize: '0.68rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'IBM Plex Sans, sans-serif' }}
+                                >
+                                  {approvingProposal === proposal.id ? '...' : '✓ Confirmar e incorporar'}
+                                </button>
+                              )}
+                              <button
+                                onClick={() => rejectProposalItem(proposal)}
+                                style={{ padding: '3px 8px', background: 'transparent', border: '1px solid rgba(240,235,225,0.06)', borderRadius: '4px', color: 'rgba(240,235,225,0.25)', fontSize: '0.68rem', cursor: 'pointer', fontFamily: 'IBM Plex Sans, sans-serif' }}
+                              >
+                                Descartar
+                              </button>
+                            </div>
+                          </div>
+                          {/* Diff */}
+                          <div style={{ padding: '10px 16px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                            <div>
+                              <div style={{ fontSize: '0.58rem', letterSpacing: '0.1em', color: 'rgba(212,37,106,0.5)', marginBottom: '4px', fontWeight: 700 }}>ORIGINAL</div>
+                              <pre style={{ margin: 0, fontSize: '0.75rem', fontFamily: 'Courier New, monospace', color: 'rgba(240,235,225,0.45)', lineHeight: 1.65, whiteSpace: 'pre-wrap', textDecoration: 'line-through', textDecorationColor: 'rgba(212,37,106,0.3)', textDecorationThickness: '1px' }}>
+                                {proposal.original_text}
+                              </pre>
+                            </div>
+                            <div>
+                              <div style={{ fontSize: '0.58rem', letterSpacing: '0.1em', color: 'rgba(78,205,196,0.6)', marginBottom: '4px', fontWeight: 700 }}>PROPUESTA</div>
+                              <pre style={{ margin: 0, fontSize: '0.75rem', fontFamily: 'Courier New, monospace', color: '#F0EBE1', lineHeight: 1.65, whiteSpace: 'pre-wrap' }}>
+                                {proposal.proposed_text}
+                              </pre>
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )
+              })()}
             </div>
           )}
 
