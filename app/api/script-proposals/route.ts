@@ -119,11 +119,11 @@ export async function PATCH(request: NextRequest) {
 
   const now = new Date().toISOString()
 
-  // --- Action: first_approval (no status change, just record first approver) ---
+  // --- Action: first_approval (no status change, store first approver in final_text) ---
   if (action === 'first_approval') {
     const { data: updatedProposal, error: updateError } = await supabase
       .from('script_proposals')
-      .update({ change_type: 'awaiting_second_approval', final_text: token.email, updated_at: now })
+      .update({ final_text: `__approved_by__${token.email}`, updated_at: now })
       .eq('id', id)
       .select('*')
       .single()

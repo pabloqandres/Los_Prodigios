@@ -712,7 +712,7 @@ El original_text debe ser una cita LITERAL del guión para ubicarlo automáticam
     if (!proposal.original_text || !proposal.proposed_text) return
     setApprovingProposal(proposal.id)
     try {
-      const isAwaitingSecond = proposal.change_type === 'awaiting_second_approval'
+      const isAwaitingSecond = proposal.final_text?.startsWith('__approved_by__') ?? false
 
       if (!isAwaitingSecond) {
         // First approval: record approver, don't merge yet
@@ -1510,7 +1510,7 @@ El original_text debe ser una cita LITERAL del guión para ubicarlo automáticam
                       ✦ NUPPA
                     </span>
                     {pendingProposals.map((proposal, i) => {
-                      const isAwaiting = proposal.change_type === 'awaiting_second_approval'
+                      const isAwaiting = proposal.final_text?.startsWith('__approved_by__')
                       const findingTitle = currentAnalysis?.categories?.flatMap(c => c.findings)?.find(f => f.id === proposal.finding_id)?.title
                       const label = [proposal.location_hint, findingTitle ? findingTitle.replace(/^[^:]+:\s*/, '').slice(0, 30) : null].filter(Boolean).join(' · ')
                       return (
@@ -1654,15 +1654,22 @@ El original_text debe ser una cita LITERAL del guión para ubicarlo automáticam
                   )
                 }
 
-                // Find proposal position — try exact, then first 2 non-empty lines
+                // Find proposal position in script — handles whitespace/tab differences
                 const findProposalInScript = (script: string, origText: string): { idx: number; len: number } => {
+                  // 1. Exact match
                   const exact = script.indexOf(origText)
                   if (exact !== -1) return { idx: exact, len: origText.length }
-                  // Fallback: match on first 2 non-empty lines
-                  const anchor = origText.split('\n').filter(l => l.trim().length > 10).slice(0, 2).join('\n')
-                  if (anchor) {
-                    const ai = script.indexOf(anchor)
-                    if (ai !== -1) return { idx: ai, len: anchor.length }
+
+                  // 2. Line-by-line trimmed search — find first distinctive line
+                  const scriptLines = script.split('\n')
+                  const needleLines = origText.split('\n').map(l => l.trim()).filter(l => l.length > 12)
+                  for (const needle of needleLines.slice(0, 3)) {
+                    for (let li = 0; li < scriptLines.length; li++) {
+                      if (scriptLines[li].trim() === needle || scriptLines[li].trim().startsWith(needle.slice(0, 25))) {
+                        const charPos = scriptLines.slice(0, li).reduce((sum, l) => sum + l.length + 1, 0)
+                        return { idx: charPos, len: scriptLines[li].length }
+                      }
+                    }
                   }
                   return { idx: -1, len: 0 }
                 }
@@ -1677,14 +1684,9 @@ El original_text debe ser una cita LITERAL del guión para ubicarlo automáticam
                 const parts: Part[] = []
                 let cursor = scriptDraft
 
-                for (const { proposal, idx, len } of withPos) {
-                  if (idx === -1) continue
-                  // Adjust idx relative to remaining cursor
-                  const relIdx = cursor.indexOf(proposal.original_text!) !== -1
-                    ? cursor.indexOf(proposal.original_text!)
-                    : cursor.indexOf(proposal.original_text!.split('\n').filter(l => l.trim().length > 10)[0] ?? '__nomatch__')
+                for (const { proposal } of withPos) {
+                  const { idx: relIdx, len: relLen } = findProposalInScript(cursor, proposal.original_text!)
                   if (relIdx === -1) continue
-                  const relLen = cursor.indexOf(proposal.original_text!) !== -1 ? proposal.original_text!.length : len
                   if (relIdx > 0) parts.push({ type: 'text', content: cursor.slice(0, relIdx) })
                   parts.push({ type: 'proposal', proposal })
                   cursor = cursor.slice(relIdx + relLen)
@@ -1709,8 +1711,8 @@ El original_text debe ser una cita LITERAL del guión para ubicarlo automáticam
                       }
 
                       const { proposal } = part
-                      const isAwaiting = proposal.change_type === 'awaiting_second_approval'
-                      const firstApprover = isAwaiting ? proposal.final_text : null
+                      const isAwaiting = proposal.final_text?.startsWith('__approved_by__')
+                      const firstApprover = isAwaiting ? proposal.final_text?.replace('__approved_by__', '') : null
 
                       return (
                         <div id={`proposal-${proposal.id}`} key={proposal.id} style={{ margin: '4px 0', borderLeft: `3px solid ${isAwaiting ? 'rgba(245,165,42,0.5)' : 'rgba(155,111,212,0.4)'}`, background: isAwaiting ? 'rgba(245,165,42,0.04)' : 'rgba(155,111,212,0.04)', borderRadius: '0 6px 6px 0' }}>
