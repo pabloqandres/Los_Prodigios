@@ -73,7 +73,6 @@ export async function POST(request: NextRequest) {
       proposed_text: proposed_text ?? null,
       change_type: change_type ?? null,
       location_hint: location_hint ?? null,
-      status: 'pending',
       created_by: token.email,
     })
     .select('*')
