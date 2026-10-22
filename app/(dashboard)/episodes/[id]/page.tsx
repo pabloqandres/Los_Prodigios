@@ -97,6 +97,79 @@ type CanonIssue = {
   severity: 'error' | 'warning'
 }
 
+// ── Full Analysis Types ───────────────────────────────────────────────────────
+
+type Finding = {
+  id: string
+  category: string
+  title: string
+  scene_ref: string
+  evidence: string
+  problem_description: string
+  narrative_effect: string
+  improvement_goal: string
+  priority: 'alta' | 'media' | 'baja'
+  status: 'pending' | 'in_review' | 'implemented' | 'verified' | 'discarded'
+  source: 'scoring' | 'assistant'
+  order_index: number
+  discarded_reason?: string
+}
+
+type AnalysisCategory = {
+  key: string
+  label: string
+  score: number
+  strength: string
+  weakness: string
+  findings: Finding[]
+}
+
+type AnalysisScene = {
+  scene_number: number
+  title: string
+  description: string
+  original_text: string
+  location: string
+  characters: string[]
+  duration_est: number
+  mood: string
+  scene_ref: string
+}
+
+type AnalysisAct = {
+  act_number: number
+  title: string
+  goal: string
+  scenes: AnalysisScene[]
+}
+
+type CurrentAnalysis = {
+  analysis_id: string
+  script_version_id: string
+  overall_score: number
+  verdict: string
+  is_current: boolean
+  created_at: string
+  categories: AnalysisCategory[]
+  findings_count: number
+  pending_count: number
+  structure?: { acts: AnalysisAct[]; total_scenes: number; structure_notes: string }
+  script_truncated?: boolean
+  script_total_chars?: number
+  script_analyzed_chars?: number
+}
+
+type ScriptProposal = {
+  id: string
+  finding_id: string
+  episode_id: string
+  original_text: string | null
+  proposed_text: string | null
+  location_hint: string | null
+  status: 'pending' | 'approved' | 'discarded' | 'reverted'
+  created_at: string
+}
+
 // ── Constants ─────────────────────────────────────────────────────────────────
 
 const STATUS_LABELS: Record<EpisodeStatus, string> = {
@@ -194,6 +267,13 @@ export default function EpisodeBuilderPage() {
   // Active workflow
   const [activeWorkflow, setActiveWorkflow] = useState<WorkflowKey>(null)
   const [aiPanelOpen, setAiPanelOpen] = useState(false)
+  const [aiPanelWidth, setAiPanelWidth] = useState(420)
+  const aiPanelDragging = useRef(false)
+  const aiPanelDragStart = useRef({ x: 0, width: 420 })
+  const [detectedProposal, setDetectedProposal] = useState<{ scene_ref: string; original_text: string; proposed_text: string } | null>(null)
+  const [savingProposal, setSavingProposal] = useState(false)
+  const [episodeProposals, setEpisodeProposals] = useState<ScriptProposal[]>([])
+  const [approvingProposal, setApprovingProposal] = useState<string | null>(null)
 
   // Script mode vs structure mode
   const [mode, setMode] = useState<'overview' | 'script' | 'structure' | 'produccion'>('overview')
@@ -238,6 +318,132 @@ export default function EpisodeBuilderPage() {
   const [applyingStructure, setApplyingStructure] = useState(false)
   const extractTimer = useRef<ReturnType<typeof setInterval> | null>(null)
 
+  // Full analysis (replaces scoreScript + extractedStructure)
+  const [currentAnalysis, setCurrentAnalysis] = useState<CurrentAnalysis | null>(null)
+  const [analyzingFull, setAnalyzingFull] = useState(false)
+  const [analyzeFullError, setAnalyzeFullError] = useState('')
+  const [fullAnalyzeProgress, setFullAnalyzeProgress] = useState(0)
+  const [fullAnalyzeStepLabel, setFullAnalyzeStepLabel] = useState('')
+  const [expandedFinding, setExpandedFinding] = useState<string | null>(null)
+  const [selectedFinding, setSelectedFinding] = useState<Finding | null>(null)
+  const [updatingFinding, setUpdatingFinding] = useState<string | null>(null)
+
+  async function runFullAnalysis() {
+    if (analyzingFull) return
+    setAnalyzingFull(true)
+    setAnalyzeFullError('')
+    try {
+      const res = await fetch(`/api/episodes/${id}/analyze-full`, { method: 'POST' })
+      const data = await res.json()
+      if (res.ok) {
+        // Map the FullAnalysis response to CurrentAnalysis shape
+        setCurrentAnalysis({
+          analysis_id: data.analysis_id,
+          script_version_id: data.script_version_id,
+          overall_score: data.scoring.overall,
+          verdict: data.scoring.verdict,
+          is_current: true,
+          created_at: new Date().toISOString(),
+          categories: data.scoring.categories,
+          findings_count: data.findings_count,
+          pending_count: data.findings_count,
+          structure: data.structure,
+          script_truncated: data.script_truncated,
+          script_total_chars: data.script_total_chars,
+          script_analyzed_chars: data.script_analyzed_chars,
+        })
+        setMode('structure')
+      } else {
+        setAnalyzeFullError(data.error ?? 'Error en el análisis')
+      }
+    } catch {
+      setAnalyzeFullError('Error de conexión')
+    } finally {
+      setAnalyzingFull(false)
+    }
+  }
+
+  // Animated progress for full analysis
+  useEffect(() => {
+    if (!analyzingFull) {
+      setFullAnalyzeProgress(0)
+      setFullAnalyzeStepLabel('')
+      return
+    }
+    const stages = [
+      { pct: 8,  label: 'Leyendo el guión completo...' },
+      { pct: 20, label: 'Identificando actos y escenas...' },
+      { pct: 35, label: 'Evaluando narrativa y estructura...' },
+      { pct: 50, label: 'Analizando personajes y diálogo...' },
+      { pct: 63, label: 'Revisando ritmo y emoción...' },
+      { pct: 75, label: 'Detectando hallazgos editoriales...' },
+      { pct: 85, label: 'Calculando puntuaciones...' },
+      { pct: 92, label: 'Preparando el reporte final...' },
+      { pct: 96, label: 'Guardando análisis en la base de datos...' },
+    ]
+    let stageIndex = 0
+    setFullAnalyzeProgress(stages[0].pct)
+    setFullAnalyzeStepLabel(stages[0].label)
+    const interval = setInterval(() => {
+      stageIndex = Math.min(stageIndex + 1, stages.length - 1)
+      setFullAnalyzeProgress(stages[stageIndex].pct)
+      setFullAnalyzeStepLabel(stages[stageIndex].label)
+    }, 8000)
+    return () => clearInterval(interval)
+  }, [analyzingFull])
+
+  async function updateFindingStatus(finding: Finding, status: Finding['status'], reason?: string) {
+    setUpdatingFinding(finding.id)
+    try {
+      await fetch(`/api/script-findings?id=${finding.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status, discarded_reason: reason }),
+      })
+      setCurrentAnalysis(prev => {
+        if (!prev) return prev
+        return {
+          ...prev,
+          categories: prev.categories.map(cat => ({
+            ...cat,
+            findings: cat.findings.map(f =>
+              f.id === finding.id ? { ...f, status, discarded_reason: reason } : f
+            ),
+          })),
+        }
+      })
+    } finally {
+      setUpdatingFinding(null)
+    }
+  }
+
+  function improveWithNuppa(finding: Finding) {
+    setSelectedFinding(finding)
+    setActiveWorkflow('improve_dialogue')
+    setAiPanelOpen(true)
+    const categoryLabels: Record<string, string> = { narrativa: 'Narrativa', personajes: 'Personajes', dialogo: 'Diálogo', ritmo: 'Ritmo', emocion: 'Emoción' }
+    const prompt = `[Hallazgo seleccionado para mejora]
+Categoría: ${categoryLabels[finding.category] ?? finding.category}
+Prioridad: ${finding.priority.toUpperCase()}
+Hallazgo: ${finding.title}
+Escena: ${finding.scene_ref}
+Evidencia: "${finding.evidence}"
+Problema: ${finding.problem_description}
+Efecto narrativo: ${finding.narrative_effect}
+Objetivo de la mejora: ${finding.improvement_goal}
+
+Trabajemos este hallazgo específico. Propón una revisión concreta del fragmento afectado que resuelva el problema sin alterar la continuidad ni la información narrativa del episodio.
+
+Al final de tu respuesta, incluye OBLIGATORIAMENTE este bloque con el cambio propuesto:
+
+<<<PROPUESTA_NUPPA>>>
+{"scene_ref":"ESC XX","original_text":"texto EXACTO del guión que reemplazas (copia literal del guión)","proposed_text":"texto nuevo completo"}
+<<<FIN_PROPUESTA>>>
+
+El original_text debe ser una cita LITERAL del guión para ubicarlo automáticamente. Si propones varias versiones, usa la recomendada en el bloque JSON.`
+    setTimeout(() => sendToAI('improve_dialogue', prompt), 100)
+  }
+
   // Continuity log entries saved to DB
   type ContinuityEntry = { id: string; type: string; entity: string; description: string; created_at: string }
   const [continuityLog, setContinuityLog] = useState<ContinuityEntry[]>([])
@@ -248,20 +454,25 @@ export default function EpisodeBuilderPage() {
   useEffect(() => { setMounted(true) }, [])
 
   useEffect(() => {
+    fetch(`/api/script-proposals?episode_id=${id}`)
+      .then(r => r.json())
+      .then(data => { if (Array.isArray(data)) setEpisodeProposals(data) })
+      .catch(() => {})
+
     Promise.all([
       fetch(`/api/episodes?id=${id}`).then(r => r.json()),
       fetch(`/api/episode-chat?episode_id=${id}`).then(r => r.json()),
       fetch(`/api/episode-continuity-log?episode_id=${id}`).then(r => r.json()),
       fetch(`/api/episodes/${id}/analyze-script`).then(r => r.json()),
+      fetch(`/api/episodes/${id}/analyses`).then(r => r.json()),
     ])
-      .then(([ep, chat, log, gaps]) => {
+      .then(([ep, chat, log, gaps, analysis]) => {
         if (ep.id) {
           setEpisode(ep)
           setScriptDraft(ep.script ?? '')
         }
         if (Array.isArray(chat) && chat.length > 0) {
           setAiMessages(chat.map((m: { role: 'user' | 'assistant'; content: string }) => ({ role: m.role, content: m.content })))
-          // Restore last active workflow from most recent message
           const lastMsg = chat[chat.length - 1] as { workflow_key?: string }
           if (lastMsg?.workflow_key && lastMsg.workflow_key !== 'general') {
             setActiveWorkflow(lastMsg.workflow_key as WorkflowKey)
@@ -269,6 +480,7 @@ export default function EpisodeBuilderPage() {
         }
         if (Array.isArray(log)) setContinuityLog(log)
         if (Array.isArray(gaps)) setScriptGaps(gaps)
+        if (analysis?.analysis) setCurrentAnalysis(analysis.analysis)
       })
       .catch(() => {})
       .finally(() => setLoading(false))
@@ -391,6 +603,16 @@ export default function EpisodeBuilderPage() {
         if (workflowKey === 'analyze_continuity' && data.result?.changes) {
           setPendingChanges(data.result.changes)
         }
+        // Parse NUPPA proposal block from isJson response
+        const proposalMatchJson = assistantContent.match(/<<<PROPUESTA_NUPPA>>>([\s\S]*?)<<<FIN_PROPUESTA>>>/)
+        if (proposalMatchJson) {
+          try {
+            const parsed = JSON.parse(proposalMatchJson[1].trim())
+            if (parsed.original_text && parsed.proposed_text) {
+              setDetectedProposal({ scene_ref: parsed.scene_ref ?? '', original_text: parsed.original_text, proposed_text: parsed.proposed_text })
+            }
+          } catch { /* ignore */ }
+        }
       } else {
         const reader = res.body?.getReader()
         if (!reader) return
@@ -406,15 +628,26 @@ export default function EpisodeBuilderPage() {
             return m
           })
         }
+        // Parse NUPPA proposal block from streaming response
+        const proposalMatch = assistantContent.match(/<<<PROPUESTA_NUPPA>>>([\s\S]*?)<<<FIN_PROPUESTA>>>/)
+        if (proposalMatch) {
+          try {
+            const parsed = JSON.parse(proposalMatch[1].trim())
+            if (parsed.original_text && parsed.proposed_text) {
+              setDetectedProposal({ scene_ref: parsed.scene_ref ?? '', original_text: parsed.original_text, proposed_text: parsed.proposed_text })
+            }
+          } catch { /* ignore */ }
+        }
       }
 
-      // Persist both messages to DB
+      // Persist both messages to DB (use cleaned content without proposal block)
+      const cleanContent = assistantContent.replace(/<<<PROPUESTA_NUPPA>>>[\s\S]*?<<<FIN_PROPUESTA>>>/g, '').trim()
       await fetch('/api/episode-chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify([
           { episode_id: id, workflow_key: wfKey, role: 'user', content: newMsg.content },
-          { episode_id: id, workflow_key: wfKey, role: 'assistant', content: assistantContent },
+          { episode_id: id, workflow_key: wfKey, role: 'assistant', content: cleanContent },
         ]),
       })
     } catch { /* ignore */ } finally { setAiStreaming(false) }
@@ -441,6 +674,68 @@ export default function EpisodeBuilderPage() {
   async function deleteLogEntry(entryId: string) {
     await fetch(`/api/episode-continuity-log?id=${entryId}`, { method: 'DELETE' })
     setContinuityLog(prev => prev.filter(e => e.id !== entryId))
+  }
+
+  async function saveDetectedProposal() {
+    if (!detectedProposal || !selectedFinding) return
+    setSavingProposal(true)
+    try {
+      const res = await fetch('/api/script-proposals', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          finding_id: selectedFinding.id,
+          episode_id: id,
+          original_text: detectedProposal.original_text,
+          proposed_text: detectedProposal.proposed_text,
+          location_hint: detectedProposal.scene_ref,
+        }),
+      })
+      const data = await res.json()
+      if (res.ok) {
+        setEpisodeProposals(prev => [data, ...prev])
+        setDetectedProposal(null)
+        if (selectedFinding) updateFindingStatus(selectedFinding, 'in_review')
+      }
+    } finally {
+      setSavingProposal(false)
+    }
+  }
+
+  async function approveProposal(proposal: ScriptProposal) {
+    if (!proposal.original_text || !proposal.proposed_text) return
+    setApprovingProposal(proposal.id)
+    try {
+      const newScript = scriptDraft.replace(proposal.original_text, proposal.proposed_text)
+      const applied = newScript !== scriptDraft
+      if (applied) {
+        await fetch(`/api/episodes?id=${id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ script: newScript }),
+        })
+        setScriptDraft(newScript)
+        setEpisode(prev => prev ? { ...prev, script: newScript } : prev)
+      }
+      await fetch(`/api/script-proposals?id=${proposal.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'approved', final_text: proposal.proposed_text }),
+      })
+      setEpisodeProposals(prev => prev.map(p => p.id === proposal.id ? { ...p, status: 'approved' } : p))
+      if (!applied) alert('Propuesta aprobada. El texto original no se encontró exactamente en el guión — aplica el cambio manualmente.')
+    } finally {
+      setApprovingProposal(null)
+    }
+  }
+
+  async function rejectProposalItem(proposal: ScriptProposal) {
+    await fetch(`/api/script-proposals?id=${proposal.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: 'discarded' }),
+    })
+    setEpisodeProposals(prev => prev.map(p => p.id === proposal.id ? { ...p, status: 'discarded' } : p))
   }
 
   async function importGeneratedScenes(scenes: { title: string; description: string; characters: string[]; location: string; duration_est: number; mood: string }[]) {
@@ -510,25 +805,30 @@ export default function EpisodeBuilderPage() {
     if (!episode || !extractedStructure || applyingStructure) return
     setApplyingStructure(true)
 
-    // 1. Clear all existing scenes
-    await fetch(`/api/scenes?episode_id=${id}`, { method: 'DELETE' })
-
     const acts = [...episode.acts].sort((a, b) => a.act_number - b.act_number)
-    const allCreated: Scene[] = []
+    const newScenes: Scene[] = []
 
     for (const extractedAct of extractedStructure.acts) {
       const dbAct = acts.find(a => a.act_number === extractedAct.act_number)
       if (!dbAct) continue
 
-      // 2. Patch act title + goal
-      await fetch(`/api/acts?id=${dbAct.id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: extractedAct.title, goal: extractedAct.goal }),
-      })
+      // Patch act title + goal (only if empty or not set)
+      if (!dbAct.title || !dbAct.goal) {
+        await fetch(`/api/acts?id=${dbAct.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title: extractedAct.title, goal: extractedAct.goal }),
+        })
+      }
 
-      // 3. Create scenes for this act
+      // Add only scenes not already present (match by title, case-insensitive)
+      const existingTitles = new Set(
+        episode.scenes
+          .filter(s => s.act_id === dbAct.id)
+          .map(s => (s.title ?? '').trim().toLowerCase())
+      )
       for (const sc of extractedAct.scenes) {
+        if (existingTitles.has(sc.title.trim().toLowerCase())) continue
         const res = await fetch('/api/scenes', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -541,24 +841,71 @@ export default function EpisodeBuilderPage() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ location_name: sc.location, duration_est: sc.duration_est, mood: sc.mood }),
           })
-          allCreated.push({ ...scene, location_name: sc.location, duration_est: sc.duration_est, mood: sc.mood })
+          newScenes.push({ ...scene, location_name: sc.location, duration_est: sc.duration_est, mood: sc.mood })
         }
       }
     }
 
-    // 4. Update local state
+    // Update local state — add to existing scenes
     setEpisode(prev => prev ? {
       ...prev,
-      scenes: allCreated,
+      scenes: [...prev.scenes, ...newScenes],
       acts: prev.acts.map(a => {
         const ext = extractedStructure.acts.find(ea => ea.act_number === a.act_number)
-        return ext ? { ...a, title: ext.title, goal: ext.goal } : a
+        if (!ext) return a
+        return { ...a, title: a.title || ext.title, goal: a.goal || ext.goal }
       }),
     } : prev)
 
     setExtractedStructure(null)
     setApplyingStructure(false)
     setMode('structure')
+  }
+
+  async function applyAnalysisStructure() {
+    if (!episode || !currentAnalysis?.structure || applyingStructure) return
+    setApplyingStructure(true)
+    const structure = currentAnalysis.structure
+    const acts = [...episode.acts].sort((a, b) => a.act_number - b.act_number)
+    const newScenes: Scene[] = []
+
+    for (const analysisAct of structure.acts) {
+      const dbAct = acts.find(a => a.act_number === analysisAct.act_number)
+      if (!dbAct) continue
+      if (!dbAct.title || !dbAct.goal) {
+        await fetch(`/api/acts?id=${dbAct.id}`, {
+          method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title: analysisAct.title, goal: analysisAct.goal }),
+        })
+      }
+      const existingTitles = new Set(
+        episode.scenes.filter(s => s.act_id === dbAct.id).map(s => (s.title ?? '').trim().toLowerCase())
+      )
+      for (const sc of analysisAct.scenes) {
+        if (existingTitles.has(sc.title.trim().toLowerCase())) continue
+        const res = await fetch('/api/scenes', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ act_id: dbAct.id, episode_id: id, title: sc.title, description: sc.description }),
+        })
+        const scene = await res.json()
+        if (scene.id) {
+          await fetch(`/api/scenes?id=${scene.id}`, {
+            method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ location_name: sc.location, duration_est: sc.duration_est, mood: sc.mood }),
+          })
+          newScenes.push({ ...scene, location_name: sc.location, duration_est: sc.duration_est, mood: sc.mood })
+        }
+      }
+    }
+    setEpisode(prev => prev ? {
+      ...prev,
+      scenes: [...prev.scenes, ...newScenes],
+      acts: prev.acts.map(a => {
+        const ext = structure.acts.find(ea => ea.act_number === a.act_number)
+        return ext ? { ...a, title: a.title || ext.title, goal: a.goal || ext.goal } : a
+      }),
+    } : prev)
+    setApplyingStructure(false)
   }
 
   function scriptCode() {
@@ -597,24 +944,10 @@ export default function EpisodeBuilderPage() {
     if (importingDoc) return
     setImportingDoc(true)
     try {
-      // 1. Get signed upload URL (server sanitizes the path automatically)
-      const pathRes = await fetch('/api/assets/upload-signed-url', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ path: `scripts/${id}/${file.name}` }),
-      })
-      const { signed_url, path } = await pathRes.json()
-      if (!signed_url) throw new Error('No se pudo obtener URL de subida')
-
-      // 2. Upload file
-      await fetch(signed_url, { method: 'PUT', body: file, headers: { 'Content-Type': file.type || 'application/octet-stream' } })
-
-      // 3. Parse text
-      const parseRes = await fetch('/api/parse-doc', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ storage_path: path, filename: file.name }),
-      })
+      // 1. Send file directly to parse-doc (no Storage upload needed)
+      const formData = new FormData()
+      formData.append('file', file)
+      const parseRes = await fetch('/api/parse-doc', { method: 'POST', body: formData })
       const { text, error } = await parseRes.json()
       if (error || !text) throw new Error(error ?? 'No se pudo extraer texto')
 
@@ -628,29 +961,63 @@ export default function EpisodeBuilderPage() {
       setSavedMsg(true)
       setTimeout(() => setSavedMsg(false), 2000)
 
-      // 5. Auto-analyze — switch to produccion tab first so user sees progress
-      setMode('produccion')
-      setAnalyzingScript(true)
-      setAnalysisError('')
-      setAnalysisSummary('')
-      setCanonIssues([])
-      startProgressAnimation()
+      // 4b. Extract metadata in background (logline, sinopsis, tema, cold open, tag)
+      fetch(`/api/episodes/${id}/extract-metadata`, { method: 'POST' })
+        .then(r => r.ok ? r.json() : null)
+        .then(meta => {
+          if (meta) {
+            setEpisode(prev => prev ? {
+              ...prev,
+              logline: meta.logline ?? prev.logline,
+              synopsis: meta.synopsis ?? prev.synopsis,
+              theme: meta.theme ?? prev.theme,
+              cold_open: meta.cold_open ?? prev.cold_open,
+              tag: meta.tag ?? prev.tag,
+            } : prev)
+          }
+        })
+        .catch(() => {})
+
+      // 5. Full editorial analysis (structure + scoring + findings) — show in Estructura tab
+      setMode('structure')
+      setAnalyzingFull(true)
+      setAnalyzeFullError('')
       try {
-        const res = await fetch(`/api/episodes/${id}/analyze-script`, { method: 'POST' })
+        const res = await fetch(`/api/episodes/${id}/analyze-full`, { method: 'POST' })
         const data = await res.json()
         if (res.ok) {
-          setScriptGaps(data.gaps ?? [])
-          setCanonIssues(data.canon_issues ?? [])
-          setAnalysisSummary(data.summary ?? '')
-          stopProgressAnimation(true)
+          setCurrentAnalysis({
+            analysis_id: data.analysis_id,
+            script_version_id: data.script_version_id,
+            overall_score: data.scoring.overall,
+            verdict: data.scoring.verdict,
+            is_current: true,
+            created_at: new Date().toISOString(),
+            categories: data.scoring.categories,
+            findings_count: data.findings_count,
+            pending_count: data.findings_count,
+            structure: data.structure,
+          })
         } else {
-          setAnalysisError(data.error ?? 'Error en el análisis')
-          stopProgressAnimation(false)
+          setAnalyzeFullError(data.error ?? 'Error en el análisis')
         }
       } catch {
-        setAnalysisError('Error al conectar con el servidor')
-        stopProgressAnimation(false)
+        setAnalyzeFullError('Error al conectar con el servidor')
+      } finally {
+        setAnalyzingFull(false)
       }
+
+      // 6. Asset gap analysis in background (for Producción tab)
+      fetch(`/api/episodes/${id}/analyze-script`, { method: 'POST' })
+        .then(r => r.ok ? r.json() : null)
+        .then(data => {
+          if (data) {
+            setScriptGaps(data.gaps ?? [])
+            setCanonIssues(data.canon_issues ?? [])
+            setAnalysisSummary(data.summary ?? '')
+          }
+        })
+        .catch(() => {})
     } catch (e) {
       alert(`Error al importar: ${e instanceof Error ? e.message : String(e)}`)
     } finally {
@@ -752,6 +1119,21 @@ export default function EpisodeBuilderPage() {
       setAnalysisError('Error al conectar con el servidor')
       stopProgressAnimation(false)
     }
+  }
+
+  async function resetGap(gap: AssetGap) {
+    if (gap.id) {
+      await fetch(`/api/episodes/${id}/analyze-script`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ gap_id: gap.id, status: 'pending' }),
+      }).catch(() => {})
+    }
+    setScriptGaps(prev => prev.map(g =>
+      g.entity_name === gap.entity_name && g.view_type === gap.view_type
+        ? { ...g, status: 'pending' }
+        : g
+    ))
   }
 
   async function createGapSlot(gap: AssetGap, gapIndex: string) {
@@ -1094,6 +1476,43 @@ export default function EpisodeBuilderPage() {
           {/* SCRIPT MODE */}
           {mode === 'script' && (
             <div>
+              {/* PENDING NUPPA PROPOSALS */}
+              {episodeProposals.filter(p => p.status === 'pending' || !p.status).length > 0 && (
+                <div style={{ marginBottom: '1.5rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '0.75rem' }}>
+                    <span style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '0.9rem', letterSpacing: '0.1em', color: '#9B6FD4' }}>
+                      ✦ PROPUESTAS DE NUPPA — {episodeProposals.filter(p => p.status === 'pending' || !p.status).length} pendiente{episodeProposals.filter(p => p.status === 'pending' || !p.status).length > 1 ? 's' : ''}
+                    </span>
+                  </div>
+                  {episodeProposals.filter(p => p.status === 'pending' || !p.status).map(proposal => (
+                    <div key={proposal.id} style={{ background: 'rgba(155,111,212,0.05)', border: '1px solid rgba(155,111,212,0.2)', borderRadius: '8px', overflow: 'hidden', marginBottom: '0.75rem' }}>
+                      <div style={{ padding: '0.75rem 1rem', background: 'rgba(155,111,212,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#9B6FD4', background: 'rgba(155,111,212,0.15)', borderRadius: '20px', padding: '2px 10px' }}>
+                          {proposal.location_hint ?? 'PROPUESTA NUPPA'}
+                        </span>
+                        <div style={{ display: 'flex', gap: '6px' }}>
+                          <button onClick={() => approveProposal(proposal)} disabled={approvingProposal === proposal.id} style={{ padding: '5px 14px', background: 'rgba(78,205,196,0.15)', border: '1px solid rgba(78,205,196,0.35)', borderRadius: '4px', color: '#4ECDC4', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'IBM Plex Sans, sans-serif' }}>
+                            {approvingProposal === proposal.id ? 'Aplicando...' : '✓ Aprobar e incorporar'}
+                          </button>
+                          <button onClick={() => rejectProposalItem(proposal)} style={{ padding: '5px 10px', background: 'transparent', border: '1px solid rgba(240,235,225,0.08)', borderRadius: '4px', color: 'rgba(240,235,225,0.3)', fontSize: '0.75rem', cursor: 'pointer', fontFamily: 'IBM Plex Sans, sans-serif' }}>
+                            Rechazar
+                          </button>
+                        </div>
+                      </div>
+                      <div style={{ padding: '0.75rem 1rem' }}>
+                        <div style={{ fontSize: '0.6rem', letterSpacing: '0.1em', color: 'rgba(240,235,225,0.25)', marginBottom: '4px', fontWeight: 600 }}>TEXTO ORIGINAL</div>
+                        <div style={{ background: 'rgba(212,37,106,0.07)', borderLeft: '2px solid rgba(212,37,106,0.35)', padding: '8px 12px', borderRadius: '0 4px 4px 0', marginBottom: '8px', fontSize: '0.78rem', fontFamily: 'Courier New, monospace', color: 'rgba(240,235,225,0.45)', lineHeight: 1.7, textDecoration: 'line-through' }}>
+                          {proposal.original_text}
+                        </div>
+                        <div style={{ fontSize: '0.6rem', letterSpacing: '0.1em', color: 'rgba(240,235,225,0.25)', marginBottom: '4px', fontWeight: 600 }}>PROPUESTA NUPPA</div>
+                        <div style={{ background: 'rgba(78,205,196,0.06)', borderLeft: '2px solid rgba(78,205,196,0.35)', padding: '8px 12px', borderRadius: '0 4px 4px 0', fontSize: '0.78rem', fontFamily: 'Courier New, monospace', color: '#F0EBE1', lineHeight: 1.7 }}>
+                          {proposal.proposed_text}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '0.5rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                   <div style={{ ...SECTION_HEADER, marginBottom: 0 }}>Guión</div>
@@ -1218,130 +1637,473 @@ export default function EpisodeBuilderPage() {
           {/* STRUCTURE MODE */}
           {mode === 'structure' && (
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                <div style={{ ...SECTION_HEADER, marginBottom: 0 }}>Estructura del episodio</div>
-                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                  {episode.script && episode.script.trim().length > 100 && !extractingStructure && !extractedStructure && (
-                    <button
-                      onClick={extractStructureFromScript}
-                      style={{ padding: '5px 12px', background: 'rgba(212,37,106,0.15)', border: '1px solid rgba(212,37,106,0.5)', borderRadius: '3px', color: '#D4256A', fontSize: '0.75rem', cursor: 'pointer', fontFamily: 'IBM Plex Sans, sans-serif', fontWeight: 600 }}
-                    >
-                      <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style={{ marginRight: '5px', verticalAlign: 'middle' }}><path d="M3 4h10v1.5H3zM3 7.5h10V9H3zM3 11h6v1.5H3z" fill="currentColor" opacity=".8"/></svg>
-                      Extraer del guión
-                    </button>
-                  )}
-                  <button
-                    onClick={() => activateWorkflow('generate_scenes')}
-                    style={{ padding: '5px 12px', background: 'rgba(74,143,232,0.10)', border: '1px solid rgba(74,143,232,0.25)', borderRadius: '3px', color: '#4A8FE8', fontSize: '0.75rem', cursor: 'pointer', fontFamily: 'IBM Plex Sans, sans-serif' }}
-                  >
-                    <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style={{ marginRight: '4px', verticalAlign: 'middle' }}><rect x="2" y="3" width="12" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.2"/><path d="M6.5 6.5L10 8l-3.5 1.5V6.5z" fill="currentColor"/></svg>
-                    Generar con AI
-                  </button>
-                </div>
-              </div>
 
-              {/* Extraction loading */}
-              {extractingStructure && (
-                <div style={{ background: 'rgba(212,37,106,0.04)', border: '1px solid rgba(212,37,106,0.15)', borderRadius: '6px', padding: '1.5rem', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                  <div style={{ width: '32px', height: '32px', flexShrink: 0, position: 'relative' }}>
-                    <svg width="32" height="32" viewBox="0 0 32 32" style={{ animation: 'spin 1.2s linear infinite' }}>
-                      <circle cx="16" cy="16" r="13" stroke="rgba(212,37,106,0.15)" strokeWidth="2.5" fill="none"/>
-                      <path d="M16 3 A13 13 0 0 1 29 16" stroke="#D4256A" strokeWidth="2.5" fill="none" strokeLinecap="round"/>
-                    </svg>
-                  </div>
+              {/* ── ANALYZING LOADER ──────────────────────────────────── */}
+              {analyzingFull && (
+                <div style={{ background: 'rgba(155,111,212,0.06)', border: '1px solid rgba(155,111,212,0.25)', borderRadius: '12px', padding: '2.5rem 2rem', marginBottom: '2rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem', textAlign: 'center' }}>
+                  {/* Title */}
                   <div>
-                    <div style={{ fontSize: '0.8rem', color: '#F0EBE1', fontWeight: 600, marginBottom: '3px' }}>Analizando guión...</div>
-                    <div style={{ fontSize: '0.7rem', color: 'rgba(240,235,225,0.45)' }}>{extractStep}</div>
+                    <div style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '1.6rem', letterSpacing: '0.12em', color: '#9B6FD4', marginBottom: '6px' }}>NUPPA ESTÁ ANALIZANDO EL GUIÓN</div>
+                    <div style={{ fontSize: '0.875rem', color: 'rgba(240,235,225,0.4)', lineHeight: 1.6 }}>Análisis editorial completo — estructura, personajes, diálogo, ritmo y emoción</div>
+                  </div>
+                  {/* Progress bar */}
+                  <div style={{ width: '100%', maxWidth: '480px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                      <div style={{ fontSize: '0.8rem', color: 'rgba(240,235,225,0.55)', fontStyle: 'italic' }}>{fullAnalyzeStepLabel}</div>
+                      <div style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '1.1rem', color: '#9B6FD4', letterSpacing: '0.08em' }}>{fullAnalyzeProgress}%</div>
+                    </div>
+                    <div style={{ height: '6px', background: 'rgba(155,111,212,0.1)', borderRadius: '10px', overflow: 'hidden' }}>
+                      <div style={{ height: '100%', width: `${fullAnalyzeProgress}%`, background: 'linear-gradient(90deg, #D4256A, #9B6FD4, #4A8FE8, #4ECDC4)', borderRadius: '10px', transition: 'width 1.5s ease', boxShadow: '0 0 12px rgba(155,111,212,0.5)' }} />
+                    </div>
+                  </div>
+                  {/* Stage dots */}
+                  <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start' }}>
+                    {[
+                      { label: 'Guión',      pct: 20, color: '#D4256A' },
+                      { label: 'Estructura', pct: 35, color: '#C44490' },
+                      { label: 'Personajes', pct: 50, color: '#9B6FD4' },
+                      { label: 'Diálogo',    pct: 63, color: '#7B9FE8' },
+                      { label: 'Ritmo',      pct: 75, color: '#4A8FE8' },
+                      { label: 'Hallazgos',  pct: 85, color: '#4ECDC4' },
+                      { label: 'Guardando',  pct: 96, color: '#F5A52A' },
+                    ].map(stage => {
+                      const done = fullAnalyzeProgress >= stage.pct
+                      const active = fullAnalyzeProgress >= stage.pct - 15 && fullAnalyzeProgress < stage.pct
+                      return (
+                        <div key={stage.label} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                          <div style={{
+                            width: active ? '18px' : '14px',
+                            height: active ? '18px' : '14px',
+                            borderRadius: '50%',
+                            background: done ? stage.color : active ? `${stage.color}60` : 'rgba(240,235,225,0.06)',
+                            border: `2px solid ${done ? stage.color : active ? `${stage.color}80` : 'rgba(240,235,225,0.1)'}`,
+                            transition: 'all 0.5s ease',
+                            boxShadow: done ? `0 0 10px ${stage.color}70` : active ? `0 0 14px ${stage.color}50` : 'none',
+                          }} />
+                          <div style={{ fontSize: '0.65rem', fontWeight: done ? 600 : 400, color: done ? stage.color : active ? `${stage.color}90` : 'rgba(240,235,225,0.2)', letterSpacing: '0.06em', whiteSpace: 'nowrap', transition: 'color 0.5s ease' }}>{stage.label}</div>
+                        </div>
+                      )
+                    })}
                   </div>
                 </div>
               )}
 
-              {/* Extracted structure preview */}
-              {extractedStructure && !applyingStructure && (
-                <div style={{ background: '#0D0920', border: '1px solid rgba(212,37,106,0.2)', borderRadius: '6px', marginBottom: '1.5rem', overflow: 'hidden' }}>
-                  {/* Header */}
-                  <div style={{ background: 'rgba(212,37,106,0.08)', padding: '0.875rem 1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <div>
-                      <div style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '1rem', letterSpacing: '0.1em', color: '#D4256A' }}>
-                        ESTRUCTURA EXTRAÍDA — {extractedStructure.total_scenes} ESCENAS
+              {/* ── EMPTY STATE — NO SCRIPT ──────────────────────────── */}
+              {!analyzingFull && !currentAnalysis && (!episode.script || episode.script.trim().length < 100) && (
+                <div style={{ padding: '3rem 2rem', textAlign: 'center' }}>
+                  <div style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '1.8rem', letterSpacing: '0.1em', color: 'rgba(240,235,225,0.15)', marginBottom: '2.5rem' }}>ANÁLISIS EDITORIAL</div>
+                  <div style={{ display: 'flex', gap: '0', justifyContent: 'center', maxWidth: '600px', margin: '0 auto 2.5rem' }}>
+                    {[
+                      { n: '01', label: 'Importar guión', desc: 'Sube el .docx o pega el texto en la pestaña Guión', color: '#D4256A' },
+                      { n: '02', label: 'Análisis automático', desc: 'NUPPA evalúa estructura, personajes, ritmo y emoción', color: '#9B6FD4' },
+                      { n: '03', label: 'Mejorar con NUPPA', desc: 'Trabaja hallazgo por hallazgo con el asistente AI', color: '#4ECDC4' },
+                    ].map((step, i) => (
+                      <div key={step.n} style={{ flex: 1, padding: '1.5rem 1rem', position: 'relative' }}>
+                        {i < 2 && <div style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)', width: '1px', height: '60%', background: 'rgba(240,235,225,0.06)' }} />}
+                        <div style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '2.5rem', color: step.color, opacity: 0.3, lineHeight: 1, marginBottom: '8px' }}>{step.n}</div>
+                        <div style={{ fontSize: '0.875rem', fontWeight: 700, color: '#F0EBE1', marginBottom: '6px' }}>{step.label}</div>
+                        <div style={{ fontSize: '0.75rem', color: 'rgba(240,235,225,0.35)', lineHeight: 1.6 }}>{step.desc}</div>
                       </div>
-                      <div style={{ fontSize: '0.65rem', color: 'rgba(240,235,225,0.4)', marginTop: '2px' }}>
-                        Revisa y aplica al episodio
-                      </div>
-                    </div>
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                      <button
-                        onClick={() => setExtractedStructure(null)}
-                        style={{ padding: '5px 12px', background: 'transparent', border: '1px solid rgba(240,235,225,0.12)', borderRadius: '3px', color: 'rgba(240,235,225,0.4)', fontSize: '0.7rem', cursor: 'pointer', fontFamily: 'IBM Plex Sans, sans-serif' }}
-                      >
-                        Descartar
-                      </button>
-                      <button
-                        onClick={applyExtractedStructure}
-                        style={{ padding: '5px 14px', background: '#D4256A', border: 'none', borderRadius: '3px', color: '#F0EBE1', fontSize: '0.7rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'IBM Plex Sans, sans-serif' }}
-                      >
-                        Aplicar al episodio →
-                      </button>
-                    </div>
+                    ))}
                   </div>
+                  <button
+                    onClick={() => setMode('script')}
+                    style={{ padding: '12px 28px', background: 'rgba(212,37,106,0.15)', border: '1px solid rgba(212,37,106,0.4)', borderRadius: '6px', color: '#D4256A', fontSize: '0.9rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'IBM Plex Sans, sans-serif' }}
+                  >
+                    → Ir a importar guión
+                  </button>
+                </div>
+              )}
 
-                  {/* Acts preview */}
-                  <div style={{ padding: '1rem 1.25rem', display: 'flex', gap: '0.75rem', flexDirection: 'column' }}>
-                    {extractedStructure.acts.map(act => (
-                      <div key={act.act_number} style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(212,37,106,0.08)', borderRadius: '4px', overflow: 'hidden' }}>
-                        <div style={{ padding: '0.625rem 0.875rem', background: 'rgba(212,37,106,0.05)', display: 'flex', alignItems: 'baseline', gap: '0.75rem' }}>
-                          <span style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '0.85rem', letterSpacing: '0.1em', color: '#D4256A', flexShrink: 0 }}>ACTO {act.act_number}</span>
-                          <span style={{ fontSize: '0.8rem', color: '#F0EBE1', fontWeight: 600 }}>{act.title}</span>
-                          <span style={{ fontSize: '0.65rem', color: 'rgba(240,235,225,0.35)', marginLeft: 'auto', flexShrink: 0 }}>{act.scenes.length} esc</span>
+              {/* ── EMPTY STATE — SCRIPT EXISTS BUT NO ANALYSIS ──────── */}
+              {!analyzingFull && !currentAnalysis && episode.script && episode.script.trim().length >= 100 && (
+                <div style={{ marginBottom: '2rem' }}>
+                  {/* Steps */}
+                  <div style={{ display: 'flex', gap: '0', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '10px', marginBottom: '1.5rem', overflow: 'hidden' }}>
+                    {[
+                      { n: '01', label: 'Guión importado', done: true, color: '#4ECDC4' },
+                      { n: '02', label: 'Análisis editorial', done: false, color: '#9B6FD4' },
+                      { n: '03', label: 'Mejoras con NUPPA', done: false, color: '#F5A52A' },
+                    ].map((step, i) => (
+                      <div key={step.n} style={{ flex: 1, padding: '1.25rem 1rem', display: 'flex', alignItems: 'center', gap: '10px', borderRight: i < 2 ? '1px solid rgba(255,255,255,0.05)' : 'none', background: step.done ? 'rgba(78,205,196,0.04)' : 'transparent' }}>
+                        <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: step.done ? 'rgba(78,205,196,0.15)' : 'rgba(255,255,255,0.04)', border: `1px solid ${step.done ? 'rgba(78,205,196,0.4)' : 'rgba(255,255,255,0.08)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          {step.done ? (
+                            <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5L13 4" stroke="#4ECDC4" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                          ) : (
+                            <span style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '0.75rem', color: 'rgba(240,235,225,0.2)', letterSpacing: '0.05em' }}>{step.n}</span>
+                          )}
                         </div>
-                        {act.goal && (
-                          <div style={{ padding: '4px 0.875rem 6px', fontSize: '0.65rem', color: 'rgba(240,235,225,0.35)', fontStyle: 'italic' }}>{act.goal}</div>
-                        )}
-                        <div style={{ padding: '0.375rem 0.875rem 0.75rem', display: 'flex', flexDirection: 'column', gap: '0.375rem' }}>
-                          {act.scenes.map((sc, i) => (
-                            <div key={i} style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start' }}>
-                              <span style={{ fontSize: '0.55rem', fontFamily: 'monospace', color: 'rgba(240,235,225,0.2)', marginTop: '2px', flexShrink: 0, minWidth: '32px' }}>{sc.scene_ref}</span>
-                              <div style={{ flex: 1 }}>
-                                <span style={{ fontSize: '0.7rem', color: '#F0EBE1', fontWeight: 600 }}>{sc.title}</span>
-                                {sc.location && <span style={{ fontSize: '0.65rem', color: 'rgba(240,235,225,0.3)', marginLeft: '6px' }}>{sc.location}</span>}
-                                <div style={{ fontSize: '0.65rem', color: 'rgba(240,235,225,0.4)', lineHeight: 1.4, marginTop: '1px' }}>{sc.description}</div>
-                              </div>
-                              <span style={{ fontSize: '0.55rem', color: 'rgba(240,235,225,0.2)', flexShrink: 0, fontFamily: 'monospace' }}>{sc.duration_est}s</span>
-                            </div>
-                          ))}
+                        <div>
+                          <div style={{ fontSize: '0.8rem', fontWeight: 700, color: step.done ? '#4ECDC4' : 'rgba(240,235,225,0.4)' }}>{step.label}</div>
+                          {!step.done && <div style={{ fontSize: '0.65rem', color: 'rgba(240,235,225,0.2)' }}>Pendiente</div>}
+                          {step.done && <div style={{ fontSize: '0.65rem', color: 'rgba(78,205,196,0.5)' }}>Listo</div>}
                         </div>
                       </div>
                     ))}
                   </div>
-
-                  {/* AI notes */}
-                  {extractedStructure.notes && (
-                    <div style={{ padding: '0.75rem 1.25rem', borderTop: '1px solid rgba(212,37,106,0.08)', display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
-                      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0, marginTop: '1px', color: '#F5A52A' }}><circle cx="8" cy="8" r="6.5" stroke="currentColor" strokeWidth="1.2"/><path d="M8 7v4M8 5.5v.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>
-                      <p style={{ fontSize: '0.7rem', color: 'rgba(240,235,225,0.5)', lineHeight: 1.6, margin: 0 }}>{extractedStructure.notes}</p>
+                  {/* CTA */}
+                  <div style={{ background: 'rgba(155,111,212,0.06)', border: '1px solid rgba(155,111,212,0.2)', borderRadius: '10px', padding: '2rem', textAlign: 'center' }}>
+                    <div style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '1.5rem', letterSpacing: '0.1em', color: '#9B6FD4', marginBottom: '8px' }}>PASO 2 — ANÁLISIS EDITORIAL</div>
+                    <div style={{ fontSize: '0.875rem', color: 'rgba(240,235,225,0.45)', marginBottom: '1.5rem', lineHeight: 1.6 }}>
+                      NUPPA analizará el guión completo: estructura dramática, evaluación por dimensiones<br/>e identificación de hallazgos concretos para mejorar.
                     </div>
-                  )}
+                    {/* Script size info */}
+                    {(() => {
+                      const chars = episode.script?.length ?? 0
+                      const LIMIT = 28000
+                      const willTruncate = chars > LIMIT
+                      const pct = Math.min(100, Math.round((chars / LIMIT) * 100))
+                      return (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '1.25rem', padding: '10px 14px', background: willTruncate ? 'rgba(245,165,42,0.06)' : 'rgba(78,205,196,0.04)', border: `1px solid ${willTruncate ? 'rgba(245,165,42,0.25)' : 'rgba(78,205,196,0.15)'}`, borderRadius: '6px' }}>
+                          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0, color: willTruncate ? '#F5A52A' : '#4ECDC4' }}><path d="M3 4h10v1.5H3zM3 7.5h10V9H3zM3 11h6v1.5H3z" fill="currentColor" opacity=".8"/></svg>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ height: '4px', background: 'rgba(255,255,255,0.06)', borderRadius: '4px', overflow: 'hidden', marginBottom: '4px' }}>
+                              <div style={{ height: '100%', width: `${pct}%`, background: willTruncate ? '#F5A52A' : '#4ECDC4', borderRadius: '4px' }} />
+                            </div>
+                            <div style={{ fontSize: '0.7rem', color: willTruncate ? '#F5A52A' : 'rgba(78,205,196,0.7)' }}>
+                              {willTruncate
+                                ? `⚠️ Guión largo (${(chars/1000).toFixed(1)}k chars) — se analizarán los primeros 28,000 caracteres. Las escenas del final podrían no estar incluidas.`
+                                : `✓ Guión completo (${(chars/1000).toFixed(1)}k chars) — todo el contenido será analizado.`
+                              }
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    })()}
+                    <button
+                      onClick={runFullAnalysis}
+                      style={{ padding: '14px 36px', background: 'linear-gradient(135deg, rgba(155,111,212,0.3), rgba(155,111,212,0.15))', border: '1px solid rgba(155,111,212,0.5)', borderRadius: '8px', color: '#B08FE8', fontSize: '1rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'IBM Plex Sans, sans-serif', letterSpacing: '0.05em', display: 'inline-flex', alignItems: 'center', gap: '10px' }}
+                    >
+                      <svg width="18" height="18" viewBox="0 0 16 16" fill="none"><path d="M8 2l1.8 3.6L14 6.3l-3 2.9.7 4.1L8 11.3l-3.7 1.9.7-4.1-3-2.9 4.2-.7z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/></svg>
+                      Analizar guión con NUPPA
+                    </button>
+                    {analyzeFullError && <div style={{ marginTop: '1rem', fontSize: '0.75rem', color: '#D4256A' }}>{analyzeFullError}</div>}
+                  </div>
                 </div>
               )}
 
-              {/* Applying indicator */}
-              {applyingStructure && (
-                <div style={{ background: 'rgba(212,37,106,0.06)', border: '1px solid rgba(212,37,106,0.2)', borderRadius: '6px', padding: '1rem 1.25rem', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                  <svg width="16" height="16" viewBox="0 0 32 32" style={{ animation: 'spin 1.2s linear infinite', flexShrink: 0 }}>
-                    <circle cx="16" cy="16" r="13" stroke="rgba(212,37,106,0.15)" strokeWidth="2.5" fill="none"/>
-                    <path d="M16 3 A13 13 0 0 1 29 16" stroke="#D4256A" strokeWidth="2.5" fill="none" strokeLinecap="round"/>
-                  </svg>
-                  <span style={{ fontSize: '0.8rem', color: '#F0EBE1' }}>Aplicando estructura al episodio...</span>
-                </div>
-              )}
+              {/* ── FULL ANALYSIS RESULTS ─────────────────────────────── */}
+              {!analyzingFull && currentAnalysis && (() => {
+                const C = 2 * Math.PI * 36
+                const scoreColor = (s: number) => s >= 4 ? '#4ECDC4' : s === 3 ? '#F5A52A' : '#D4256A'
+                const scoreBg = (s: number) => s >= 4 ? 'rgba(78,205,196,0.06)' : s === 3 ? 'rgba(245,165,42,0.06)' : 'rgba(212,37,106,0.06)'
+                const scoreBorder = (s: number) => s >= 4 ? 'rgba(78,205,196,0.25)' : s === 3 ? 'rgba(245,165,42,0.25)' : 'rgba(212,37,106,0.25)'
+                const overallColor = scoreColor(currentAnalysis.overall_score)
+                const statusIcon = (s: string) => {
+                  if (s === 'implemented' || s === 'verified') return <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5L13 4" stroke="#4ECDC4" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                  if (s === 'discarded') return <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="rgba(240,235,225,0.25)" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                  if (s === 'in_review') return <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="#F5A52A" strokeWidth="1.3"/><path d="M8 5v4M8 11v.5" stroke="#F5A52A" strokeWidth="1.4" strokeLinecap="round"/></svg>
+                  return <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="rgba(240,235,225,0.2)" strokeWidth="1.3"/></svg>
+                }
+                const priorityBadge = (p: string) => {
+                  const cfg = { alta: { bg: 'rgba(212,37,106,0.15)', border: 'rgba(212,37,106,0.3)', color: '#D4256A', label: 'ALTA' }, media: { bg: 'rgba(245,165,42,0.12)', border: 'rgba(245,165,42,0.3)', color: '#F5A52A', label: 'MEDIA' }, baja: { bg: 'rgba(240,235,225,0.05)', border: 'rgba(240,235,225,0.1)', color: 'rgba(240,235,225,0.35)', label: 'BAJA' } }[p] ?? { bg: 'rgba(240,235,225,0.05)', border: 'rgba(240,235,225,0.1)', color: 'rgba(240,235,225,0.35)', label: p.toUpperCase() }
+                  return <span style={{ fontSize: '0.55rem', fontWeight: 700, letterSpacing: '0.1em', color: cfg.color, background: cfg.bg, border: `1px solid ${cfg.border}`, borderRadius: '20px', padding: '2px 7px', flexShrink: 0 }}>{cfg.label}</span>
+                }
+                const overallFill = (currentAnalysis.overall_score / 5) * (2 * Math.PI * 52)
+                const overallC = 2 * Math.PI * 52
+                return (
+                  <>
+                    {/* ── HERO SCORE CARD ──────────────────────────────── */}
+                    <div style={{ position: 'relative', borderRadius: '12px', overflow: 'hidden', marginBottom: '1.5rem', minHeight: '200px' }}>
+                      {/* Background: hero image or gradient */}
+                      {episode.hero_image_path ? (
+                        <img src={episode.hero_image_path} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.25 }} />
+                      ) : (
+                        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg, rgba(155,111,212,0.15), rgba(212,37,106,0.1), rgba(78,205,196,0.08))' }} />
+                      )}
+                      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(10,7,25,0.4) 0%, rgba(10,7,25,0.85) 100%)' }} />
+                      {/* Content */}
+                      <div style={{ position: 'relative', padding: '1.75rem 2rem', display: 'flex', alignItems: 'center', gap: '2rem' }}>
+                        {/* Overall circle */}
+                        <div style={{ flexShrink: 0, position: 'relative' }}>
+                          <svg width="130" height="130" viewBox="0 0 130 130">
+                            <circle cx="65" cy="65" r="52" fill="none" stroke="rgba(240,235,225,0.06)" strokeWidth="8"/>
+                            <circle cx="65" cy="65" r="52" fill="none" stroke={overallColor} strokeWidth="8"
+                              strokeDasharray={`${overallFill} ${overallC}`}
+                              strokeDashoffset={overallC * 0.25}
+                              strokeLinecap="round"
+                              style={{ transition: 'stroke-dasharray 0.8s ease', filter: `drop-shadow(0 0 8px ${overallColor}55)` }}
+                            />
+                            <text x="65" y="60" textAnchor="middle" dominantBaseline="central" fill={overallColor} fontSize="30" fontWeight="700" fontFamily="Bebas Neue, Impact, sans-serif">{currentAnalysis.overall_score.toFixed(1)}</text>
+                            <text x="65" y="80" textAnchor="middle" dominantBaseline="central" fill="rgba(240,235,225,0.3)" fontSize="11" fontFamily="IBM Plex Sans, sans-serif">/5.0</text>
+                          </svg>
+                        </div>
+                        {/* Info */}
+                        <div style={{ flex: 1 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                            <div style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '1.5rem', letterSpacing: '0.08em', color: '#F0EBE1' }}>Análisis editorial</div>
+                            <div style={{ fontSize: '0.6rem', letterSpacing: '0.12em', color: overallColor, background: `${overallColor}15`, border: `1px solid ${overallColor}40`, borderRadius: '20px', padding: '2px 10px', fontWeight: 700 }}>
+                              {currentAnalysis.overall_score >= 4 ? 'SÓLIDO' : currentAnalysis.overall_score >= 3 ? 'ACEPTABLE' : 'REVISAR'}
+                            </div>
+                          </div>
+                          <div style={{ fontSize: '0.9rem', color: 'rgba(240,235,225,0.65)', lineHeight: 1.7, marginBottom: '1rem', maxWidth: '520px' }}>{currentAnalysis.verdict}</div>
+                          <div style={{ display: 'flex', gap: '1.5rem' }}>
+                            <div style={{ fontSize: '0.75rem', color: 'rgba(240,235,225,0.35)' }}>
+                              <span style={{ color: '#F5A52A', fontWeight: 700, fontSize: '1.1rem', fontFamily: 'Bebas Neue, Impact, sans-serif' }}>{currentAnalysis.findings_count}</span> hallazgos
+                            </div>
+                            <div style={{ fontSize: '0.75rem', color: 'rgba(240,235,225,0.35)' }}>
+                              <span style={{ color: '#4ECDC4', fontWeight: 700, fontSize: '1.1rem', fontFamily: 'Bebas Neue, Impact, sans-serif' }}>{currentAnalysis.structure?.total_scenes ?? 0}</span> escenas detectadas
+                            </div>
+                            <div style={{ fontSize: '0.75rem', color: 'rgba(240,235,225,0.35)' }}>
+                              <span style={{ color: 'rgba(240,235,225,0.5)', fontWeight: 700, fontSize: '1.1rem', fontFamily: 'Bebas Neue, Impact, sans-serif' }}>{currentAnalysis.pending_count}</span> pendientes
+                            </div>
+                          </div>
+                        </div>
+                        {/* Reevaluar button */}
+                        <button
+                          onClick={runFullAnalysis}
+                          style={{ flexShrink: 0, padding: '10px 18px', background: 'rgba(155,111,212,0.12)', border: '1px solid rgba(155,111,212,0.3)', borderRadius: '6px', color: '#9B6FD4', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'IBM Plex Sans, sans-serif', display: 'flex', alignItems: 'center', gap: '7px' }}
+                        >
+                          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 8a6 6 0 1 1 1.5 4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/><path d="M2 12V8h4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                          Reevaluar guión
+                        </button>
+                      </div>
+                    </div>
 
+                    {/* ── TRUNCATION WARNING ───────────────────────────── */}
+                    {currentAnalysis.script_truncated && (
+                      <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', background: 'rgba(245,165,42,0.07)', border: '1px solid rgba(245,165,42,0.3)', borderRadius: '8px', padding: '12px 16px', marginBottom: '1.25rem' }}>
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0, marginTop: '1px', color: '#F5A52A' }}><path d="M8 2L14.5 13H1.5L8 2z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round"/><path d="M8 6v3.5M8 11v.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/></svg>
+                        <div>
+                          <div style={{ fontSize: '0.8rem', fontWeight: 600, color: '#F5A52A', marginBottom: '3px' }}>Análisis parcial — guión largo</div>
+                          <div style={{ fontSize: '0.75rem', color: 'rgba(245,165,42,0.75)', lineHeight: 1.5 }}>
+                            Se analizaron {((currentAnalysis.script_analyzed_chars ?? 0) / 1000).toFixed(1)}k de {((currentAnalysis.script_total_chars ?? 0) / 1000).toFixed(1)}k caracteres del guión. Las escenas de la segunda mitad pueden no estar reflejadas en los hallazgos. Considera dividir el guión o revisar manualmente las escenas finales.
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* ── SCORE CIRCLES ────────────────────────────────── */}
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '0.875rem', marginBottom: '2rem' }}>
+                      {currentAnalysis.categories.map(cat => {
+                        const fill = (cat.score / 5) * C
+                        const color = scoreColor(cat.score)
+                        const pendingCount = cat.findings.filter(f => f.status === 'pending' || f.status === 'in_review').length
+                        return (
+                          <div key={cat.key} style={{ background: `linear-gradient(135deg, ${scoreBg(cat.score)}, rgba(10,7,25,0.4))`, border: `1px solid ${scoreBorder(cat.score)}`, borderRadius: '10px', padding: '1.5rem 1rem 1.25rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem', position: 'relative', backdropFilter: 'blur(8px)' }}>
+                            {pendingCount > 0 && (
+                              <div style={{ position: 'absolute', top: '10px', right: '10px', width: '18px', height: '18px', borderRadius: '50%', background: '#D4256A', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.6rem', fontWeight: 700, color: '#fff' }}>{pendingCount}</div>
+                            )}
+                            <svg width="90" height="90" viewBox="0 0 90 90">
+                              <circle cx="45" cy="45" r="36" fill="none" stroke="rgba(240,235,225,0.05)" strokeWidth="6"/>
+                              <circle cx="45" cy="45" r="36" fill="none" stroke={color} strokeWidth="6"
+                                strokeDasharray={`${fill} ${C}`}
+                                strokeDashoffset={C * 0.25}
+                                strokeLinecap="round"
+                                style={{ transition: 'stroke-dasharray 0.7s ease', filter: `drop-shadow(0 0 6px ${color}44)` }}
+                              />
+                              <text x="45" y="42" textAnchor="middle" dominantBaseline="central" fill={color} fontSize="24" fontWeight="700" fontFamily="Bebas Neue, Impact, sans-serif">{cat.score}</text>
+                              <text x="45" y="56" textAnchor="middle" dominantBaseline="central" fill="rgba(240,235,225,0.2)" fontSize="10" fontFamily="IBM Plex Sans, sans-serif">/5</text>
+                            </svg>
+                            <div style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '0.9rem', letterSpacing: '0.12em', color: '#F0EBE1', textAlign: 'center' }}>{cat.label}</div>
+                            <div style={{ fontSize: '0.7rem', color: 'rgba(240,235,225,0.4)', lineHeight: 1.5, textAlign: 'center', flexGrow: 1 }}>{cat.weakness}</div>
+                          </div>
+                        )
+                      })}
+                    </div>
+
+                    {/* ── FINDINGS ACCORDION ───────────────────────────── */}
+                    {currentAnalysis.categories.some(c => c.findings.length > 0) && (
+                      <div style={{ marginBottom: '2rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                          <div style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '1.1rem', letterSpacing: '0.08em', color: '#F0EBE1' }}>
+                            HALLAZGOS EDITORIALES
+                            <span style={{ fontSize: '0.65rem', fontFamily: 'IBM Plex Sans, sans-serif', color: 'rgba(240,235,225,0.25)', marginLeft: '10px', letterSpacing: '0.04em', fontWeight: 400 }}>{currentAnalysis.findings_count} total · {currentAnalysis.pending_count} pendientes</span>
+                          </div>
+                        </div>
+                        {currentAnalysis.categories.filter(c => c.findings.length > 0).map(cat => {
+                          const color = scoreColor(cat.score)
+                          return (
+                            <div key={cat.key} style={{ marginBottom: '1rem', background: 'rgba(255,255,255,0.015)', border: `1px solid ${scoreBorder(cat.score)}`, borderRadius: '8px', overflow: 'hidden' }}>
+                              {/* Category header */}
+                              <div style={{ padding: '0.875rem 1.25rem', background: scoreBg(cat.score), display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: `${color}15`, border: `2px solid ${color}40`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                  <span style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '1rem', color: color }}>{cat.score}</span>
+                                </div>
+                                <div>
+                                  <div style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '1rem', letterSpacing: '0.1em', color: '#F0EBE1' }}>{cat.label.toUpperCase()}</div>
+                                  <div style={{ fontSize: '0.7rem', color: 'rgba(240,235,225,0.4)' }}>{cat.strength}</div>
+                                </div>
+                                <div style={{ marginLeft: 'auto', fontSize: '0.65rem', color: color, background: `${color}12`, border: `1px solid ${color}30`, borderRadius: '20px', padding: '2px 10px' }}>{cat.findings.length} hallazgo{cat.findings.length > 1 ? 's' : ''}</div>
+                              </div>
+                              {/* Findings list */}
+                              <div style={{ padding: '0.75rem' }}>
+                                {cat.findings.map(finding => {
+                                  const isExpanded = expandedFinding === finding.id
+                                  const isDone = finding.status === 'implemented' || finding.status === 'verified' || finding.status === 'discarded'
+                                  return (
+                                    <div key={finding.id} style={{ marginBottom: '6px', background: isDone ? 'rgba(240,235,225,0.02)' : 'rgba(10,7,25,0.5)', border: `1px solid ${isDone ? 'rgba(240,235,225,0.06)' : scoreBorder(cat.score)}`, borderRadius: '6px', overflow: 'hidden', opacity: isDone ? 0.6 : 1 }}>
+                                      {/* Finding header */}
+                                      <div
+                                        style={{ padding: '0.875rem 1rem', display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}
+                                        onClick={() => setExpandedFinding(isExpanded ? null : finding.id)}
+                                      >
+                                        <div style={{ flexShrink: 0 }}>{statusIcon(finding.status)}</div>
+                                        <div style={{ flex: 1, minWidth: 0 }}>
+                                          <div style={{ fontSize: '0.875rem', fontWeight: 600, color: isDone ? 'rgba(240,235,225,0.4)' : '#F0EBE1', lineHeight: 1.4, marginBottom: '2px' }}>{finding.title}</div>
+                                          <div style={{ fontSize: '0.7rem', color: 'rgba(240,235,225,0.3)', fontFamily: 'monospace' }}>{finding.scene_ref}</div>
+                                        </div>
+                                        {priorityBadge(finding.priority)}
+                                        <div style={{ fontSize: '0.7rem', color: 'rgba(240,235,225,0.2)', flexShrink: 0 }}>{isExpanded ? '▲' : '▼'}</div>
+                                      </div>
+                                      {/* Finding detail */}
+                                      {isExpanded && (
+                                        <div style={{ padding: '0 1rem 1rem', borderTop: '1px solid rgba(240,235,225,0.04)' }}>
+                                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.875rem', marginTop: '0.875rem', marginBottom: '1rem' }}>
+                                            <div>
+                                              <div style={{ fontSize: '0.6rem', letterSpacing: '0.12em', color: 'rgba(240,235,225,0.25)', marginBottom: '4px', fontWeight: 600 }}>EVIDENCIA DEL GUIÓN</div>
+                                              <div style={{ fontSize: '0.75rem', color: 'rgba(240,235,225,0.55)', lineHeight: 1.6, fontStyle: 'italic', background: 'rgba(255,255,255,0.03)', borderLeft: `2px solid ${color}40`, padding: '8px 10px', borderRadius: '0 4px 4px 0' }}>&ldquo;{finding.evidence}&rdquo;</div>
+                                            </div>
+                                            <div>
+                                              <div style={{ fontSize: '0.6rem', letterSpacing: '0.12em', color: 'rgba(240,235,225,0.25)', marginBottom: '4px', fontWeight: 600 }}>PROBLEMA</div>
+                                              <div style={{ fontSize: '0.75rem', color: 'rgba(240,235,225,0.55)', lineHeight: 1.6 }}>{finding.problem_description}</div>
+                                            </div>
+                                            <div>
+                                              <div style={{ fontSize: '0.6rem', letterSpacing: '0.12em', color: 'rgba(240,235,225,0.25)', marginBottom: '4px', fontWeight: 600 }}>EFECTO NARRATIVO</div>
+                                              <div style={{ fontSize: '0.75rem', color: 'rgba(240,235,225,0.55)', lineHeight: 1.6 }}>{finding.narrative_effect}</div>
+                                            </div>
+                                            <div>
+                                              <div style={{ fontSize: '0.6rem', letterSpacing: '0.12em', color: 'rgba(240,235,225,0.25)', marginBottom: '4px', fontWeight: 600 }}>OBJETIVO DE MEJORA</div>
+                                              <div style={{ fontSize: '0.75rem', color: '#4ECDC4', lineHeight: 1.6 }}>{finding.improvement_goal}</div>
+                                            </div>
+                                          </div>
+                                          {/* Actions */}
+                                          {!isDone && (
+                                            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                                              <button
+                                                onClick={() => improveWithNuppa(finding)}
+                                                style={{ padding: '8px 18px', background: 'linear-gradient(135deg, rgba(155,111,212,0.25), rgba(155,111,212,0.12))', border: '1px solid rgba(155,111,212,0.45)', borderRadius: '6px', color: '#B08FE8', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'IBM Plex Sans, sans-serif', display: 'flex', alignItems: 'center', gap: '7px' }}
+                                              >
+                                                <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 2l1.8 3.6L14 6.3l-3 2.9.7 4.1L8 11.3l-3.7 1.9.7-4.1-3-2.9 4.2-.7z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/></svg>
+                                                Mejorar con NUPPA
+                                              </button>
+                                              <button
+                                                disabled={updatingFinding === finding.id}
+                                                onClick={() => updateFindingStatus(finding, 'implemented')}
+                                                style={{ padding: '7px 14px', background: 'rgba(78,205,196,0.08)', border: '1px solid rgba(78,205,196,0.25)', borderRadius: '6px', color: '#4ECDC4', fontSize: '0.75rem', cursor: 'pointer', fontFamily: 'IBM Plex Sans, sans-serif' }}
+                                              >
+                                                ✓ Marcar resuelto
+                                              </button>
+                                              <button
+                                                disabled={updatingFinding === finding.id}
+                                                onClick={() => updateFindingStatus(finding, 'discarded')}
+                                                style={{ padding: '7px 14px', background: 'transparent', border: '1px solid rgba(240,235,225,0.08)', borderRadius: '6px', color: 'rgba(240,235,225,0.3)', fontSize: '0.75rem', cursor: 'pointer', fontFamily: 'IBM Plex Sans, sans-serif' }}
+                                              >
+                                                Descartar
+                                              </button>
+                                            </div>
+                                          )}
+                                          {isDone && (
+                                            <div style={{ display: 'flex', gap: '8px' }}>
+                                              <button
+                                                onClick={() => updateFindingStatus(finding, 'pending')}
+                                                style={{ padding: '6px 12px', background: 'transparent', border: '1px solid rgba(240,235,225,0.08)', borderRadius: '6px', color: 'rgba(240,235,225,0.3)', fontSize: '0.7rem', cursor: 'pointer', fontFamily: 'IBM Plex Sans, sans-serif' }}
+                                              >
+                                                ↩ Reabrir
+                                              </button>
+                                            </div>
+                                          )}
+                                        </div>
+                                      )}
+                                    </div>
+                                  )
+                                })}
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )}
+
+                    {/* ── DETECTED STRUCTURE ───────────────────────────── */}
+                    {currentAnalysis.structure && (
+                      <div style={{ background: '#0A0719', border: '1px solid rgba(212,37,106,0.2)', borderRadius: '10px', marginBottom: '2rem', overflow: 'hidden' }}>
+                        <div style={{ background: 'rgba(212,37,106,0.08)', padding: '1rem 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <div>
+                            <div style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '1.1rem', letterSpacing: '0.1em', color: '#D4256A' }}>
+                              ESTRUCTURA DETECTADA — {currentAnalysis.structure.total_scenes} escenas
+                            </div>
+                            {currentAnalysis.structure.structure_notes && (
+                              <div style={{ fontSize: '0.7rem', color: 'rgba(240,235,225,0.35)', marginTop: '3px', maxWidth: '520px', lineHeight: 1.5 }}>{currentAnalysis.structure.structure_notes}</div>
+                            )}
+                          </div>
+                          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                            {applyingStructure ? (
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '7px', fontSize: '0.75rem', color: '#D4256A' }}>
+                                <svg width="14" height="14" viewBox="0 0 32 32" style={{ animation: 'spin 1.2s linear infinite' }}><circle cx="16" cy="16" r="13" stroke="rgba(212,37,106,0.15)" strokeWidth="2.5" fill="none"/><path d="M16 3 A13 13 0 0 1 29 16" stroke="#D4256A" strokeWidth="2.5" fill="none" strokeLinecap="round"/></svg>
+                                Agregando...
+                              </div>
+                            ) : (
+                              <button
+                                onClick={applyAnalysisStructure}
+                                style={{ padding: '8px 18px', background: '#D4256A', border: 'none', borderRadius: '6px', color: '#fff', fontSize: '0.8rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'IBM Plex Sans, sans-serif', display: 'flex', alignItems: 'center', gap: '7px' }}
+                              >
+                                <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M8 2v12M2 8h12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
+                                Agregar al episodio
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', borderTop: '1px solid rgba(212,37,106,0.08)' }}>
+                          {currentAnalysis.structure.acts.map((act, ai) => (
+                            <div key={act.act_number} style={{ borderRight: ai < 2 ? '1px solid rgba(212,37,106,0.08)' : 'none', padding: '1.25rem' }}>
+                              <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '8px' }}>
+                                <span style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '0.9rem', letterSpacing: '0.15em', color: '#D4256A' }}>ACTO {act.act_number}</span>
+                                <span style={{ fontSize: '0.65rem', color: 'rgba(240,235,225,0.2)', fontFamily: 'monospace' }}>{act.scenes.length} esc</span>
+                              </div>
+                              <div style={{ fontSize: '0.95rem', color: '#F0EBE1', fontWeight: 700, marginBottom: '5px', lineHeight: 1.3 }}>{act.title}</div>
+                              <div style={{ fontSize: '0.75rem', color: 'rgba(240,235,225,0.35)', fontStyle: 'italic', marginBottom: '14px', lineHeight: 1.5 }}>{act.goal}</div>
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '7px' }}>
+                                {act.scenes.map((sc, i) => (
+                                  <div key={i} style={{ background: 'rgba(255,255,255,0.025)', borderRadius: '5px', padding: '10px 12px', borderLeft: '2px solid rgba(212,37,106,0.2)' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '4px', marginBottom: '4px' }}>
+                                      <span style={{ fontSize: '0.8rem', color: '#F0EBE1', fontWeight: 700, lineHeight: 1.3 }}>{sc.title}</span>
+                                      <span style={{ fontSize: '0.6rem', color: 'rgba(240,235,225,0.2)', fontFamily: 'monospace', flexShrink: 0 }}>{sc.duration_est}s</span>
+                                    </div>
+                                    {sc.location && <div style={{ fontSize: '0.7rem', color: '#9B6FD4', marginBottom: '3px' }}>{sc.location}</div>}
+                                    <div style={{ fontSize: '0.75rem', color: 'rgba(240,235,225,0.4)', lineHeight: 1.6 }}>{sc.description}</div>
+                                    {sc.mood && <div style={{ fontSize: '0.6rem', color: 'rgba(240,235,225,0.2)', marginTop: '4px', fontStyle: 'italic' }}>{sc.mood}</div>}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )
+              })()}
+
+              {/* ── ACTS & SCENES (DB editor) ─────────────────────────── */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', paddingTop: currentAnalysis ? '0.5rem' : '0', borderTop: currentAnalysis ? '1px solid rgba(240,235,225,0.05)' : 'none' }}>
+                <div style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '1rem', letterSpacing: '0.08em', color: currentAnalysis ? 'rgba(240,235,225,0.5)' : '#F0EBE1' }}>
+                  Actos y escenas
+                  <span style={{ fontSize: '0.6rem', fontFamily: 'IBM Plex Sans, sans-serif', color: 'rgba(240,235,225,0.2)', marginLeft: '10px', letterSpacing: '0.05em', fontWeight: 400 }}>
+                    {episode.scenes.length} escenas · {episode.acts.length} actos
+                  </span>
+                </div>
+                <button
+                  onClick={() => activateWorkflow('generate_scenes')}
+                  style={{ padding: '5px 12px', background: 'rgba(74,143,232,0.08)', border: '1px solid rgba(74,143,232,0.2)', borderRadius: '3px', color: '#4A8FE8', fontSize: '0.72rem', cursor: 'pointer', fontFamily: 'IBM Plex Sans, sans-serif', display: 'flex', alignItems: 'center', gap: '5px' }}
+                >
+                  <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.2"/><path d="M6.5 6.5L10 8l-3.5 1.5V6.5z" fill="currentColor"/></svg>
+                  Generar con AI
+                </button>
+              </div>
+
+              {/* ── ACTS & SCENES ───────────────────────────────────────── */}
               {episode.acts.map(act => {
                 const actScenes = episode.scenes.filter(s => s.act_id === act.id).sort((a, b) => a.scene_number - b.scene_number)
+                const actPercent = [25, 50, 25][act.act_number - 1] ?? 33
                 return (
-                  <div key={act.id} style={{ marginBottom: '1.5rem', background: '#0D0920', border: '1px solid rgba(212,37,106,0.12)', borderRadius: '4px', overflow: 'hidden' }}>
+                  <div key={act.id} style={{ marginBottom: '1.5rem', background: '#0A0719', border: '1px solid rgba(212,37,106,0.12)', borderRadius: '6px', overflow: 'hidden' }}>
                     {/* Act header */}
-                    <div style={{ background: 'rgba(212,37,106,0.06)', padding: '0.875rem 1rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                      <span style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '1rem', letterSpacing: '0.1em', color: '#D4256A', flexShrink: 0 }}>ACTO {act.act_number}</span>
+                    <div style={{ background: 'rgba(212,37,106,0.07)', padding: '0.875rem 1.125rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
+                        <span style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '1.25rem', letterSpacing: '0.1em', color: '#D4256A', lineHeight: 1 }}>ACTO {act.act_number}</span>
+                        <span style={{ fontSize: '0.55rem', color: 'rgba(212,37,106,0.5)', background: 'rgba(212,37,106,0.1)', borderRadius: '20px', padding: '2px 8px', fontWeight: 600 }}>{actPercent}%</span>
+                      </div>
                       <input
                         defaultValue={act.title ?? ''}
                         placeholder="Título del acto..."
@@ -1349,55 +2111,55 @@ export default function EpisodeBuilderPage() {
                           await fetch(`/api/acts?id=${act.id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ title: e.target.value }) })
                           setEpisode(prev => prev ? { ...prev, acts: prev.acts.map(a => a.id === act.id ? { ...a, title: e.target.value } : a) } : prev)
                         }}
-                        style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: '#F0EBE1', fontFamily: 'IBM Plex Sans, sans-serif', fontSize: '0.875rem', fontWeight: 600 }}
+                        style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: '#F0EBE1', fontFamily: 'IBM Plex Sans, sans-serif', fontSize: '0.9rem', fontWeight: 700 }}
                       />
-                      <span style={{ fontSize: '0.6rem', color: 'rgba(240,235,225,0.25)', fontFamily: 'monospace', flexShrink: 0 }}>{actScenes.length} escena{actScenes.length !== 1 ? 's' : ''}</span>
+                      <span style={{ fontSize: '0.6rem', color: 'rgba(240,235,225,0.2)', fontFamily: 'monospace', flexShrink: 0 }}>{actScenes.length} esc</span>
                     </div>
 
                     {/* Act goal */}
-                    <div style={{ padding: '0.75rem 1rem 0' }}>
-                      <div style={FIELD_LABEL}>Objetivo narrativo del acto</div>
+                    <div style={{ padding: '0.625rem 1.125rem', borderBottom: '1px solid rgba(212,37,106,0.06)' }}>
                       <input
                         defaultValue={act.goal ?? ''}
-                        placeholder="¿Qué debe lograr este acto en la historia?"
+                        placeholder="Objetivo narrativo del acto — ¿qué debe lograr esta parte de la historia?"
                         onBlur={async e => {
                           await fetch(`/api/acts?id=${act.id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ goal: e.target.value }) })
                         }}
-                        style={{ ...INPUT, marginBottom: '0.75rem' }}
+                        style={{ width: '100%', background: 'transparent', border: 'none', outline: 'none', color: 'rgba(240,235,225,0.4)', fontFamily: 'IBM Plex Sans, sans-serif', fontSize: '0.75rem', fontStyle: 'italic', boxSizing: 'border-box' }}
                       />
                     </div>
 
                     {/* Scenes */}
-                    <div style={{ padding: '0 1rem 1rem' }}>
+                    <div style={{ padding: '0.75rem 1.125rem 1rem' }}>
                       {actScenes.map(scene => (
-                        <div key={scene.id} style={{ background: '#120D28', border: '1px solid rgba(245,165,42,0.06)', borderRadius: '3px', marginBottom: '0.5rem', overflow: 'hidden' }}>
+                        <div key={scene.id} style={{ background: '#120D28', border: '1px solid rgba(240,235,225,0.04)', borderLeft: '2px solid rgba(245,165,42,0.15)', borderRadius: '3px', marginBottom: '6px', overflow: 'hidden' }}>
                           {/* Scene header */}
                           <div
-                            style={{ padding: '0.625rem 0.875rem', display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}
+                            style={{ padding: '0.625rem 0.875rem', display: 'flex', alignItems: 'center', gap: '0.625rem', cursor: 'pointer' }}
                             onClick={() => setExpandedScene(expandedScene === scene.id ? null : scene.id)}
                           >
-                            <span style={{ fontSize: '0.55rem', fontFamily: 'monospace', color: 'rgba(240,235,225,0.25)', flexShrink: 0 }}>ESC {scene.scene_number}</span>
+                            <span style={{ fontSize: '0.6rem', fontFamily: 'monospace', color: 'rgba(212,37,106,0.5)', flexShrink: 0, minWidth: '28px' }}>#{scene.scene_number}</span>
                             <input
                               defaultValue={scene.title ?? ''}
                               placeholder="Título de la escena..."
                               onClick={e => e.stopPropagation()}
                               onBlur={e => updateSceneField(scene.id, 'title', e.target.value)}
-                              style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: '#F0EBE1', fontFamily: 'IBM Plex Sans, sans-serif', fontSize: '0.8125rem' }}
+                              style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', color: '#F0EBE1', fontFamily: 'IBM Plex Sans, sans-serif', fontSize: '0.8125rem', fontWeight: 600 }}
                             />
-                            {scene.location_name && <span style={{ fontSize: '0.6rem', color: 'rgba(240,235,225,0.3)', flexShrink: 0, display: 'flex', alignItems: 'center', gap: '3px' }}><svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M6 1a3.5 3.5 0 0 1 3.5 3.5c0 2.5-3.5 6.5-3.5 6.5S2.5 7 2.5 4.5A3.5 3.5 0 0 1 6 1z" stroke="currentColor" strokeWidth="1.1"/><circle cx="6" cy="4.5" r="1.2" fill="currentColor"/></svg>{scene.location_name}</span>}
-                            {scene.duration_est && <span style={{ fontSize: '0.6rem', color: 'rgba(240,235,225,0.3)', flexShrink: 0, display: 'flex', alignItems: 'center', gap: '3px' }}><svg width="10" height="10" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="4.5" stroke="currentColor" strokeWidth="1.1"/><path d="M6 3.5V6l1.5 1.5" stroke="currentColor" strokeWidth="1.1" strokeLinecap="round"/></svg>{scene.duration_est}s</span>}
-                            <span style={{ fontSize: '0.7rem', color: 'rgba(240,235,225,0.2)', flexShrink: 0 }}>{expandedScene === scene.id ? '▲' : '▼'}</span>
+                            {scene.mood && <span style={{ fontSize: '0.55rem', color: 'rgba(240,235,225,0.25)', background: 'rgba(240,235,225,0.05)', borderRadius: '20px', padding: '1px 7px', flexShrink: 0 }}>{scene.mood}</span>}
+                            {scene.location_name && <span style={{ fontSize: '0.6rem', color: 'rgba(155,111,212,0.7)', flexShrink: 0, display: 'flex', alignItems: 'center', gap: '3px' }}><svg width="9" height="9" viewBox="0 0 12 12" fill="none"><path d="M6 1a3.5 3.5 0 0 1 3.5 3.5c0 2.5-3.5 6.5-3.5 6.5S2.5 7 2.5 4.5A3.5 3.5 0 0 1 6 1z" stroke="currentColor" strokeWidth="1.1"/><circle cx="6" cy="4.5" r="1.2" fill="currentColor"/></svg>{scene.location_name}</span>}
+                            {scene.duration_est && <span style={{ fontSize: '0.55rem', color: 'rgba(240,235,225,0.2)', flexShrink: 0, fontFamily: 'monospace' }}>{scene.duration_est}s</span>}
+                            <span style={{ fontSize: '0.65rem', color: 'rgba(240,235,225,0.15)', flexShrink: 0 }}>{expandedScene === scene.id ? '▲' : '▼'}</span>
                             <button
                               onClick={e => { e.stopPropagation(); deleteScene(scene.id) }}
-                              style={{ background: 'none', border: 'none', color: 'rgba(212,37,106,0.3)', cursor: 'pointer', fontSize: '0.9rem', padding: '0 2px', flexShrink: 0 }}
+                              style={{ background: 'none', border: 'none', color: 'rgba(212,37,106,0.2)', cursor: 'pointer', fontSize: '0.9rem', padding: '0 2px', flexShrink: 0 }}
                               onMouseEnter={e => (e.currentTarget.style.color = '#D4256A')}
-                              onMouseLeave={e => (e.currentTarget.style.color = 'rgba(212,37,106,0.3)')}
+                              onMouseLeave={e => (e.currentTarget.style.color = 'rgba(212,37,106,0.2)')}
                             >×</button>
                           </div>
 
                           {/* Scene detail (expanded) */}
                           {expandedScene === scene.id && (
-                            <div style={{ padding: '0 0.875rem 0.875rem', borderTop: '1px solid rgba(245,165,42,0.05)', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                            <div style={{ padding: '0 0.875rem 0.875rem', borderTop: '1px solid rgba(240,235,225,0.04)', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
                               <div>
                                 <div style={FIELD_LABEL}>Descripción / Acción</div>
                                 <textarea
@@ -1410,28 +2172,11 @@ export default function EpisodeBuilderPage() {
                               </div>
                               <div>
                                 <div style={FIELD_LABEL}>Locación</div>
-                                <input
-                                  defaultValue={scene.location_name ?? ''}
-                                  placeholder="Nombre de la locación..."
-                                  onBlur={e => updateSceneField(scene.id, 'location_name', e.target.value)}
-                                  style={{ ...INPUT, marginBottom: '0.5rem' }}
-                                />
+                                <input defaultValue={scene.location_name ?? ''} placeholder="Nombre de la locación..." onBlur={e => updateSceneField(scene.id, 'location_name', e.target.value)} style={{ ...INPUT, marginBottom: '0.5rem' }} />
                                 <div style={FIELD_LABEL}>Mood / Tono</div>
-                                <input
-                                  defaultValue={scene.mood ?? ''}
-                                  placeholder="Ej: tenso, íntimo, cómico..."
-                                  onBlur={e => updateSceneField(scene.id, 'mood', e.target.value)}
-                                  style={{ ...INPUT, marginBottom: '0.5rem' }}
-                                />
+                                <input defaultValue={scene.mood ?? ''} placeholder="Ej: tenso, íntimo, cómico..." onBlur={e => updateSceneField(scene.id, 'mood', e.target.value)} style={{ ...INPUT, marginBottom: '0.5rem' }} />
                                 <div style={FIELD_LABEL}>Duración estimada (seg)</div>
-                                <input
-                                  type="number"
-                                  defaultValue={scene.duration_est ?? ''}
-                                  placeholder="Ej: 45"
-                                  min={0}
-                                  onBlur={e => { if (e.target.value) updateSceneField(scene.id, 'duration_est', e.target.value) }}
-                                  style={{ ...INPUT }}
-                                />
+                                <input type="number" defaultValue={scene.duration_est ?? ''} placeholder="Ej: 45" min={0} onBlur={e => { if (e.target.value) updateSceneField(scene.id, 'duration_est', e.target.value) }} style={{ ...INPUT }} />
                               </div>
                               <div style={{ gridColumn: '1 / -1' }}>
                                 <div style={FIELD_LABEL}>Guión de la escena</div>
@@ -1448,12 +2193,11 @@ export default function EpisodeBuilderPage() {
                         </div>
                       ))}
 
-                      {/* Add scene button */}
                       <button
                         onClick={() => addScene(act.id)}
-                        style={{ width: '100%', padding: '7px', background: 'transparent', border: '1px dashed rgba(212,37,106,0.2)', borderRadius: '3px', color: 'rgba(212,37,106,0.5)', fontSize: '0.75rem', cursor: 'pointer', fontFamily: 'IBM Plex Sans, sans-serif', transition: 'all 0.15s' }}
-                        onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(212,37,106,0.5)'; e.currentTarget.style.color = '#D4256A' }}
-                        onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(212,37,106,0.2)'; e.currentTarget.style.color = 'rgba(212,37,106,0.5)' }}
+                        style={{ width: '100%', padding: '7px', background: 'transparent', border: '1px dashed rgba(212,37,106,0.15)', borderRadius: '3px', color: 'rgba(212,37,106,0.4)', fontSize: '0.72rem', cursor: 'pointer', fontFamily: 'IBM Plex Sans, sans-serif', marginTop: '4px' }}
+                        onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(212,37,106,0.4)'; e.currentTarget.style.color = '#D4256A' }}
+                        onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(212,37,106,0.15)'; e.currentTarget.style.color = 'rgba(212,37,106,0.4)' }}
                       >
                         + Agregar escena al Acto {act.act_number}
                       </button>
@@ -1462,7 +2206,7 @@ export default function EpisodeBuilderPage() {
                 )
               })}
 
-              {/* Continuity log saved entries */}
+              {/* Continuity log */}
               {continuityLog.length > 0 && (
                 <div style={{ marginTop: '2rem' }}>
                   <div style={{ ...SECTION_HEADER }}>Log de continuidad guardado</div>
@@ -1474,12 +2218,7 @@ export default function EpisodeBuilderPage() {
                           <div style={{ fontSize: '0.75rem', color: '#F0EBE1', fontWeight: 600, marginBottom: '2px' }}>{entry.entity}</div>
                           <div style={{ fontSize: '0.75rem', color: 'rgba(240,235,225,0.55)', lineHeight: 1.5 }}>{entry.description}</div>
                         </div>
-                        <button
-                          onClick={() => deleteLogEntry(entry.id)}
-                          style={{ background: 'none', border: 'none', color: 'rgba(212,37,106,0.25)', cursor: 'pointer', fontSize: '0.9rem', padding: '0 2px', flexShrink: 0 }}
-                          onMouseEnter={e => (e.currentTarget.style.color = '#D4256A')}
-                          onMouseLeave={e => (e.currentTarget.style.color = 'rgba(212,37,106,0.25)')}
-                        >×</button>
+                        <button onClick={() => deleteLogEntry(entry.id)} style={{ background: 'none', border: 'none', color: 'rgba(212,37,106,0.25)', cursor: 'pointer', fontSize: '0.9rem', padding: '0 2px', flexShrink: 0 }} onMouseEnter={e => (e.currentTarget.style.color = '#D4256A')} onMouseLeave={e => (e.currentTarget.style.color = 'rgba(212,37,106,0.25)')}>×</button>
                       </div>
                     ))}
                   </div>
@@ -1654,7 +2393,14 @@ export default function EpisodeBuilderPage() {
                         <div style={{ padding: '0.5rem' }}>
                           {gaps.map((gap, gi) => {
                             const gapKey = `${gap.entity_name}-${gap.view_type}-${gi}`
-                            const isDone = gap.status === 'created' || gap.status === 'linked' || gap.status === 'skipped'
+                            const isDone = gap.status !== 'pending'
+                            const statusPill = gap.status === 'created'
+                              ? { label: 'Slot creado · Sin imagen', color: '#F5A52A', bg: 'rgba(245,165,42,0.12)' }
+                              : gap.status === 'linked'
+                              ? { label: 'Vinculado', color: '#4ECDC4', bg: 'rgba(78,205,196,0.12)' }
+                              : gap.status === 'skipped'
+                              ? { label: 'Omitido', color: 'rgba(240,235,225,0.35)', bg: 'rgba(240,235,225,0.06)' }
+                              : null
                             return (
                               <div key={gapKey} style={{
                                 display: 'flex',
@@ -1662,15 +2408,20 @@ export default function EpisodeBuilderPage() {
                                 gap: '0.5rem',
                                 padding: '10px 12px',
                                 borderRadius: '3px',
-                                background: isDone ? 'rgba(78,205,196,0.05)' : 'transparent',
+                                background: isDone ? 'rgba(255,255,255,0.02)' : 'transparent',
                                 marginBottom: '2px',
-                                opacity: isDone ? 0.6 : 1,
+                                opacity: gap.status === 'skipped' ? 0.5 : 1,
                               }}>
                                 <div style={{ flex: 1, minWidth: 0 }}>
-                                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
-                                    <span style={{ fontSize: '0.875rem', color: isDone ? '#4ECDC4' : '#F0EBE1', fontWeight: 600 }}>{gap.view_type}</span>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px', flexWrap: 'wrap' }}>
+                                    <span style={{ fontSize: '0.875rem', color: '#F0EBE1', fontWeight: 600 }}>{gap.view_type}</span>
                                     {gap.outfit && <span style={{ fontSize: '0.6rem', color: 'rgba(240,235,225,0.35)' }}>· {gap.outfit}</span>}
                                     {gap.age_version && <span style={{ fontSize: '0.6rem', color: 'rgba(240,235,225,0.35)' }}>· {gap.age_version}</span>}
+                                    {statusPill && (
+                                      <span style={{ fontSize: '0.6rem', color: statusPill.color, background: statusPill.bg, borderRadius: '20px', padding: '1px 8px', fontWeight: 600 }}>
+                                        {statusPill.label}
+                                      </span>
+                                    )}
                                   </div>
                                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
                                     <span style={{
@@ -1682,32 +2433,60 @@ export default function EpisodeBuilderPage() {
                                     <span style={{ fontSize: '0.75rem', color: 'rgba(240,235,225,0.45)', lineHeight: 1.5 }}>{gap.reason}</span>
                                   </div>
                                 </div>
-                                {isDone ? (
-                                  <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.7rem', color: '#4ECDC4', flexShrink: 0 }}>
-                                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><polyline points="2 6 5 9 10 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                                    creado
-                                  </span>
-                                ) : (
-                                  <button
-                                    onClick={() => createGapSlot(gap, gapKey)}
-                                    disabled={creatingGap === gapKey}
-                                    style={{
-                                      padding: '6px 12px',
-                                      background: 'rgba(78,205,196,0.12)',
-                                      border: '1px solid rgba(78,205,196,0.3)',
-                                      borderRadius: '3px',
-                                      color: '#4ECDC4',
-                                      fontSize: '0.75rem',
-                                      fontWeight: 600,
-                                      cursor: creatingGap === gapKey ? 'not-allowed' : 'pointer',
-                                      fontFamily: 'IBM Plex Sans, sans-serif',
-                                      flexShrink: 0,
-                                      whiteSpace: 'nowrap',
-                                    }}
-                                  >
-                                    {creatingGap === gapKey ? '...' : '+ Crear slots'}
-                                  </button>
-                                )}
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
+                                  {(gap.status === 'created' || gap.status === 'linked') && (
+                                    <a
+                                      href="/approval"
+                                      style={{
+                                        fontSize: '0.7rem', color: '#9B6FD4',
+                                        textDecoration: 'none', whiteSpace: 'nowrap',
+                                        padding: '4px 8px',
+                                        border: '1px solid rgba(155,111,212,0.25)',
+                                        borderRadius: '3px',
+                                        background: 'rgba(155,111,212,0.08)',
+                                      }}
+                                    >
+                                      Ver en Biblia Visual →
+                                    </a>
+                                  )}
+                                  {isDone ? (
+                                    <button
+                                      onClick={() => resetGap(gap)}
+                                      style={{
+                                        padding: '4px 8px',
+                                        background: 'transparent',
+                                        border: '1px solid rgba(240,235,225,0.1)',
+                                        borderRadius: '3px',
+                                        color: 'rgba(240,235,225,0.3)',
+                                        fontSize: '0.7rem',
+                                        cursor: 'pointer',
+                                        fontFamily: 'IBM Plex Sans, sans-serif',
+                                        whiteSpace: 'nowrap',
+                                      }}
+                                    >
+                                      ↩ Restablecer
+                                    </button>
+                                  ) : (
+                                    <button
+                                      onClick={() => createGapSlot(gap, gapKey)}
+                                      disabled={creatingGap === gapKey}
+                                      style={{
+                                        padding: '6px 12px',
+                                        background: 'rgba(78,205,196,0.12)',
+                                        border: '1px solid rgba(78,205,196,0.3)',
+                                        borderRadius: '3px',
+                                        color: '#4ECDC4',
+                                        fontSize: '0.75rem',
+                                        fontWeight: 600,
+                                        cursor: creatingGap === gapKey ? 'not-allowed' : 'pointer',
+                                        fontFamily: 'IBM Plex Sans, sans-serif',
+                                        whiteSpace: 'nowrap',
+                                      }}
+                                    >
+                                      {creatingGap === gapKey ? '...' : '+ Crear slots'}
+                                    </button>
+                                  )}
+                                </div>
                               </div>
                             )
                           })}
@@ -1731,7 +2510,31 @@ export default function EpisodeBuilderPage() {
 
         {/* ── RIGHT PANEL — AI ASSISTANT ─────────────────────────────── */}
         {aiPanelOpen && (
-        <div data-tutorial="episode-ai-panel" style={{ width: '380px', flexShrink: 0, borderLeft: '1px solid rgba(212,37,106,0.12)', display: 'flex', flexDirection: 'column', background: '#0A0719' }}>
+        <div data-tutorial="episode-ai-panel" style={{ width: `${aiPanelWidth}px`, flexShrink: 0, borderLeft: '1px solid rgba(212,37,106,0.12)', display: 'flex', flexDirection: 'column', background: '#0A0719', position: 'relative' }}>
+          {/* Drag handle */}
+          <div
+            style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: '5px', cursor: 'ew-resize', zIndex: 10, background: 'transparent' }}
+            onMouseEnter={e => (e.currentTarget.style.background = 'rgba(212,37,106,0.2)')}
+            onMouseLeave={e => { if (!aiPanelDragging.current) e.currentTarget.style.background = 'transparent' }}
+            onMouseDown={e => {
+              aiPanelDragging.current = true
+              aiPanelDragStart.current = { x: e.clientX, width: aiPanelWidth }
+              const onMove = (ev: MouseEvent) => {
+                if (!aiPanelDragging.current) return
+                const delta = aiPanelDragStart.current.x - ev.clientX
+                const newWidth = Math.min(700, Math.max(320, aiPanelDragStart.current.width + delta))
+                setAiPanelWidth(newWidth)
+              }
+              const onUp = () => {
+                aiPanelDragging.current = false
+                window.removeEventListener('mousemove', onMove)
+                window.removeEventListener('mouseup', onUp)
+              }
+              window.addEventListener('mousemove', onMove)
+              window.addEventListener('mouseup', onUp)
+              e.preventDefault()
+            }}
+          />
 
           {/* AI panel header */}
           <div style={{ flexShrink: 0, padding: '0.875rem 1rem', borderBottom: '1px solid rgba(212,37,106,0.10)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -1797,7 +2600,7 @@ export default function EpisodeBuilderPage() {
                   {msg.role === 'user' ? 'Tú' : 'Asistente'}
                 </div>
                 <div style={{ fontSize: '0.8125rem', color: msg.role === 'user' ? 'rgba(240,235,225,0.7)' : '#F0EBE1', lineHeight: 1.6, whiteSpace: 'pre-wrap', background: msg.role === 'user' ? 'transparent' : 'rgba(78,205,196,0.04)', borderRadius: '3px', padding: msg.role === 'assistant' ? '8px 10px' : '0', border: msg.role === 'assistant' ? '1px solid rgba(78,205,196,0.08)' : 'none' }}>
-                  {msg.content || (aiStreaming && i === aiMessages.length - 1 ? <span style={{ opacity: 0.4 }}>●●●</span> : '')}
+                  {(msg.role === 'assistant' ? msg.content.replace(/<<<PROPUESTA_NUPPA>>>[\s\S]*?<<<FIN_PROPUESTA>>>/g, '').trim() : msg.content) || (aiStreaming && i === aiMessages.length - 1 ? <span style={{ opacity: 0.4 }}>●●●</span> : '')}
                 </div>
               </div>
             ))}
@@ -1823,6 +2626,32 @@ export default function EpisodeBuilderPage() {
                   style={{ padding: '4px 12px', background: savingLog ? 'rgba(232,122,74,0.3)' : '#E87A4A', border: 'none', borderRadius: '3px', color: '#F0EBE1', fontSize: '0.7rem', fontWeight: 600, cursor: savingLog ? 'not-allowed' : 'pointer', fontFamily: 'IBM Plex Sans, sans-serif' }}
                 >
                   {savingLog ? 'Guardando...' : '✓ Aprobar y guardar log'}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* NUPPA proposal detected */}
+          {detectedProposal && !aiStreaming && (
+            <div style={{ flexShrink: 0, padding: '0.875rem 1rem', borderTop: '1px solid rgba(155,111,212,0.3)', background: 'rgba(155,111,212,0.08)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.625rem' }}>
+                <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#9B6FD4', letterSpacing: '0.08em' }}>✦ NUPPA propone cambio · {detectedProposal.scene_ref}</span>
+                <button onClick={() => setDetectedProposal(null)} style={{ background: 'none', border: 'none', color: 'rgba(240,235,225,0.3)', cursor: 'pointer', fontSize: '1rem', padding: 0 }}>×</button>
+              </div>
+              <div style={{ marginBottom: '0.625rem', fontSize: '0.7rem', fontFamily: 'monospace', lineHeight: 1.5 }}>
+                <div style={{ background: 'rgba(212,37,106,0.1)', borderLeft: '2px solid rgba(212,37,106,0.4)', padding: '5px 8px', color: 'rgba(240,235,225,0.45)', textDecoration: 'line-through', marginBottom: '3px' }}>
+                  {detectedProposal.original_text.substring(0, 150)}{detectedProposal.original_text.length > 150 ? '...' : ''}
+                </div>
+                <div style={{ background: 'rgba(78,205,196,0.08)', borderLeft: '2px solid rgba(78,205,196,0.4)', padding: '5px 8px', color: 'rgba(240,235,225,0.8)' }}>
+                  {detectedProposal.proposed_text.substring(0, 150)}{detectedProposal.proposed_text.length > 150 ? '...' : ''}
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: '6px' }}>
+                <button onClick={saveDetectedProposal} disabled={savingProposal} style={{ flex: 1, padding: '7px', background: 'rgba(155,111,212,0.2)', border: '1px solid rgba(155,111,212,0.4)', borderRadius: '4px', color: '#9B6FD4', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'IBM Plex Sans, sans-serif' }}>
+                  {savingProposal ? 'Guardando...' : '✦ Guardar propuesta'}
+                </button>
+                <button onClick={() => setDetectedProposal(null)} style={{ padding: '7px 12px', background: 'transparent', border: '1px solid rgba(240,235,225,0.08)', borderRadius: '4px', color: 'rgba(240,235,225,0.3)', fontSize: '0.75rem', cursor: 'pointer', fontFamily: 'IBM Plex Sans, sans-serif' }}>
+                  Ignorar
                 </button>
               </div>
             </div>
