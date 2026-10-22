@@ -3,6 +3,14 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
+
+function heroUrl(path: string | null): string | null {
+  if (!path) return null
+  if (path.startsWith('http')) return path
+  return `${SUPABASE_URL}/storage/v1/object/public/assets/${path}`
+}
+
 type EpisodeSummary = {
   id: string
   season: number
@@ -10,6 +18,7 @@ type EpisodeSummary = {
   title: string | null
   logline: string | null
   status: 'draft' | 'outline' | 'script' | 'in_production' | 'completed'
+  hero_image_path: string | null
   updated_at: string
 }
 
@@ -154,67 +163,78 @@ export default function EpisodesPage() {
                   const statusColor = episode ? STATUS_COLORS[episode.status] : 'rgba(240,235,225,0.06)'
 
                   if (episode) {
+                    const img = heroUrl(episode.hero_image_path)
                     return (
                       <div
                         key={ep}
                         onClick={() => router.push(`/episodes/${episode.id}`)}
                         style={{
-                          background: '#0D0920',
+                          background: img ? 'transparent' : '#0D0920',
                           borderRadius: '8px',
                           border: `1px solid rgba(212,37,106,0.10)`,
                           borderTop: `2px solid ${statusColor}`,
-                          padding: '1.25rem',
                           cursor: 'pointer',
-                          transition: 'transform 0.15s, box-shadow 0.15s, background 0.15s',
+                          transition: 'transform 0.15s, box-shadow 0.15s',
                           minHeight: '200px',
                           display: 'flex',
                           flexDirection: 'column',
-                          gap: '0.375rem',
                           position: 'relative',
+                          overflow: 'hidden',
                         }}
-                        onMouseEnter={e => { e.currentTarget.style.background = '#130D2A'; e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = `0 6px 24px rgba(212,37,106,0.14)`; const btn = e.currentTarget.querySelector('.delete-btn') as HTMLElement; if (btn) btn.style.opacity = '1' }}
-                        onMouseLeave={e => { e.currentTarget.style.background = '#0D0920'; e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; const btn = e.currentTarget.querySelector('.delete-btn') as HTMLElement; if (btn) btn.style.opacity = '0' }}
+                        onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = `0 8px 28px rgba(212,37,106,0.18)`; const btn = e.currentTarget.querySelector('.delete-btn') as HTMLElement; if (btn) btn.style.opacity = '1' }}
+                        onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; const btn = e.currentTarget.querySelector('.delete-btn') as HTMLElement; if (btn) btn.style.opacity = '0' }}
                       >
-                        {isAdmin && (
-                          <button
-                            className="delete-btn"
-                            onClick={e => deleteEpisode(e, episode.id)}
-                            disabled={deleting === episode.id}
-                            title="Eliminar episodio"
-                            style={{
-                              position: 'absolute', top: '8px', right: '8px',
-                              background: 'rgba(212,37,106,0.12)', border: '1px solid rgba(212,37,106,0.2)',
-                              borderRadius: '4px', color: '#D4256A', cursor: 'pointer',
-                              width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                              opacity: 0, transition: 'opacity 0.15s, background 0.15s',
-                            }}
-                            onMouseEnter={e => { e.stopPropagation(); e.currentTarget.style.background = 'rgba(212,37,106,0.3)' }}
-                            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(212,37,106,0.12)' }}
-                          >
-                            {deleting === episode.id ? '…' : (
-                              <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 3.5h9M5 3.5V2.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5v1M10.5 3.5l-.7 7a.5.5 0 0 1-.5.45H3.7a.5.5 0 0 1-.5-.45l-.7-7" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                            )}
-                          </button>
+                        {/* Background image */}
+                        {img && (
+                          <>
+                            <img src={img} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }} />
+                            <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(8,6,15,0.96) 0%, rgba(8,6,15,0.55) 55%, rgba(8,6,15,0.2) 100%)' }} />
+                          </>
                         )}
-                        <div style={{ fontFamily: 'monospace', fontSize: '0.7rem', letterSpacing: '0.18em', color: statusColor, textTransform: 'uppercase' }}>{code}</div>
-                        <div style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '1.25rem', letterSpacing: '0.04em', color: '#F0EBE1', lineHeight: 1.1, flex: 1 }}>
-                          {episode.title || 'Sin título'}
-                        </div>
-                        {episode.logline && (
-                          <div style={{ fontSize: '0.75rem', color: 'rgba(240,235,225,0.35)', lineHeight: 1.4, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }}>
-                            {episode.logline}
+
+                        {/* Content */}
+                        <div style={{ position: 'relative', flex: 1, display: 'flex', flexDirection: 'column', gap: '0.375rem', padding: '1.25rem' }}>
+                          {isAdmin && (
+                            <button
+                              className="delete-btn"
+                              onClick={e => deleteEpisode(e, episode.id)}
+                              disabled={deleting === episode.id}
+                              title="Eliminar episodio"
+                              style={{
+                                position: 'absolute', top: 0, right: 0,
+                                background: 'rgba(212,37,106,0.12)', border: '1px solid rgba(212,37,106,0.2)',
+                                borderRadius: '4px', color: '#D4256A', cursor: 'pointer',
+                                width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                opacity: 0, transition: 'opacity 0.15s, background 0.15s',
+                              }}
+                              onMouseEnter={e => { e.stopPropagation(); e.currentTarget.style.background = 'rgba(212,37,106,0.3)' }}
+                              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(212,37,106,0.12)' }}
+                            >
+                              {deleting === episode.id ? '…' : (
+                                <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 3.5h9M5 3.5V2.5a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 .5.5v1M10.5 3.5l-.7 7a.5.5 0 0 1-.5.45H3.7a.5.5 0 0 1-.5-.45l-.7-7" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                              )}
+                            </button>
+                          )}
+                          <div style={{ fontFamily: 'monospace', fontSize: '0.7rem', letterSpacing: '0.18em', color: statusColor, textTransform: 'uppercase' }}>{code}</div>
+                          <div style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '1.25rem', letterSpacing: '0.04em', color: '#F0EBE1', lineHeight: 1.1, flex: 1 }}>
+                            {episode.title || 'Sin título'}
                           </div>
-                        )}
-                        <div style={{ marginTop: 'auto', paddingTop: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                          <span style={{
-                            fontSize: '0.6rem', letterSpacing: '0.1em', textTransform: 'uppercase',
-                            color: statusColor, fontWeight: 600,
-                            background: `${statusColor}22`, borderRadius: '20px',
-                            padding: '3px 8px',
-                          }}>
-                            {STATUS_LABELS[episode.status]}
-                          </span>
-                          <span style={{ fontSize: '0.6rem', color: '#D4256A', fontWeight: 700 }}>Abrir →</span>
+                          {episode.logline && !img && (
+                            <div style={{ fontSize: '0.75rem', color: 'rgba(240,235,225,0.35)', lineHeight: 1.4, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical' }}>
+                              {episode.logline}
+                            </div>
+                          )}
+                          <div style={{ marginTop: 'auto', paddingTop: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <span style={{
+                              fontSize: '0.6rem', letterSpacing: '0.1em', textTransform: 'uppercase',
+                              color: statusColor, fontWeight: 600,
+                              background: `${statusColor}22`, borderRadius: '20px',
+                              padding: '3px 8px',
+                            }}>
+                              {STATUS_LABELS[episode.status]}
+                            </span>
+                            <span style={{ fontSize: '0.6rem', color: '#D4256A', fontWeight: 700 }}>Abrir →</span>
+                          </div>
                         </div>
                       </div>
                     )

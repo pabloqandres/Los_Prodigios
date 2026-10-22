@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
 
   let query = supabase
     .from('episodes')
-    .select('id, season, episode_number, title, logline, status, created_by, updated_at')
+    .select('id, season, episode_number, title, logline, status, hero_image_path, created_by, updated_at')
     .order('season')
     .order('episode_number')
 
