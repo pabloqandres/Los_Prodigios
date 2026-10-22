@@ -1480,42 +1480,58 @@ El original_text debe ser una cita LITERAL del guión para ubicarlo automáticam
           {mode === 'script' && (
             <div>
               {/* PENDING NUPPA PROPOSALS */}
-              {episodeProposals.filter(p => p.status === 'pending' || p.status === 'draft' || !p.status).length > 0 && (
-                <div style={{ marginBottom: '1.5rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '0.75rem' }}>
-                    <span style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '0.9rem', letterSpacing: '0.1em', color: '#9B6FD4' }}>
-                      ✦ PROPUESTAS DE NUPPA — {episodeProposals.filter(p => p.status === 'pending' || p.status === 'draft' || !p.status).length} pendiente{episodeProposals.filter(p => p.status === 'pending' || p.status === 'draft' || !p.status).length > 1 ? 's' : ''}
-                    </span>
-                  </div>
-                  {episodeProposals.filter(p => p.status === 'pending' || p.status === 'draft' || !p.status).map(proposal => (
-                    <div key={proposal.id} style={{ background: 'rgba(155,111,212,0.05)', border: '1px solid rgba(155,111,212,0.2)', borderRadius: '8px', overflow: 'hidden', marginBottom: '0.75rem' }}>
-                      <div style={{ padding: '0.75rem 1rem', background: 'rgba(155,111,212,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#9B6FD4', background: 'rgba(155,111,212,0.15)', borderRadius: '20px', padding: '2px 10px' }}>
-                          {proposal.location_hint ?? 'PROPUESTA NUPPA'}
-                        </span>
-                        <div style={{ display: 'flex', gap: '6px' }}>
-                          <button onClick={() => approveProposal(proposal)} disabled={approvingProposal === proposal.id} style={{ padding: '5px 14px', background: 'rgba(78,205,196,0.15)', border: '1px solid rgba(78,205,196,0.35)', borderRadius: '4px', color: '#4ECDC4', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'IBM Plex Sans, sans-serif' }}>
-                            {approvingProposal === proposal.id ? 'Aplicando...' : '✓ Aprobar e incorporar'}
-                          </button>
-                          <button onClick={() => rejectProposalItem(proposal)} style={{ padding: '5px 10px', background: 'transparent', border: '1px solid rgba(240,235,225,0.08)', borderRadius: '4px', color: 'rgba(240,235,225,0.3)', fontSize: '0.75rem', cursor: 'pointer', fontFamily: 'IBM Plex Sans, sans-serif' }}>
-                            Rechazar
-                          </button>
-                        </div>
-                      </div>
-                      <div style={{ padding: '0.75rem 1rem' }}>
-                        <div style={{ fontSize: '0.6rem', letterSpacing: '0.1em', color: 'rgba(240,235,225,0.25)', marginBottom: '4px', fontWeight: 600 }}>TEXTO ORIGINAL</div>
-                        <div style={{ background: 'rgba(212,37,106,0.07)', borderLeft: '2px solid rgba(212,37,106,0.35)', padding: '8px 12px', borderRadius: '0 4px 4px 0', marginBottom: '8px', fontSize: '0.78rem', fontFamily: 'Courier New, monospace', color: 'rgba(240,235,225,0.45)', lineHeight: 1.7, textDecoration: 'line-through' }}>
-                          {proposal.original_text}
-                        </div>
-                        <div style={{ fontSize: '0.6rem', letterSpacing: '0.1em', color: 'rgba(240,235,225,0.25)', marginBottom: '4px', fontWeight: 600 }}>PROPUESTA NUPPA</div>
-                        <div style={{ background: 'rgba(78,205,196,0.06)', borderLeft: '2px solid rgba(78,205,196,0.35)', padding: '8px 12px', borderRadius: '0 4px 4px 0', fontSize: '0.78rem', fontFamily: 'Courier New, monospace', color: '#F0EBE1', lineHeight: 1.7 }}>
-                          {proposal.proposed_text}
-                        </div>
-                      </div>
+              {(() => {
+                const pendingProposals = episodeProposals.filter(p => p.status === 'pending' || p.status === 'draft' || !p.status)
+                if (pendingProposals.length === 0) return null
+                return (
+                  <div style={{ marginBottom: '1.5rem' }}>
+                    {/* Summary bar — chips */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '1rem', flexWrap: 'wrap' }}>
+                      <span style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '0.8rem', letterSpacing: '0.1em', color: 'rgba(155,111,212,0.7)', flexShrink: 0 }}>
+                        ✦ NUPPA · {pendingProposals.length} propuesta{pendingProposals.length > 1 ? 's' : ''}
+                      </span>
+                      {pendingProposals.map((proposal, i) => (
+                        <button
+                          key={proposal.id}
+                          onClick={() => document.getElementById(`proposal-${proposal.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
+                          style={{ padding: '3px 10px', background: 'rgba(155,111,212,0.1)', border: '1px solid rgba(155,111,212,0.3)', borderRadius: '20px', color: '#9B6FD4', fontSize: '0.7rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'IBM Plex Sans, sans-serif', whiteSpace: 'nowrap' }}
+                        >
+                          {proposal.location_hint ?? `Propuesta ${i + 1}`}
+                        </button>
+                      ))}
                     </div>
-                  ))}
-                </div>
-              )}
+
+                    {/* Full proposal cards */}
+                    {pendingProposals.map(proposal => (
+                      <div id={`proposal-${proposal.id}`} key={proposal.id} style={{ background: 'rgba(155,111,212,0.04)', border: '1px solid rgba(155,111,212,0.18)', borderRadius: '8px', overflow: 'hidden', marginBottom: '0.75rem' }}>
+                        <div style={{ padding: '0.6rem 1rem', background: 'rgba(155,111,212,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#9B6FD4', background: 'rgba(155,111,212,0.15)', borderRadius: '20px', padding: '2px 10px' }}>
+                            {proposal.location_hint ?? 'PROPUESTA NUPPA'}
+                          </span>
+                          <div style={{ display: 'flex', gap: '6px' }}>
+                            <button onClick={() => approveProposal(proposal)} disabled={approvingProposal === proposal.id} style={{ padding: '4px 14px', background: 'rgba(78,205,196,0.15)', border: '1px solid rgba(78,205,196,0.35)', borderRadius: '4px', color: '#4ECDC4', fontSize: '0.72rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'IBM Plex Sans, sans-serif' }}>
+                              {approvingProposal === proposal.id ? 'Aplicando...' : '✓ Incorporar'}
+                            </button>
+                            <button onClick={() => rejectProposalItem(proposal)} style={{ padding: '4px 10px', background: 'transparent', border: '1px solid rgba(240,235,225,0.08)', borderRadius: '4px', color: 'rgba(240,235,225,0.3)', fontSize: '0.72rem', cursor: 'pointer', fontFamily: 'IBM Plex Sans, sans-serif' }}>
+                              Descartar
+                            </button>
+                          </div>
+                        </div>
+                        <div style={{ padding: '0.75rem 1rem' }}>
+                          <div style={{ fontSize: '0.6rem', letterSpacing: '0.1em', color: 'rgba(240,235,225,0.2)', marginBottom: '4px', fontWeight: 600 }}>ORIGINAL</div>
+                          <div style={{ background: 'rgba(212,37,106,0.05)', borderLeft: '2px solid rgba(212,37,106,0.25)', padding: '8px 12px', borderRadius: '0 4px 4px 0', marginBottom: '8px', fontSize: '0.77rem', fontFamily: 'Courier New, monospace', color: 'rgba(240,235,225,0.55)', lineHeight: 1.7, textDecoration: 'line-through', textDecorationColor: 'rgba(212,37,106,0.35)', textDecorationThickness: '1px' }}>
+                            {proposal.original_text}
+                          </div>
+                          <div style={{ fontSize: '0.6rem', letterSpacing: '0.1em', color: 'rgba(240,235,225,0.2)', marginBottom: '4px', fontWeight: 600 }}>PROPUESTA NUPPA</div>
+                          <div style={{ background: 'rgba(78,205,196,0.05)', borderLeft: '2px solid rgba(78,205,196,0.3)', padding: '8px 12px', borderRadius: '0 4px 4px 0', fontSize: '0.77rem', fontFamily: 'Courier New, monospace', color: '#F0EBE1', lineHeight: 1.7 }}>
+                            {proposal.proposed_text}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )
+              })()}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '0.5rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                   <div style={{ ...SECTION_HEADER, marginBottom: 0 }}>Guión</div>
