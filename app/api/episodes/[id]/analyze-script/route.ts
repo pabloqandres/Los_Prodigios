@@ -232,8 +232,17 @@ Reglas:
     user_email: token.email,
   })
 
+  const canonIssues = Array.isArray(parsed.canon_issues) ? parsed.canon_issues : []
+
+  // Persist canon_issues into the current script_analysis (if one exists)
+  await supabase
+    .from('script_analyses')
+    .update({ canon_issues: canonIssues })
+    .eq('episode_id', episodeId)
+    .eq('is_current', true)
+
   const result: AnalysisResult = {
-    canon_issues: Array.isArray(parsed.canon_issues) ? parsed.canon_issues : [],
+    canon_issues: canonIssues,
     scene_needs:  sceneNeeds,
     gaps,
     summary:      typeof parsed.summary === 'string' ? parsed.summary : '',

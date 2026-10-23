@@ -493,7 +493,12 @@ El original_text debe ser cita LITERAL del guión (para ubicarlo automáticament
         }
         if (Array.isArray(log)) setContinuityLog(log)
         if (Array.isArray(gaps)) setScriptGaps(gaps)
-        if (analysis?.analysis) setCurrentAnalysis(analysis.analysis)
+        if (analysis?.analysis) {
+          setCurrentAnalysis(analysis.analysis)
+          if (Array.isArray(analysis.analysis.canon_issues) && analysis.analysis.canon_issues.length > 0) {
+            setCanonIssues(analysis.analysis.canon_issues)
+          }
+        }
       })
       .catch(() => {})
       .finally(() => setLoading(false))

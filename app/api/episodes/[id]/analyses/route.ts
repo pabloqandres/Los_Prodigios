@@ -75,6 +75,8 @@ export async function GET(
       categories: categoriesWithFindings,
       findings_count: allFindings.length,
       pending_count: pendingCount,
+      structure: analysis.structure_data ?? null,
+      canon_issues: Array.isArray(analysis.canon_issues) ? analysis.canon_issues : [],
     },
   })
 }

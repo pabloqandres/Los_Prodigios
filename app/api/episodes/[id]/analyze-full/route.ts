@@ -297,6 +297,7 @@ Devuelve exactamente este JSON:
       overall_score: result.scoring.overall,
       verdict: result.scoring.verdict,
       scores_snapshot: result.scoring.categories,
+      structure_data: result.structure ?? null,
       is_current: true,
       created_by: token.email,
     })
