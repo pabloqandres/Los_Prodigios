@@ -333,6 +333,53 @@ export default function EpisodeBuilderPage() {
   const [selectedFinding, setSelectedFinding] = useState<Finding | null>(null)
   const [updatingFinding, setUpdatingFinding] = useState<string | null>(null)
 
+  // Script rewrite (full rewrite with plan)
+  type RewriteChange = { scene_ref: string; finding_title: string; what_changes: string; why: string; dimensions: string[] }
+  type RewritePlan = { summary: string; changes: RewriteChange[]; removals: string[]; additions: string[]; expected_improvement: string }
+  const [rewriting, setRewriting] = useState(false)
+  const [rewriteError, setRewriteError] = useState('')
+  const [rewriteResult, setRewriteResult] = useState<{ plan: RewritePlan; rewritten_script: string; findings_addressed: number } | null>(null)
+  const [applyingRewrite, setApplyingRewrite] = useState(false)
+
+  async function runRewrite() {
+    if (rewriting) return
+    setRewriting(true)
+    setRewriteError('')
+    setRewriteResult(null)
+    try {
+      const res = await fetch(`/api/episodes/${id}/rewrite-script`, { method: 'POST' })
+      const data = await res.json()
+      if (res.ok) {
+        setRewriteResult(data)
+      } else {
+        setRewriteError(data.error ?? 'Error en la reescritura')
+      }
+    } catch {
+      setRewriteError('Error de conexión')
+    } finally {
+      setRewriting(false)
+    }
+  }
+
+  async function applyRewrite() {
+    if (!rewriteResult || applyingRewrite) return
+    setApplyingRewrite(true)
+    try {
+      await fetch(`/api/episodes?id=${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ script: rewriteResult.rewritten_script }),
+      })
+      setScriptDraft(rewriteResult.rewritten_script)
+      setEpisode(prev => prev ? { ...prev, script: rewriteResult!.rewritten_script } : prev)
+      setRewriteResult(null)
+      // Auto-run full analysis to get new score
+      await runFullAnalysis()
+    } finally {
+      setApplyingRewrite(false)
+    }
+  }
+
   async function runFullAnalysis() {
     if (analyzingFull) return
     setAnalyzingFull(true)
@@ -2346,6 +2393,18 @@ El original_text debe ser cita LITERAL del guión (para ubicarlo automáticament
                           <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M2 8a6 6 0 1 1 1.5 4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/><path d="M2 12V8h4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/></svg>
                           Reevaluar guión
                         </button>
+                        {/* Reescritura completa */}
+                        <button
+                          onClick={runRewrite}
+                          disabled={rewriting}
+                          style={{ flexShrink: 0, padding: '10px 18px', background: rewriting ? 'rgba(212,37,106,0.06)' : 'rgba(212,37,106,0.1)', border: '1px solid rgba(212,37,106,0.3)', borderRadius: '6px', color: '#D4256A', fontSize: '0.8rem', fontWeight: 600, cursor: rewriting ? 'not-allowed' : 'pointer', fontFamily: 'IBM Plex Sans, sans-serif', display: 'flex', alignItems: 'center', gap: '7px', opacity: rewriting ? 0.7 : 1 }}
+                        >
+                          {rewriting
+                            ? <svg width="14" height="14" viewBox="0 0 32 32" style={{ animation: 'spin 1s linear infinite' }}><circle cx="16" cy="16" r="12" stroke="currentColor" strokeWidth="3" fill="none" opacity=".3"/><path d="M16 4 A12 12 0 0 1 28 16" stroke="currentColor" strokeWidth="3" fill="none" strokeLinecap="round"/></svg>
+                            : <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                          }
+                          {rewriting ? 'NUPPA reescribiendo...' : 'Reescritura completa'}
+                        </button>
                       </div>
                     </div>
 
@@ -3199,6 +3258,130 @@ El original_text debe ser cita LITERAL del guión (para ubicarlo automáticament
         </div>
         )}
       </div>
+
+      {/* ── REWRITE PLAN MODAL ─────────────────────────────────────────────── */}
+      {(rewriteResult || rewriteError) && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(4,2,12,0.88)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
+          <div style={{ width: '100%', maxWidth: 760, maxHeight: '88vh', background: '#0A0816', border: '1px solid rgba(212,37,106,0.25)', borderRadius: 14, display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 32px 80px rgba(0,0,0,0.7)' }}>
+
+            {/* Header */}
+            <div style={{ padding: '1.5rem 2rem 1.25rem', borderBottom: '1px solid rgba(240,235,225,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+              <div>
+                <div style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '1.4rem', letterSpacing: '0.1em', color: '#D4256A' }}>
+                  PLAN DE REESCRITURA — NUPPA
+                </div>
+                {rewriteResult && (
+                  <div style={{ fontSize: '0.75rem', color: 'rgba(240,235,225,0.45)', marginTop: 3 }}>
+                    {rewriteResult.findings_addressed} hallazgos abordados · Revisa qué va a cambiar antes de aplicar
+                  </div>
+                )}
+              </div>
+              <button onClick={() => { setRewriteResult(null); setRewriteError('') }}
+                style={{ background: 'none', border: '1px solid rgba(240,235,225,0.12)', borderRadius: 6, color: 'rgba(240,235,225,0.45)', cursor: 'pointer', padding: '6px 12px', fontSize: '0.75rem', fontFamily: 'IBM Plex Sans, sans-serif' }}>
+                Cancelar
+              </button>
+            </div>
+
+            {/* Error state */}
+            {rewriteError && (
+              <div style={{ padding: '2rem', color: '#D4256A', fontSize: '0.875rem' }}>
+                {rewriteError}
+              </div>
+            )}
+
+            {/* Plan content */}
+            {rewriteResult && (
+              <div style={{ flex: 1, overflowY: 'auto', padding: '1.75rem 2rem' }}>
+
+                {/* Summary */}
+                <div style={{ background: 'rgba(212,37,106,0.06)', border: '1px solid rgba(212,37,106,0.15)', borderRadius: 8, padding: '1rem 1.25rem', marginBottom: '1.5rem' }}>
+                  <div style={{ fontSize: '0.6rem', fontFamily: 'IBM Plex Mono, monospace', letterSpacing: '0.16em', textTransform: 'uppercase', color: 'rgba(212,37,106,0.6)', marginBottom: 6 }}>Resumen editorial</div>
+                  <div style={{ fontSize: '0.875rem', color: 'rgba(240,235,225,0.82)', lineHeight: 1.6 }}>{rewriteResult.plan.summary}</div>
+                  {rewriteResult.plan.expected_improvement && (
+                    <div style={{ marginTop: 10, fontSize: '0.78rem', fontWeight: 700, color: '#4ECDC4' }}>{rewriteResult.plan.expected_improvement}</div>
+                  )}
+                </div>
+
+                {/* Scene-level changes */}
+                {rewriteResult.plan.changes.length > 0 && (
+                  <div style={{ marginBottom: '1.5rem' }}>
+                    <div style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '0.85rem', letterSpacing: '0.14em', color: 'rgba(240,235,225,0.4)', marginBottom: '0.875rem' }}>
+                      CAMBIOS POR ESCENA
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      {rewriteResult.plan.changes.map((ch, i) => (
+                        <div key={i} style={{ background: 'rgba(240,235,225,0.03)', border: '1px solid rgba(240,235,225,0.07)', borderRadius: 8, padding: '0.875rem 1rem' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                            <span style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: '0.65rem', color: '#9B6FD4', background: 'rgba(155,111,212,0.12)', padding: '2px 7px', borderRadius: 3 }}>{ch.scene_ref}</span>
+                            <span style={{ fontSize: '0.72rem', color: 'rgba(240,235,225,0.5)', flex: 1 }}>{ch.finding_title}</span>
+                            {ch.dimensions?.map(d => (
+                              <span key={d} style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: '0.55rem', color: 'rgba(78,205,196,0.6)', background: 'rgba(78,205,196,0.06)', padding: '1px 5px', borderRadius: 2 }}>{d}</span>
+                            ))}
+                          </div>
+                          <div style={{ fontSize: '0.82rem', fontWeight: 600, color: 'rgba(240,235,225,0.88)', marginBottom: 4 }}>{ch.what_changes}</div>
+                          <div style={{ fontSize: '0.75rem', color: 'rgba(240,235,225,0.48)', lineHeight: 1.5 }}>{ch.why}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Removals */}
+                {rewriteResult.plan.removals.length > 0 && (
+                  <div style={{ marginBottom: '1.25rem' }}>
+                    <div style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '0.85rem', letterSpacing: '0.14em', color: 'rgba(240,235,225,0.4)', marginBottom: '0.75rem' }}>
+                      SE ELIMINA
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                      {rewriteResult.plan.removals.map((r, i) => (
+                        <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                          <span style={{ color: '#D4256A', marginTop: 2, flexShrink: 0, fontSize: '0.7rem' }}>−</span>
+                          <span style={{ fontSize: '0.8rem', color: 'rgba(240,235,225,0.62)', lineHeight: 1.5 }}>{r}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Additions */}
+                {rewriteResult.plan.additions.length > 0 && (
+                  <div style={{ marginBottom: '1.25rem' }}>
+                    <div style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '0.85rem', letterSpacing: '0.14em', color: 'rgba(240,235,225,0.4)', marginBottom: '0.75rem' }}>
+                      SE AGREGA
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                      {rewriteResult.plan.additions.map((a, i) => (
+                        <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                          <span style={{ color: '#4ECDC4', marginTop: 2, flexShrink: 0, fontSize: '0.7rem' }}>+</span>
+                          <span style={{ fontSize: '0.8rem', color: 'rgba(240,235,225,0.62)', lineHeight: 1.5 }}>{a}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Footer CTA */}
+            {rewriteResult && (
+              <div style={{ padding: '1.25rem 2rem', borderTop: '1px solid rgba(240,235,225,0.07)', display: 'flex', gap: 12, justifyContent: 'flex-end', flexShrink: 0 }}>
+                <button onClick={() => { setRewriteResult(null); setRewriteError('') }}
+                  style={{ padding: '10px 20px', background: 'transparent', border: '1px solid rgba(240,235,225,0.14)', borderRadius: 7, color: 'rgba(240,235,225,0.55)', cursor: 'pointer', fontSize: '0.82rem', fontFamily: 'IBM Plex Sans, sans-serif' }}>
+                  Descartar
+                </button>
+                <button onClick={applyRewrite} disabled={applyingRewrite}
+                  style={{ padding: '10px 24px', background: applyingRewrite ? 'rgba(212,37,106,0.3)' : '#D4256A', border: 'none', borderRadius: 7, color: '#fff', cursor: applyingRewrite ? 'not-allowed' : 'pointer', fontSize: '0.82rem', fontWeight: 700, fontFamily: 'IBM Plex Sans, sans-serif', display: 'flex', alignItems: 'center', gap: 8 }}>
+                  {applyingRewrite
+                    ? <><svg width="13" height="13" viewBox="0 0 32 32" style={{ animation: 'spin 1s linear infinite' }}><circle cx="16" cy="16" r="12" stroke="currentColor" strokeWidth="3" fill="none" opacity=".3"/><path d="M16 4 A12 12 0 0 1 28 16" stroke="currentColor" strokeWidth="3" fill="none" strokeLinecap="round"/></svg> Aplicando...</>
+                    : 'Aplicar reescritura y reevaluar'
+                  }
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
     </div>
   )
 }
