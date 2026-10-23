@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import { storageUrl } from '@/lib/supabase'
@@ -1421,205 +1421,365 @@ El original_text debe ser cita LITERAL del guión (para ubicarlo automáticament
         <div style={{ flex: 1, overflowY: 'auto', padding: '1.5rem', minWidth: 0 }}>
 
           {/* OVERVIEW MODE */}
-          {mode === 'overview' && (
-            <div style={{ paddingBottom: '2rem' }}>
+          {mode === 'overview' && (() => {
+            const scoreColor = (s: number) => s >= 4 ? '#4ECDC4' : s >= 3 ? '#F5A52A' : '#D4256A'
+            const scoreBg = (s: number) => s >= 4 ? 'rgba(78,205,196,0.07)' : s >= 3 ? 'rgba(245,165,42,0.07)' : 'rgba(212,37,106,0.07)'
+            const scoreBorder = (s: number) => s >= 4 ? 'rgba(78,205,196,0.22)' : s >= 3 ? 'rgba(245,165,42,0.2)' : 'rgba(212,37,106,0.2)'
+            const C28 = 2 * Math.PI * 28
 
-              {/* ── HERO CARD ─────────────────────────────────────────── */}
-              <input ref={heroFileRef} type="file" accept="image/*" style={{ display: 'none' }}
-                onChange={e => { const f = e.target.files?.[0]; if (f) uploadHeroImage(f) }} />
-              <div
-                style={{
-                  position: 'relative',
-                  width: 'calc(100% + 3rem)',
-                  marginLeft: '-1.5rem',
-                  marginTop: '-1.5rem',
-                  height: '240px',
-                  marginBottom: '1.5rem',
-                  overflow: 'hidden',
-                  background: episode.hero_image_path ? 'transparent' : 'linear-gradient(135deg, #120D28 0%, #1A1235 50%, #0D0920 100%)',
-                  cursor: 'default',
-                }}
-              >
-                {/* Background image */}
-                {episode.hero_image_path && (
-                  <img
-                    src={storageUrl(episode.hero_image_path) ?? ''}
-                    alt=""
-                    style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }}
-                  />
-                )}
+            const analysisActs = currentAnalysis?.structure?.acts ?? []
+            const allScenes = analysisActs.flatMap(a => a.scenes)
+            const totalScenes = currentAnalysis?.structure?.total_scenes ?? allScenes.length
 
-                {/* Gradient overlays */}
-                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(8,6,15,0.95) 0%, rgba(8,6,15,0.4) 50%, rgba(8,6,15,0.2) 100%)' }} />
-                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(8,6,15,0.3) 0%, transparent 60%)' }} />
+            const charMap: Record<string, number> = {}
+            allScenes.forEach(sc => sc.characters.forEach(ch => { if (ch) charMap[ch] = (charMap[ch] ?? 0) + 1 }))
+            const chars = Object.entries(charMap).sort((a, b) => b[1] - a[1])
 
-                {/* Top-left: code */}
-                <div style={{ position: 'absolute', top: '1.25rem', left: '1.5rem', fontFamily: 'monospace', fontSize: '0.7rem', letterSpacing: '0.18em', color: statusColor, fontWeight: 700 }}>
-                  {code}{episode.script_finalized ? '-FINAL' : episode.script_version > 1 ? `-G${String(episode.script_version).padStart(2,'0')}` : ''}
-                </div>
+            const locMap: Record<string, number> = {}
+            allScenes.forEach(sc => { if (sc.location) locMap[sc.location] = (locMap[sc.location] ?? 0) + 1 })
+            const locs = Object.entries(locMap).sort((a, b) => b[1] - a[1])
 
-                {/* Top-right: upload button */}
-                <button
-                  onClick={() => heroFileRef.current?.click()}
-                  disabled={heroUploading}
-                  style={{
-                    position: 'absolute', top: '1rem', right: '1rem',
-                    background: 'rgba(8,6,15,0.7)', border: '1px solid rgba(240,235,225,0.12)',
-                    borderRadius: '4px', color: 'rgba(240,235,225,0.5)',
-                    cursor: heroUploading ? 'not-allowed' : 'pointer',
-                    padding: '6px 10px', display: 'flex', alignItems: 'center', gap: '5px',
-                    fontSize: '0.65rem', fontFamily: 'IBM Plex Sans, sans-serif',
-                    backdropFilter: 'blur(8px)',
-                  }}
-                >
-                  {heroUploading ? (
-                    <svg width="12" height="12" viewBox="0 0 32 32" style={{ animation: 'spin 1s linear infinite' }}><circle cx="16" cy="16" r="12" stroke="currentColor" strokeWidth="3" fill="none" opacity=".3"/><path d="M16 4 A12 12 0 0 1 28 16" stroke="currentColor" strokeWidth="3" fill="none" strokeLinecap="round"/></svg>
-                  ) : (
-                    <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M2 11v2a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-2" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/><path d="M8 3v7M5 6l3-3 3 3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            const totalDurMins = allScenes.reduce((sum, s) => sum + (s.duration_est ?? 0), 0)
+              || Math.max(1, Math.round(scriptDraft.length / 1500))
+            const scriptLines = scriptDraft.trim().length > 50 ? scriptDraft.split('\n').length : 0
+
+            const CHAR_COLORS = ['#4ECDC4', '#9B6FD4', '#F5A52A', '#4A8FE8', '#D4256A', '#66BB6A', '#FF8A65', '#AB47BC']
+            const contErrors = canonIssues.filter(i => i.severity === 'error')
+            const contWarnings = canonIssues.filter(i => i.severity === 'warning')
+
+            const secLabel = (text: string) => (
+              <div style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '1rem', letterSpacing: '0.16em', color: 'rgba(240,235,225,0.5)', display: 'flex', alignItems: 'center', gap: 12, marginBottom: '1.25rem' }}>
+                {text} <div style={{ flex: 1, height: 1, background: 'rgba(240,235,225,0.07)' }} />
+              </div>
+            )
+
+            return (
+              <div style={{ margin: '-1.5rem', paddingBottom: '2rem' }}>
+
+                {/* ── HERO IMAGE ── */}
+                <input ref={heroFileRef} type="file" accept="image/*" style={{ display: 'none' }}
+                  onChange={e => { const f = e.target.files?.[0]; if (f) uploadHeroImage(f) }} />
+                <div style={{ width: '100%', height: 200, background: episode.hero_image_path ? 'transparent' : '#0D0920', borderBottom: '1px solid rgba(240,235,225,0.05)', position: 'relative', overflow: 'hidden' }}>
+                  {episode.hero_image_path && (
+                    <img src={storageUrl(episode.hero_image_path) ?? ''} alt=""
+                      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
                   )}
-                  {episode.hero_image_path ? 'Cambiar imagen' : 'Subir imagen'}
-                </button>
+                  <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(8,6,15,0.85) 0%, rgba(8,6,15,0.3) 60%, transparent 100%)' }} />
+                  {!episode.hero_image_path && (
+                    <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
+                      <div style={{ opacity: 0.07 }}>
+                        <svg width="56" height="56" viewBox="0 0 64 64" fill="none"><rect x="4" y="12" width="56" height="40" rx="4" stroke="white" strokeWidth="2"/><circle cx="22" cy="26" r="5" stroke="white" strokeWidth="2"/><path d="M4 40l14-12 10 10 10-8 22 18" stroke="white" strokeWidth="2" strokeLinejoin="round"/></svg>
+                      </div>
+                    </div>
+                  )}
+                  <button onClick={() => heroFileRef.current?.click()} disabled={heroUploading}
+                    style={{ position: 'absolute', top: 12, right: 12, background: 'rgba(8,6,15,0.7)', border: '1px solid rgba(240,235,225,0.14)', borderRadius: 4, color: 'rgba(240,235,225,0.55)', cursor: heroUploading ? 'not-allowed' : 'pointer', padding: '5px 12px', display: 'flex', alignItems: 'center', gap: 5, fontSize: '0.62rem', fontFamily: 'IBM Plex Sans, sans-serif', backdropFilter: 'blur(8px)', letterSpacing: '0.1em', fontWeight: 700, textTransform: 'uppercase' }}>
+                    {heroUploading
+                      ? <svg width="12" height="12" viewBox="0 0 32 32" style={{ animation: 'spin 1s linear infinite' }}><circle cx="16" cy="16" r="12" stroke="currentColor" strokeWidth="3" fill="none" opacity=".3"/><path d="M16 4 A12 12 0 0 1 28 16" stroke="currentColor" strokeWidth="3" fill="none" strokeLinecap="round"/></svg>
+                      : <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M2 11v2a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-2" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/><path d="M8 3v7M5 6l3-3 3 3" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    }
+                    {episode.hero_image_path ? '↑ Cambiar imagen' : '↑ Subir imagen'}
+                  </button>
+                </div>
 
-                {/* Bottom: title + status */}
-                <div style={{ position: 'absolute', bottom: '1.25rem', left: '1.5rem', right: '1.5rem' }}>
-                  <div style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '2rem', letterSpacing: '0.05em', color: '#F0EBE1', lineHeight: 1.1, marginBottom: '0.5rem', textShadow: '0 2px 12px rgba(0,0,0,0.8)' }}>
-                    {episode.title || <span style={{ opacity: 0.25 }}>Sin título</span>}
+                {/* ── IDENTITY ── */}
+                <div style={{ padding: '2.5rem 2rem 2rem', borderBottom: '1px solid rgba(240,235,225,0.05)', display: 'grid', gridTemplateColumns: '1fr auto', gap: '3rem', alignItems: 'end' }}>
+                  <div>
+                    <div style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: '0.72rem', letterSpacing: '0.18em', color: 'rgba(240,235,225,0.48)', textTransform: 'uppercase', marginBottom: '0.75rem' }}>
+                      Temporada {episode.season} · Episodio {String(episode.episode_number).padStart(2, '0')}
+                    </div>
+                    <div style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '5rem', letterSpacing: '0.03em', lineHeight: 0.88, color: '#F0EBE1', marginBottom: '1.5rem' }}>
+                      {episode.title || <span style={{ opacity: 0.25 }}>Sin título</span>}
+                    </div>
+                    <div style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: '0.58rem', letterSpacing: '0.22em', fontWeight: 600, color: 'rgba(212,37,106,0.65)', textTransform: 'uppercase', marginBottom: 6 }}>Logline</div>
+                    {episode.logline ? (
+                      <div style={{ fontSize: '1.15rem', fontWeight: 300, fontStyle: 'italic', color: 'rgba(240,235,225,0.82)', lineHeight: 1.6, maxWidth: 680, borderTop: '1px solid rgba(212,37,106,0.2)', paddingTop: '1rem' }}>
+                        {episode.logline}
+                      </div>
+                    ) : (
+                      <textarea
+                        key={`${episode.id}-logline`}
+                        defaultValue=""
+                        placeholder="Una oración que resume el conflicto central..."
+                        rows={2}
+                        onBlur={e => saveField('logline', e.target.value)}
+                        style={{ ...INPUT, fontSize: '1rem', fontStyle: 'italic', background: 'transparent', maxWidth: 680, lineHeight: 1.6, border: 'none', borderTop: '1px solid rgba(212,37,106,0.2)', borderRadius: 0, padding: '1rem 0 0' }}
+                      />
+                    )}
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: statusColor, background: `${statusColor}18`, border: `1px solid ${statusColor}44`, borderRadius: '20px', padding: '2px 10px' }}>
-                      {({ draft:'Borrador', outline:'Outline', script:'Guión', in_production:'En producción', completed:'Completado' })[episode.status]}
-                    </span>
-                    <span style={{ fontSize: '0.6rem', color: 'rgba(240,235,225,0.3)', fontFamily: 'monospace' }}>
-                      T{episode.season} · EP {episode.episode_number}
-                    </span>
+                  {currentAnalysis && (
+                    <div style={{ textAlign: 'right', flexShrink: 0, cursor: 'pointer' }} onClick={() => setMode('structure')}>
+                      <div style={{ fontSize: '0.58rem', letterSpacing: '0.2em', fontWeight: 700, color: 'rgba(212,37,106,0.6)', textTransform: 'uppercase', marginBottom: 6 }}>Score NUPPA</div>
+                      <div style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '7rem', lineHeight: 0.85, letterSpacing: '-0.02em', color: '#D4256A' }}>
+                        {currentAnalysis.overall_score}
+                      </div>
+                      <div style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: '0.72rem', color: 'rgba(212,37,106,0.55)', letterSpacing: '0.08em' }}>/ 5</div>
+                      {currentAnalysis.verdict && (
+                        <div style={{ fontSize: '0.74rem', color: 'rgba(240,235,225,0.58)', maxWidth: 180, textAlign: 'right', lineHeight: 1.55, marginTop: 8 }}>
+                          {currentAnalysis.verdict}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* ── 3 STATS ── */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', borderBottom: '1px solid rgba(240,235,225,0.05)' }}>
+                  <div style={{ padding: '1.75rem 2rem', borderRight: '1px solid rgba(240,235,225,0.05)', cursor: 'pointer' }}
+                    onClick={() => setMode('script')}
+                    onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'rgba(240,235,225,0.02)'}
+                    onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}>
+                    <div style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '4rem', lineHeight: 0.9, color: '#4ECDC4', marginBottom: 6 }}>{totalDurMins}</div>
+                    <div style={{ fontSize: '0.72rem', letterSpacing: '0.12em', fontWeight: 700, color: 'rgba(240,235,225,0.52)', textTransform: 'uppercase' }}>Minutos estimados</div>
+                    {scriptLines > 0 && <div style={{ fontSize: '0.74rem', color: 'rgba(240,235,225,0.48)', marginTop: 5 }}>{totalScenes > 0 ? `${totalScenes} escenas · ` : ''}{scriptLines} líneas</div>}
+                    <div style={{ fontSize: '0.68rem', color: 'rgba(240,235,225,0.3)', marginTop: 10 }}>Ver guión completo →</div>
+                  </div>
+                  <div style={{ padding: '1.75rem 2rem', borderRight: '1px solid rgba(240,235,225,0.05)', cursor: 'pointer' }}
+                    onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'rgba(240,235,225,0.02)'}
+                    onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}>
+                    <div style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '4rem', lineHeight: 0.9, color: '#9B6FD4', marginBottom: 6 }}>{chars.length || '—'}</div>
+                    <div style={{ fontSize: '0.72rem', letterSpacing: '0.12em', fontWeight: 700, color: 'rgba(240,235,225,0.52)', textTransform: 'uppercase' }}>Personajes</div>
+                    {chars.length > 0 && <div style={{ fontSize: '0.74rem', color: 'rgba(240,235,225,0.48)', marginTop: 5 }}>{chars.slice(0, 3).map(([n]) => n).join(', ')}{chars.length > 3 ? ` +${chars.length - 3}` : ''}</div>}
+                    <div style={{ fontSize: '0.68rem', color: 'rgba(240,235,225,0.3)', marginTop: 10 }}>Ver fichas de personajes →</div>
+                  </div>
+                  <div style={{ padding: '1.75rem 2rem', cursor: 'pointer' }}
+                    onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'rgba(240,235,225,0.02)'}
+                    onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}>
+                    <div style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '4rem', lineHeight: 0.9, color: '#F5A52A', marginBottom: 6 }}>{locs.length || '—'}</div>
+                    <div style={{ fontSize: '0.72rem', letterSpacing: '0.12em', fontWeight: 700, color: 'rgba(240,235,225,0.52)', textTransform: 'uppercase' }}>Locaciones</div>
+                    {locs.length > 0 && <div style={{ fontSize: '0.74rem', color: 'rgba(240,235,225,0.48)', marginTop: 5 }}>{locs.slice(0, 2).map(([n]) => n).join(', ')}{locs.length > 2 ? ` +${locs.length - 2}` : ''}</div>}
+                    <div style={{ fontSize: '0.68rem', color: 'rgba(240,235,225,0.3)', marginTop: 10 }}>Ver assets de locaciones →</div>
                   </div>
                 </div>
 
-                {/* Placeholder pattern when no image */}
-                {!episode.hero_image_path && (
-                  <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
-                    <div style={{ textAlign: 'center', opacity: 0.08 }}>
-                      <svg width="64" height="64" viewBox="0 0 64 64" fill="none"><rect x="4" y="12" width="56" height="40" rx="4" stroke="white" strokeWidth="2"/><circle cx="22" cy="26" r="5" stroke="white" strokeWidth="2"/><path d="M4 40l14-12 10 10 10-8 22 18" stroke="white" strokeWidth="2" strokeLinejoin="round"/></svg>
+                {/* ── STORYBOARD STRIP ── */}
+                {analysisActs.length > 0 && (
+                  <div style={{ padding: '1.5rem 2rem', borderBottom: '1px solid rgba(240,235,225,0.05)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: '1rem' }}>
+                      <span style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '1rem', letterSpacing: '0.14em', color: 'rgba(240,235,225,0.55)' }}>Arco narrativo</span>
+                      <span style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: '0.65rem', color: 'rgba(240,235,225,0.38)' }}>{analysisActs.length} actos · {totalScenes} escenas</span>
+                      <div style={{ flex: 1, height: 1, background: 'rgba(240,235,225,0.06)' }} />
+                    </div>
+                    <div style={{ display: 'flex', gap: 3, height: 76 }}>
+                      {analysisActs.map((act, ai) => {
+                        const bases = ['rgba(78,205,196,', 'rgba(155,111,212,', 'rgba(212,37,106,']
+                        const base = bases[ai % 3]
+                        return (
+                          <React.Fragment key={act.act_number}>
+                            <div style={{ writingMode: 'vertical-rl', fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '0.58rem', letterSpacing: '0.14em', color: 'rgba(240,235,225,0.32)', padding: '0 7px', alignSelf: 'stretch', display: 'flex', alignItems: 'center', borderLeft: ai > 0 ? '1px solid rgba(240,235,225,0.06)' : 'none', flexShrink: 0 }}>
+                              {act.title || `ACTO ${act.act_number}`}
+                            </div>
+                            {act.scenes.map((sc, si) => {
+                              const opacity = Math.max(0.08, 0.22 - si * 0.02)
+                              return (
+                                <div key={sc.scene_number}
+                                  style={{ flex: si === 0 ? 1.2 : 1, borderRadius: 3, background: `${base}${opacity})`, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: '6px 7px', overflow: 'hidden', cursor: 'pointer', minWidth: 0, transition: 'flex 0.18s ease' }}
+                                  onClick={() => setMode('script')}
+                                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.flex = '2.5' }}
+                                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.flex = si === 0 ? '1.2' : '1' }}>
+                                  <div style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: '0.46rem', color: 'rgba(255,255,255,0.52)', letterSpacing: '0.08em', marginBottom: 2 }}>ESC {sc.scene_number}</div>
+                                  <div style={{ fontSize: '0.6rem', fontWeight: 600, color: 'rgba(255,255,255,0.85)', lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sc.title}</div>
+                                  <div style={{ fontSize: '0.48rem', color: 'rgba(255,255,255,0.48)', marginTop: 3 }}>Abrir →</div>
+                                </div>
+                              )
+                            })}
+                          </React.Fragment>
+                        )
+                      })}
                     </div>
                   </div>
                 )}
-              </div>
 
-              {/* ── STAT CARDS ────────────────────────────────────────── */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.75rem', marginBottom: '2rem' }}>
+                {/* ── LOWER 2 COLUMNS ── */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 400px' }}>
 
-                {/* Script card */}
-                <div
-                  onClick={() => setMode('script')}
-                  style={{ background: '#0D0920', border: '1px solid rgba(245,165,42,0.1)', borderRadius: '6px', padding: '1rem', cursor: 'pointer', transition: 'all 0.15s' }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(245,165,42,0.35)'; e.currentTarget.style.background = 'rgba(245,165,42,0.04)' }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(245,165,42,0.1)'; e.currentTarget.style.background = '#0D0920' }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style={{ color: '#F5A52A' }}><rect x="4" y="2" width="16" height="20" rx="2" stroke="currentColor" strokeWidth="1.5"/><path d="M8 8h8M8 12h8M8 16h5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round"/></svg>
-                    <svg width="12" height="12" viewBox="0 0 16 16" fill="none" style={{ color: 'rgba(240,235,225,0.2)', marginTop: '2px' }}><path d="M4 8h8M9 5l3 3-3 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                  {/* LEFT COLUMN */}
+                  <div style={{ padding: '2rem', borderRight: '1px solid rgba(240,235,225,0.05)', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+
+                    {/* Sinopsis */}
+                    <div>
+                      {secLabel('Sinopsis')}
+                      {episode.synopsis ? (
+                        <div style={{ fontSize: '0.92rem', color: 'rgba(240,235,225,0.72)', lineHeight: 1.85, cursor: 'text' }}
+                          onClick={e => { const ta = e.currentTarget; const input = document.createElement('textarea'); input.value = episode.synopsis ?? ''; ta.replaceWith(input); input.focus() }}>
+                          {episode.synopsis}
+                        </div>
+                      ) : (
+                        <textarea key={`${episode.id}-synopsis`} defaultValue={episode.synopsis ?? ''} placeholder="Resumen narrativo del episodio..." rows={4} onBlur={e => saveField('synopsis', e.target.value)} style={{ ...INPUT, lineHeight: 1.85, fontSize: '0.92rem' }} />
+                      )}
+                    </div>
+
+                    {/* Tema */}
+                    <div>
+                      {secLabel('Tema central')}
+                      <div style={{ padding: '1.25rem', background: 'rgba(155,111,212,0.07)', border: '1px solid rgba(155,111,212,0.15)', borderRadius: 6 }}>
+                        <div style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: '0.56rem', letterSpacing: '0.2em', color: 'rgba(155,111,212,0.65)', textTransform: 'uppercase', fontWeight: 600, marginBottom: 6 }}>◈ Tema</div>
+                        <textarea key={`${episode.id}-theme`} defaultValue={episode.theme ?? ''} placeholder="El tema que explora este episodio..." rows={2} onBlur={e => saveField('theme', e.target.value)} style={{ ...INPUT, background: 'transparent', border: 'none', padding: 0, fontSize: '1rem', fontStyle: 'italic', color: '#9B6FD4', lineHeight: 1.5, resize: 'none', borderRadius: 0 }} />
+                      </div>
+                    </div>
+
+                    {/* Bookends */}
+                    <div>
+                      {secLabel('Estructura dramática')}
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                        <div style={{ padding: '1.25rem', borderRadius: 6, border: '1px solid rgba(78,205,196,0.12)', position: 'relative' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 7, fontFamily: 'IBM Plex Mono, monospace', fontSize: '0.58rem', letterSpacing: '0.18em', fontWeight: 600, textTransform: 'uppercase', marginBottom: 8 }}>
+                            <svg width="11" height="11" viewBox="0 0 16 16" fill="none"><polygon points="3,3 13,8 3,13" stroke="#4ECDC4" strokeWidth="1.5" strokeLinejoin="round"/></svg>
+                            <span style={{ color: 'rgba(78,205,196,0.72)' }}>Cold Open</span>
+                          </div>
+                          <textarea key={`${episode.id}-cold_open`} defaultValue={episode.cold_open ?? ''} placeholder="Lo que ocurre antes de los créditos..." rows={4} onBlur={e => saveField('cold_open', e.target.value)} style={{ ...INPUT, background: 'transparent', border: 'none', padding: 0, lineHeight: 1.65, fontSize: '0.82rem', resize: 'none', borderRadius: 0, color: episode.cold_open ? 'rgba(240,235,225,0.65)' : undefined }} />
+                        </div>
+                        <div style={{ padding: '1.25rem', borderRadius: 6, border: '1px solid rgba(212,37,106,0.1)', position: 'relative' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 7, fontFamily: 'IBM Plex Mono, monospace', fontSize: '0.58rem', letterSpacing: '0.18em', fontWeight: 600, textTransform: 'uppercase', marginBottom: 8 }}>
+                            <svg width="11" height="11" viewBox="0 0 16 16" fill="none"><rect x="3" y="3" width="10" height="10" rx="1" stroke="#D4256A" strokeWidth="1.5"/></svg>
+                            <span style={{ color: 'rgba(212,37,106,0.65)' }}>Gancho final</span>
+                          </div>
+                          <textarea key={`${episode.id}-tag`} defaultValue={episode.tag ?? ''} placeholder="El cierre o gancho post-créditos..." rows={4} onBlur={e => saveField('tag', e.target.value)} style={{ ...INPUT, background: 'transparent', border: 'none', padding: 0, lineHeight: 1.65, fontSize: '0.82rem', resize: 'none', borderRadius: 0, color: episode.tag ? 'rgba(240,235,225,0.65)' : undefined }} />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Score cards */}
+                    {currentAnalysis && currentAnalysis.categories.length > 0 && (
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: '1rem' }}>
+                          <div style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '1rem', letterSpacing: '0.16em', color: 'rgba(240,235,225,0.5)' }}>Score por dimensión</div>
+                          <div style={{ flex: 1, height: 1, background: 'rgba(240,235,225,0.07)' }} />
+                          <span onClick={() => setMode('structure')} style={{ fontSize: '0.68rem', color: 'rgba(240,235,225,0.28)', cursor: 'pointer' }}>Ver análisis completo →</span>
+                        </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: `repeat(${currentAnalysis.categories.length}, 1fr)`, gap: 10 }}>
+                          {currentAnalysis.categories.map(cat => {
+                            const fill = (cat.score / 5) * C28
+                            const color = scoreColor(cat.score)
+                            const pendingCount = cat.findings.filter(f => f.status === 'pending' || f.status === 'in_review').length
+                            return (
+                              <div key={cat.key} onClick={() => setMode('structure')}
+                                style={{ borderRadius: 10, padding: '1rem 0.75rem 0.875rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', position: 'relative', background: `linear-gradient(135deg, ${scoreBg(cat.score)}, rgba(10,7,25,0.4))`, border: `1px solid ${scoreBorder(cat.score)}`, backdropFilter: 'blur(8px)', transition: 'filter 0.12s' }}
+                                onMouseEnter={e => (e.currentTarget as HTMLElement).style.filter = 'brightness(1.12)'}
+                                onMouseLeave={e => (e.currentTarget as HTMLElement).style.filter = 'brightness(1)'}>
+                                {pendingCount > 0 && (
+                                  <div style={{ position: 'absolute', top: 8, right: 8, width: 16, height: 16, borderRadius: '50%', background: '#D4256A', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.52rem', fontWeight: 700, color: '#fff' }}>{pendingCount}</div>
+                                )}
+                                <svg width="70" height="70" viewBox="0 0 70 70">
+                                  <circle cx="35" cy="35" r="28" fill="none" stroke="rgba(240,235,225,0.05)" strokeWidth="5"/>
+                                  <circle cx="35" cy="35" r="28" fill="none" stroke={color} strokeWidth="5"
+                                    strokeDasharray={`${fill} ${C28}`}
+                                    strokeDashoffset={C28 * 0.25}
+                                    strokeLinecap="round"
+                                    style={{ filter: `drop-shadow(0 0 5px ${color}66)` }}
+                                  />
+                                  <text x="35" y="32" textAnchor="middle" dominantBaseline="central" fill={color} fontSize="18" fontWeight="700" fontFamily="Bebas Neue, Impact, sans-serif">{cat.score}</text>
+                                  <text x="35" y="44" textAnchor="middle" dominantBaseline="central" fill="rgba(240,235,225,0.22)" fontSize="8" fontFamily="IBM Plex Sans, sans-serif">/5</text>
+                                </svg>
+                                <div style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '0.78rem', letterSpacing: '0.1em', color: '#F0EBE1', textAlign: 'center', lineHeight: 1.2 }}>{cat.label}</div>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Continuidad + Locaciones */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+
+                      {/* Continuidad */}
+                      <div>
+                        {secLabel('Continuidad')}
+                        {canonIssues.length === 0 ? (
+                          <div style={{ fontSize: '0.78rem', color: 'rgba(240,235,225,0.28)', fontStyle: 'italic' }}>Sin issues detectados.</div>
+                        ) : (
+                          <>
+                            <div style={{ display: 'flex', gap: 8, marginBottom: '1rem' }}>
+                              {contErrors.length > 0 && (
+                                <div onClick={() => setMode('produccion')} style={{ flex: 1, borderRadius: 5, padding: 10, textAlign: 'center', background: 'rgba(212,37,106,0.09)', border: '1px solid rgba(212,37,106,0.18)', cursor: 'pointer' }}>
+                                  <div style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '2rem', lineHeight: 1, color: '#D4256A' }}>{contErrors.length}</div>
+                                  <div style={{ fontSize: '0.58rem', letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 700, marginTop: 3, color: 'rgba(212,37,106,0.6)' }}>Errores</div>
+                                </div>
+                              )}
+                              {contWarnings.length > 0 && (
+                                <div onClick={() => setMode('produccion')} style={{ flex: 1, borderRadius: 5, padding: 10, textAlign: 'center', background: 'rgba(245,165,42,0.07)', border: '1px solid rgba(245,165,42,0.15)', cursor: 'pointer' }}>
+                                  <div style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '2rem', lineHeight: 1, color: '#F5A52A' }}>{contWarnings.length}</div>
+                                  <div style={{ fontSize: '0.58rem', letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 700, marginTop: 3, color: 'rgba(245,165,42,0.6)' }}>Alertas</div>
+                                </div>
+                              )}
+                            </div>
+                            {canonIssues.slice(0, 4).map((issue, i) => (
+                              <div key={i} onClick={() => setMode('produccion')} style={{ display: 'flex', gap: 8, padding: '8px 0', borderBottom: i < Math.min(3, canonIssues.length - 1) ? '1px solid rgba(240,235,225,0.05)' : 'none', cursor: 'pointer' }}>
+                                <div style={{ width: 7, height: 7, borderRadius: '50%', flexShrink: 0, marginTop: 5, background: issue.severity === 'error' ? '#D4256A' : '#F5A52A', boxShadow: `0 0 5px ${issue.severity === 'error' ? 'rgba(212,37,106,0.5)' : 'rgba(245,165,42,0.4)'}` }} />
+                                <div style={{ flex: 1 }}>
+                                  <div style={{ fontSize: '0.78rem', fontWeight: 600, color: 'rgba(240,235,225,0.85)' }}>{issue.entity}</div>
+                                  <div style={{ fontSize: '0.68rem', color: 'rgba(240,235,225,0.55)', marginTop: 2, lineHeight: 1.45 }}>{issue.issue}</div>
+                                </div>
+                              </div>
+                            ))}
+                          </>
+                        )}
+                      </div>
+
+                      {/* Locaciones */}
+                      <div>
+                        {secLabel('Locaciones')}
+                        {locs.length === 0 ? (
+                          <div style={{ fontSize: '0.78rem', color: 'rgba(240,235,225,0.28)', fontStyle: 'italic' }}>Sin análisis disponible.</div>
+                        ) : (
+                          locs.map(([name, count], i) => (
+                            <div key={name} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px', borderRadius: 6, border: '1px solid transparent', cursor: 'pointer', transition: 'all 0.12s' }}
+                              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(245,165,42,0.05)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(245,165,42,0.14)' }}
+                              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.borderColor = 'transparent' }}>
+                              <div style={{ width: 8, height: 8, borderRadius: 2, flexShrink: 0, background: `rgba(245,165,42,${Math.max(0.25, 1 - i * 0.2)})` }} />
+                              <div style={{ flex: 1, fontSize: '0.85rem', fontWeight: 600, color: 'rgba(240,235,225,0.88)' }}>{name}</div>
+                              <div style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: '0.68rem', color: 'rgba(240,235,225,0.42)' }}>{count} esc.</div>
+                              <div style={{ fontSize: '0.65rem', color: 'rgba(245,165,42,0.55)' }}>→</div>
+                            </div>
+                          ))
+                        )}
+                      </div>
+
+                    </div>
                   </div>
-                  <div style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '0.8rem', letterSpacing: '0.1em', color: 'rgba(240,235,225,0.4)', marginBottom: '4px' }}>GUIÓN</div>
-                  {scriptDraft.trim().length > 50 ? (
-                    <>
-                      <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#F5A52A', fontFamily: 'monospace', letterSpacing: '0.06em', marginBottom: '2px' }}>
-                        {episode.script_finalized ? 'FINAL' : `G${String(episode.script_version).padStart(2,'0')}`}
-                      </div>
-                      <div style={{ fontSize: '0.65rem', color: 'rgba(240,235,225,0.35)' }}>
-                        {scriptDraft.split('\n').length} líneas · ~{Math.max(1, Math.round(scriptDraft.length / 1500))} min
-                      </div>
-                    </>
-                  ) : (
-                    <div style={{ fontSize: '0.75rem', color: 'rgba(240,235,225,0.2)' }}>Sin guión</div>
-                  )}
-                </div>
 
-                {/* Structure card */}
-                <div
-                  onClick={() => setMode('structure')}
-                  style={{ background: '#0D0920', border: '1px solid rgba(212,37,106,0.1)', borderRadius: '6px', padding: '1rem', cursor: 'pointer', transition: 'all 0.15s' }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(212,37,106,0.35)'; e.currentTarget.style.background = 'rgba(212,37,106,0.04)' }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(212,37,106,0.1)'; e.currentTarget.style.background = '#0D0920' }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style={{ color: '#D4256A' }}><rect x="2" y="6" width="5" height="12" rx="1.5" stroke="currentColor" strokeWidth="1.5"/><rect x="9.5" y="4" width="5" height="16" rx="1.5" stroke="currentColor" strokeWidth="1.5"/><rect x="17" y="8" width="5" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.5"/></svg>
-                    <svg width="12" height="12" viewBox="0 0 16 16" fill="none" style={{ color: 'rgba(240,235,225,0.2)', marginTop: '2px' }}><path d="M4 8h8M9 5l3 3-3 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                  {/* RIGHT COLUMN: PERSONAJES */}
+                  <div style={{ background: '#0A0816', padding: '2rem' }}>
+                    <div style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '1rem', letterSpacing: '0.16em', color: 'rgba(240,235,225,0.5)', display: 'flex', alignItems: 'center', gap: 12, marginBottom: '0.75rem' }}>
+                      Personajes <div style={{ flex: 1, height: 1, background: 'rgba(240,235,225,0.07)' }} />
+                    </div>
+                    {chars.length === 0 ? (
+                      <div style={{ fontSize: '0.78rem', color: 'rgba(240,235,225,0.28)', fontStyle: 'italic', marginTop: 8 }}>Sin análisis de estructura disponible.</div>
+                    ) : (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                        {chars.map(([name, sceneCount], i) => {
+                          const color = CHAR_COLORS[i % CHAR_COLORS.length]
+                          const initial = name.charAt(0).toUpperCase()
+                          const onSegs = new Set<number>()
+                          allScenes.forEach((sc, si) => { if (sc.characters.includes(name)) onSegs.add(si) })
+                          const totalSegs = Math.min(Math.max(totalScenes, 14), 14)
+                          return (
+                            <div key={name} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '11px 12px', borderRadius: 7, border: '1px solid transparent', cursor: 'pointer', transition: 'all 0.15s' }}
+                              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(240,235,225,0.04)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(240,235,225,0.09)' }}
+                              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.borderColor = 'transparent' }}>
+                              <div style={{ width: 42, height: 42, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '1.2rem', flexShrink: 0, background: `${color}18`, border: `1px solid ${color}28`, color }}>
+                                {initial}
+                              </div>
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{ fontSize: '0.92rem', fontWeight: 700, color: 'rgba(240,235,225,0.92)' }}>{name}</div>
+                                <div style={{ display: 'flex', gap: 2, marginTop: 6 }}>
+                                  {Array.from({ length: totalSegs }, (_, si) => (
+                                    <div key={si} style={{ height: 3, borderRadius: 1, flex: 1, background: onSegs.has(si) ? color : 'rgba(240,235,225,0.08)', opacity: onSegs.has(si) ? 0.6 : 1 }} />
+                                  ))}
+                                </div>
+                              </div>
+                              <div style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: '0.68rem', color: 'rgba(240,235,225,0.42)', flexShrink: 0 }}>{sceneCount} esc.</div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )}
                   </div>
-                  <div style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '0.8rem', letterSpacing: '0.1em', color: 'rgba(240,235,225,0.4)', marginBottom: '4px' }}>ESTRUCTURA</div>
-                  {episode.scenes.length > 0 ? (
-                    <>
-                      <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#D4256A', marginBottom: '2px' }}>{episode.scenes.length}</div>
-                      <div style={{ fontSize: '0.65rem', color: 'rgba(240,235,225,0.35)' }}>
-                        {episode.acts.length} actos · {episode.scenes.length} escenas
-                      </div>
-                    </>
-                  ) : (
-                    <div style={{ fontSize: '0.75rem', color: 'rgba(240,235,225,0.2)' }}>Sin estructura</div>
-                  )}
-                </div>
 
-                {/* Assets card */}
-                <div
-                  onClick={() => setMode('produccion')}
-                  style={{ background: '#0D0920', border: '1px solid rgba(155,111,212,0.1)', borderRadius: '6px', padding: '1rem', cursor: 'pointer', transition: 'all 0.15s' }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(155,111,212,0.35)'; e.currentTarget.style.background = 'rgba(155,111,212,0.04)' }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(155,111,212,0.1)'; e.currentTarget.style.background = '#0D0920' }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style={{ color: '#9B6FD4' }}><rect x="3" y="3" width="8" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.5" strokeDasharray="2 2"/></svg>
-                    <svg width="12" height="12" viewBox="0 0 16 16" fill="none" style={{ color: 'rgba(240,235,225,0.2)', marginTop: '2px' }}><path d="M4 8h8M9 5l3 3-3 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                  </div>
-                  <div style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '0.8rem', letterSpacing: '0.1em', color: 'rgba(240,235,225,0.4)', marginBottom: '4px' }}>ASSETS</div>
-                  {scriptGaps.length > 0 ? (
-                    <>
-                      <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginBottom: '6px' }}>
-                        <span style={{ fontSize: '1.1rem', fontWeight: 700, color: '#9B6FD4' }}>{scriptGaps.filter(g => g.status !== 'pending').length}</span>
-                        <span style={{ fontSize: '0.75rem', color: 'rgba(240,235,225,0.3)' }}>/ {scriptGaps.length}</span>
-                      </div>
-                      <div style={{ height: '3px', background: 'rgba(155,111,212,0.15)', borderRadius: '2px', overflow: 'hidden' }}>
-                        <div style={{ height: '100%', width: `${Math.round(scriptGaps.filter(g => g.status !== 'pending').length / scriptGaps.length * 100)}%`, background: '#9B6FD4', borderRadius: '2px', transition: 'width 0.5s ease' }} />
-                      </div>
-                    </>
-                  ) : (
-                    <div style={{ fontSize: '0.75rem', color: 'rgba(240,235,225,0.2)' }}>Sin analizar</div>
-                  )}
                 </div>
               </div>
-
-              {/* ── METADATA FIELDS ───────────────────────────────────── */}
-              <div style={{ marginBottom: '1rem' }}>
-                <div style={FIELD_LABEL}>Logline</div>
-                <textarea
-                  key={`${episode.id}-logline`}
-                  defaultValue={episode.logline ?? ''}
-                  placeholder="Una oración que resume el conflicto central del episodio..."
-                  rows={2}
-                  onBlur={e => saveField('logline', e.target.value)}
-                  style={{ ...INPUT, lineHeight: 1.5 }}
-                />
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
-                <div>
-                  <div style={FIELD_LABEL}>Tema central</div>
-                  <textarea key={`${episode.id}-theme`} defaultValue={episode.theme ?? ''} placeholder="El tema que explora este episodio..." rows={2} onBlur={e => saveField('theme', e.target.value)} style={{ ...INPUT, lineHeight: 1.5 }} />
-                </div>
-                <div>
-                  <div style={FIELD_LABEL}>Sinopsis</div>
-                  <textarea key={`${episode.id}-synopsis`} defaultValue={episode.synopsis ?? ''} placeholder="Resumen narrativo del episodio..." rows={2} onBlur={e => saveField('synopsis', e.target.value)} style={{ ...INPUT, lineHeight: 1.5 }} />
-                </div>
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                <div>
-                  <div style={FIELD_LABEL}>Cold Open</div>
-                  <textarea key={`${episode.id}-cold_open`} defaultValue={episode.cold_open ?? ''} placeholder="Lo que ocurre antes de los créditos..." rows={3} onBlur={e => saveField('cold_open', e.target.value)} style={{ ...INPUT, lineHeight: 1.5 }} />
-                </div>
-                <div>
-                  <div style={FIELD_LABEL}>Tag / Gancho final</div>
-                  <textarea key={`${episode.id}-tag`} defaultValue={episode.tag ?? ''} placeholder="El cierre o gancho post-créditos..." rows={3} onBlur={e => saveField('tag', e.target.value)} style={{ ...INPUT, lineHeight: 1.5 }} />
-                </div>
-              </div>
-            </div>
-          )}
+            )
+          })()}
 
           {/* SCRIPT MODE */}
           {mode === 'script' && (
