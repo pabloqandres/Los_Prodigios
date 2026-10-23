@@ -4,7 +4,7 @@ import { createServerClient } from '@/lib/supabase'
 import Anthropic from '@anthropic-ai/sdk'
 
 export const runtime = 'nodejs'
-export const maxDuration = 120
+export const maxDuration = 300
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
@@ -161,9 +161,12 @@ export async function POST(
     .order('doc_type')   // craft first, then bible
     .order('title')
 
+  // For script analysis, only load craft docs relevant to writing (not visual/sound/branding)
+  const SCRIPT_CRAFT_CATEGORIES = ['craft:meta', 'craft:storytelling', 'craft:characters', 'craft:cinematography']
   const craftContext = (knowledgeDocs ?? [])
-    .filter(d => d.doc_type === 'craft' && d.content && d.content.length > 50)
-    .map(d => `### [CRAFT] ${d.title}\n${d.content.substring(0, 2000)}`)
+    .filter(d => d.doc_type === 'craft' && d.content && d.content.length > 50 &&
+      (d.categories ?? []).some((c: string) => SCRIPT_CRAFT_CATEGORIES.includes(c)))
+    .map(d => `### [CRAFT] ${d.title}\n${d.content.substring(0, 1500)}`)
     .join('\n\n---\n\n')
 
   const bibleContext = (knowledgeDocs ?? [])
