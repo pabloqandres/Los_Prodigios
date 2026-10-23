@@ -26,13 +26,19 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(data)
   }
 
-  const { data, error } = await supabase
+  const docType = request.nextUrl.searchParams.get('doc_type') // 'bible' | 'craft' | null = all
+
+  let q = supabase
     .from('reference_docs')
-    .select('id, title, description, categories, accent_color, filename, created_by, created_at, updated_at')
+    .select('id, title, description, categories, accent_color, doc_type, filename, created_by, created_at, updated_at')
+    .order('doc_type', { ascending: true })
     .order('title', { ascending: true })
 
+  if (docType) q = q.eq('doc_type', docType)
+
+  const { data, error } = await q
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json(data)
+  return NextResponse.json(data ?? [])
 }
 
 // POST /api/reference-docs — save doc (file already uploaded to Storage by client)

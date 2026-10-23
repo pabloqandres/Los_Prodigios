@@ -77,6 +77,23 @@ export async function POST(
     findings = (rawFindings ?? []) as Finding[]
   }
 
+  // 3. Load knowledge context
+  const { data: knowledgeDocs } = await supabase
+    .from('reference_docs')
+    .select('title, content, doc_type')
+    .order('doc_type')
+    .order('title')
+
+  const craftContext = (knowledgeDocs ?? [])
+    .filter(d => d.doc_type === 'craft' && d.content && d.content.length > 50)
+    .map(d => `### [CRAFT] ${d.title}\n${d.content.substring(0, 2000)}`)
+    .join('\n\n---\n\n')
+
+  const bibleContext = (knowledgeDocs ?? [])
+    .filter(d => d.doc_type === 'bible' && d.content && d.content.length > 50)
+    .map(d => `### [BIBLIA] ${d.title}\n${d.content.substring(0, 3000)}`)
+    .join('\n\n---\n\n')
+
   const episodeLabel = `T${episode.season}E${String(episode.episode_number).padStart(2, '0')}${episode.title ? ` — ${episode.title}` : ''}`
 
   const findingsText = findings.length > 0
@@ -87,7 +104,7 @@ export async function POST(
 
   const systemPrompt = `Eres el story editor jefe de "Los Prodigios", serie animada latinoamericana de fútbol y coming-of-age.
 
-Vas a realizar DOS cosas en una sola respuesta JSON:
+${craftContext ? `## CONOCIMIENTO DE CRAFT DEL ESTUDIO\nEstos son los estándares editoriales que definen la calidad del guión. Cada decisión de reescritura debe estar alineada con estos principios:\n\n${craftContext}\n\n---\n\n` : ''}${bibleContext ? `## BIBLIA DE LA SERIE\nConocimiento específico de "Los Prodigios". NINGÚN cambio puede violar lo establecido aquí:\n\n${bibleContext}\n\n---\n\n` : ''}Vas a realizar DOS cosas en una sola respuesta JSON:
 
 1. PLAN DE CAMBIOS: un plan editorial detallado y honesto de exactamente qué vas a modificar, eliminar y agregar — y por qué. El autor del guión debe poder leer este plan y entender exactamente qué le vas a hacer a su guión antes de aceptar.
 

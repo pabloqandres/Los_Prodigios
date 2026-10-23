@@ -154,7 +154,24 @@ export async function POST(
     .update({ is_current: false })
     .eq('episode_id', episodeId)
 
-  // 4. Call Claude
+  // 4. Load knowledge context (craft principles + bible)
+  const { data: knowledgeDocs } = await supabase
+    .from('reference_docs')
+    .select('title, content, doc_type, categories')
+    .order('doc_type')   // craft first, then bible
+    .order('title')
+
+  const craftContext = (knowledgeDocs ?? [])
+    .filter(d => d.doc_type === 'craft' && d.content && d.content.length > 50)
+    .map(d => `### [CRAFT] ${d.title}\n${d.content.substring(0, 2000)}`)
+    .join('\n\n---\n\n')
+
+  const bibleContext = (knowledgeDocs ?? [])
+    .filter(d => d.doc_type === 'bible' && d.content && d.content.length > 50)
+    .map(d => `### [BIBLIA] ${d.title}\n${d.content.substring(0, 3000)}`)
+    .join('\n\n---\n\n')
+
+  // 5. Call Claude
   const episodeLabel = `T${episode.season}E${String(episode.episode_number).padStart(2, '0')}${episode.title ? ` — ${episode.title}` : ''}`
   const SCRIPT_LIMIT = 28000
   const scriptTruncated = episode.script.length > SCRIPT_LIMIT
@@ -163,7 +180,7 @@ export async function POST(
   const systemPrompt = `Eres el story editor jefe de "Los Prodigios", serie animada latinoamericana de fútbol y coming-of-age.
 Tu tarea es hacer un análisis editorial completo del guión de un episodio.
 
-Debes hacer DOS cosas en un solo JSON:
+${craftContext ? `## CONOCIMIENTO DE CRAFT DEL ESTUDIO\nEstos son los principios editoriales que defines como estándares de calidad. Úsalos como criterio de evaluación:\n\n${craftContext}\n\n---\n\n` : ''}${bibleContext ? `## BIBLIA DE LA SERIE\nConocimiento específico de "Los Prodigios" para detectar inconsistencias y evaluar autenticidad:\n\n${bibleContext}\n\n---\n\n` : ''}Debes hacer DOS cosas en un solo JSON:
 
 1. ESTRUCTURA: identificar todos los actos y escenas del guión. Si el guión tiene marcadores explícitos de escena (INT./EXT., ESCENA, ESC, #), úsalos. Si no, infiere las escenas por cambios de locación/tiempo/acción. Un episodio de 10-14 min tiene 8-18 escenas distribuidas en 3 actos.
 
@@ -171,6 +188,7 @@ Debes hacer DOS cosas en un solo JSON:
 
 REGLAS DE SCORING:
 - 5=Excepcional, 4=Sólido, 3=Aceptable, 2=Insuficiente, 1=Crítico
+- Basar los scores en los criterios de craft del estudio, no en criterios genéricos.
 - No generar hallazgos artificialmente. Solo reportar problemas reales del guión.
 - Cada hallazgo debe tener evidencia concreta del texto.
 - Si una dimensión no tiene problemas relevantes, findings puede ser array vacío.
