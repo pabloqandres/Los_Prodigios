@@ -153,6 +153,7 @@ export default function DashboardPage() {
   const firstName = session?.user?.name?.split(' ')[0] ?? 'Equipo'
   const [activity, setActivity] = useState<ActivityItem[]>([])
   const [loadingActivity, setLoadingActivity] = useState(true)
+  const [activityExpanded, setActivityExpanded] = useState(false)
 
   useEffect(() => {
     fetch('/api/activity')
@@ -397,7 +398,7 @@ export default function DashboardPage() {
             </div>
           ) : (
             <div style={{ background: '#0D0920', border: '1px solid rgba(245,165,42,0.07)', borderRadius: '4px', overflow: 'hidden' }}>
-              {activity.map((item, i) => (
+              {(activityExpanded ? activity : activity.slice(0, 5)).map((item, i, arr) => (
                 <Link
                   key={item.id}
                   href={item.href}
@@ -406,16 +407,14 @@ export default function DashboardPage() {
                     alignItems: 'center',
                     gap: '0.875rem',
                     padding: '0.875rem 1.25rem',
-                    borderBottom: i < activity.length - 1 ? '1px solid rgba(245,165,42,0.05)' : 'none',
+                    borderBottom: i < arr.length - 1 ? '1px solid rgba(245,165,42,0.05)' : 'none',
                     textDecoration: 'none',
                     transition: 'background 0.15s',
                   }}
                   onMouseEnter={e => (e.currentTarget.style.background = 'rgba(245,165,42,0.03)')}
                   onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                 >
-                  {/* Type badge */}
                   <div style={{ flexShrink: 0, width: '6px', height: '6px', borderRadius: '50%', background: item.accent }} />
-                  {/* Content */}
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', flexWrap: 'wrap' }}>
                       <span style={{ fontSize: '0.5rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: item.accent, fontWeight: 700, opacity: 0.8 }}>{item.type}</span>
@@ -426,12 +425,21 @@ export default function DashboardPage() {
                       {item.user && <span style={{ marginLeft: '0.5rem', opacity: 0.6 }}>· {item.user.split('@')[0]}</span>}
                     </div>
                   </div>
-                  {/* Time */}
                   <div style={{ flexShrink: 0, fontSize: '0.6875rem', color: 'rgba(240,235,225,0.25)', fontFamily: 'monospace' }}>
                     {timeAgo(item.ts)}
                   </div>
                 </Link>
               ))}
+              {activity.length > 5 && (
+                <button
+                  onClick={() => setActivityExpanded(e => !e)}
+                  style={{ width: '100%', padding: '0.625rem', background: 'rgba(245,165,42,0.03)', border: 'none', borderTop: '1px solid rgba(245,165,42,0.05)', color: 'rgba(240,235,225,0.35)', fontSize: '0.7rem', cursor: 'pointer', fontFamily: 'IBM Plex Sans, sans-serif', letterSpacing: '0.06em' }}
+                  onMouseEnter={e => (e.currentTarget.style.color = 'rgba(240,235,225,0.65)')}
+                  onMouseLeave={e => (e.currentTarget.style.color = 'rgba(240,235,225,0.35)')}
+                >
+                  {activityExpanded ? `▲ Mostrar menos` : `▼ Ver ${activity.length - 5} más`}
+                </button>
+              )}
             </div>
           )}
         </div>
