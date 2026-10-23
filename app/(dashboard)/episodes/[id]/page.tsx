@@ -1425,6 +1425,23 @@ El original_text debe ser cita LITERAL del guión (para ubicarlo automáticament
         {/* ── LEFT PANEL ─────────────────────────────────────────────── */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '1.5rem', minWidth: 0 }}>
 
+          {/* COMPACT HERO BANNER — shown in script / structure / produccion tabs */}
+          {(mode === 'script' || mode === 'structure' || mode === 'produccion') && episode?.hero_image_path && (
+            <div style={{ margin: '-1.5rem -1.5rem 1.5rem', height: 90, position: 'relative', overflow: 'hidden' }}>
+              <img src={storageUrl(episode.hero_image_path) ?? ''} alt=""
+                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.55 }} />
+              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(8,6,15,0.92) 0%, rgba(8,6,15,0.25) 100%)' }} />
+              <div style={{ position: 'absolute', bottom: 12, left: 20, display: 'flex', alignItems: 'baseline', gap: 10 }}>
+                <span style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: '0.58rem', letterSpacing: '0.18em', color: 'rgba(240,235,225,0.42)', textTransform: 'uppercase' }}>
+                  T{episode.season} · E{String(episode.episode_number).padStart(2, '0')}
+                </span>
+                <span style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '1.5rem', color: 'rgba(240,235,225,0.88)', letterSpacing: '0.04em', lineHeight: 1 }}>
+                  {episode.title || 'Sin título'}
+                </span>
+              </div>
+            </div>
+          )}
+
           {/* OVERVIEW MODE */}
           {mode === 'overview' && (() => {
             const scoreColor = (s: number) => s >= 4 ? '#4ECDC4' : s >= 3 ? '#F5A52A' : '#D4256A'
@@ -1437,7 +1454,7 @@ El original_text debe ser cita LITERAL del guión (para ubicarlo automáticament
             const totalScenes = currentAnalysis?.structure?.total_scenes ?? allScenes.length
 
             const charMap: Record<string, number> = {}
-            allScenes.forEach(sc => sc.characters.forEach(ch => { if (ch) charMap[ch] = (charMap[ch] ?? 0) + 1 }))
+            allScenes.forEach(sc => (Array.isArray(sc.characters) ? sc.characters : []).forEach(ch => { if (ch) charMap[ch] = (charMap[ch] ?? 0) + 1 }))
             const chars = Object.entries(charMap).sort((a, b) => b[1] - a[1])
 
             const locMap: Record<string, number> = {}
@@ -1756,7 +1773,7 @@ El original_text debe ser cita LITERAL del guión (para ubicarlo automáticament
                           const color = CHAR_COLORS[i % CHAR_COLORS.length]
                           const initial = name.charAt(0).toUpperCase()
                           const onSegs = new Set<number>()
-                          allScenes.forEach((sc, si) => { if (sc.characters.includes(name)) onSegs.add(si) })
+                          allScenes.forEach((sc, si) => { if (Array.isArray(sc.characters) && sc.characters.includes(name)) onSegs.add(si) })
                           const totalSegs = Math.min(Math.max(totalScenes, 14), 14)
                           return (
                             <div key={name} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '11px 12px', borderRadius: 7, border: '1px solid transparent', cursor: 'pointer', transition: 'all 0.15s' }}
