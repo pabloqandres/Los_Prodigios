@@ -541,8 +541,14 @@ El original_text debe ser cita LITERAL del guión (para ubicarlo automáticament
     setExtraction(null)
     try {
       const r = await fetch(`/api/episodes/${episode?.id}/extract-continuity`, { method: 'POST' })
-      const data = await r.json()
-      if (!r.ok) throw new Error(data.error ?? 'Error')
+      const text = await r.text()
+      let data: ContinuityExtraction
+      try {
+        data = JSON.parse(text)
+      } catch {
+        throw new Error(`Error del servidor: ${text.substring(0, 120)}`)
+      }
+      if (!r.ok) throw new Error((data as unknown as { error?: string }).error ?? 'Error del servidor')
       setExtraction(data)
       localStorage.setItem(`nuppa_extraction_${id}`, JSON.stringify({ data, committed: false }))
     } catch (e: unknown) {

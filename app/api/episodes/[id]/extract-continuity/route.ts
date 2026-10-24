@@ -23,6 +23,7 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  try {
   const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET })
   if (!token?.email) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
@@ -133,4 +134,8 @@ Extrae TODA la información de continuidad del guión y devuelve exactamente est
   }
 
   return NextResponse.json(extraction)
+  } catch (e) {
+    console.error('[extract-continuity] unhandled error:', e)
+    return NextResponse.json({ error: e instanceof Error ? e.message : 'Error interno del servidor' }, { status: 500 })
+  }
 }
