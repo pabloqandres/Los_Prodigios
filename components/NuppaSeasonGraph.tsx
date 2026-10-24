@@ -56,12 +56,12 @@ function buildNodes(episodes: SeasonEpisode[]): Node3D[] {
     type: 'season',
     label: 'T01',
     color: '#F2EEEA',
-    r: 16,
+    r: 22,
     x: 0, y: 0, z: 0,
   })
 
   const total = episodes.length
-  const EP_DIST = 160
+  const EP_DIST = 200
 
   episodes.forEach((ep, i) => {
     const angle = (i / total) * Math.PI * 2 - Math.PI / 2
@@ -77,7 +77,7 @@ function buildNodes(episodes: SeasonEpisode[]): Node3D[] {
       type: 'episode',
       label: `E${String(ep.episode_number).padStart(2, '0')}`,
       color: scoreColor(ep.overall_score),
-      r: ep.overall_score !== undefined ? 11 : 8,
+      r: ep.overall_score !== undefined ? 18 : 14,
       x: ex, y: ey, z: ez,
       episodeRef: ep.id,
       score: ep.overall_score,
@@ -92,7 +92,7 @@ function buildNodes(episodes: SeasonEpisode[]): Node3D[] {
 
       weak.forEach((dim, j) => {
         const dimAngle = angle + (j - (weak.length - 1) / 2) * 0.45
-        const dimDist = EP_DIST + 70
+        const dimDist = EP_DIST + 80
         const dx = Math.cos(dimAngle) * dimDist
         const dy = Math.sin(dimAngle) * dimDist * Math.cos(tilt)
         const dz = Math.sin(dimAngle) * dimDist * Math.sin(tilt)
@@ -101,7 +101,7 @@ function buildNodes(episodes: SeasonEpisode[]): Node3D[] {
           type: 'dimension',
           label: dim.label.slice(0, 3).toUpperCase(),
           color: DIM_COLORS[dim.key] ?? '#888',
-          r: 5,
+          r: 8,
           x: dx, y: dy, z: dz,
           episodeId: epId,
           episodeRef: ep.id,
@@ -297,7 +297,7 @@ export default function NuppaSeasonGraph({ episodes, seasonLabel = 'T01' }: Prop
 
       // Label
       if (n.type === 'episode' || n.type === 'season' || isHov) {
-        ctx.font = `${n.type === 'season' ? 'bold ' : ''}${Math.max(9, 11 * p.scale)}px "IBM Plex Sans", sans-serif`
+        ctx.font = `${n.type === 'season' ? 'bold ' : ''}${Math.max(11, 13 * p.scale)}px "IBM Plex Sans", sans-serif`
         ctx.textAlign = 'center'
         ctx.textBaseline = 'middle'
         ctx.fillStyle = n.type === 'season' ? '#F2EEEA' : '#131313'
@@ -308,7 +308,7 @@ export default function NuppaSeasonGraph({ episodes, seasonLabel = 'T01' }: Prop
       if (n.type === 'episode' && n.score !== undefined) {
         const bx = p.sx + r + 2
         const by = p.sy - r - 2
-        ctx.font = `${Math.max(7, 8 * p.scale)}px "IBM Plex Sans", sans-serif`
+        ctx.font = `${Math.max(9, 10 * p.scale)}px "IBM Plex Sans", sans-serif`
         ctx.textAlign = 'left'
         ctx.textBaseline = 'bottom'
         ctx.fillStyle = n.color
