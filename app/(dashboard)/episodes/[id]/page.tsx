@@ -1707,25 +1707,31 @@ El original_text debe ser cita LITERAL del guión (para ubicarlo automáticament
                     </div>
 
                     {/* Bookends */}
+                    {(episode.cold_open || episode.tag) && (
                     <div>
                       {secLabel('Estructura dramática')}
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                        {episode.cold_open && (
                         <div style={{ padding: '1.25rem', borderRadius: 6, border: '1px solid rgba(78,205,196,0.12)', position: 'relative' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 7, fontFamily: 'IBM Plex Mono, monospace', fontSize: '0.58rem', letterSpacing: '0.18em', fontWeight: 600, textTransform: 'uppercase', marginBottom: 8 }}>
                             <svg width="11" height="11" viewBox="0 0 16 16" fill="none"><polygon points="3,3 13,8 3,13" stroke="#4ECDC4" strokeWidth="1.5" strokeLinejoin="round"/></svg>
                             <span style={{ color: 'rgba(78,205,196,0.72)' }}>Cold Open</span>
                           </div>
-                          <textarea key={`${episode.id}-cold_open`} defaultValue={episode.cold_open ?? ''} placeholder="Lo que ocurre antes de los créditos..." rows={4} onBlur={e => saveField('cold_open', e.target.value)} style={{ ...INPUT, background: 'transparent', border: 'none', padding: 0, lineHeight: 1.65, fontSize: '0.82rem', resize: 'none', borderRadius: 0, color: episode.cold_open ? 'rgba(240,235,225,0.65)' : undefined }} />
+                          <textarea key={`${episode.id}-cold_open`} defaultValue={episode.cold_open ?? ''} placeholder="Lo que ocurre antes de los créditos..." rows={4} onBlur={e => saveField('cold_open', e.target.value)} style={{ ...INPUT, background: 'transparent', border: 'none', padding: 0, lineHeight: 1.65, fontSize: '0.82rem', resize: 'none', borderRadius: 0, color: 'rgba(240,235,225,0.65)' }} />
                         </div>
+                        )}
+                        {episode.tag && (
                         <div style={{ padding: '1.25rem', borderRadius: 6, border: '1px solid rgba(212,37,106,0.1)', position: 'relative' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 7, fontFamily: 'IBM Plex Mono, monospace', fontSize: '0.58rem', letterSpacing: '0.18em', fontWeight: 600, textTransform: 'uppercase', marginBottom: 8 }}>
                             <svg width="11" height="11" viewBox="0 0 16 16" fill="none"><rect x="3" y="3" width="10" height="10" rx="1" stroke="#D4256A" strokeWidth="1.5"/></svg>
                             <span style={{ color: 'rgba(212,37,106,0.65)' }}>Gancho final</span>
                           </div>
-                          <textarea key={`${episode.id}-tag`} defaultValue={episode.tag ?? ''} placeholder="El cierre o gancho post-créditos..." rows={4} onBlur={e => saveField('tag', e.target.value)} style={{ ...INPUT, background: 'transparent', border: 'none', padding: 0, lineHeight: 1.65, fontSize: '0.82rem', resize: 'none', borderRadius: 0, color: episode.tag ? 'rgba(240,235,225,0.65)' : undefined }} />
+                          <textarea key={`${episode.id}-tag`} defaultValue={episode.tag ?? ''} placeholder="El cierre o gancho post-créditos..." rows={4} onBlur={e => saveField('tag', e.target.value)} style={{ ...INPUT, background: 'transparent', border: 'none', padding: 0, lineHeight: 1.65, fontSize: '0.82rem', resize: 'none', borderRadius: 0, color: 'rgba(240,235,225,0.65)' }} />
                         </div>
+                        )}
                       </div>
                     </div>
+                    )}
 
 
 
