@@ -2,24 +2,9 @@
 
 import { useEffect, useState } from 'react'
 import dynamic from 'next/dynamic'
-import { createClient } from '@/lib/supabase'
 import type { SeasonEpisode } from '@/components/NuppaSeasonGraph'
 
 const NuppaSeasonGraph = dynamic(() => import('@/components/NuppaSeasonGraph'), { ssr: false })
-
-type RawEpisode = {
-  id: string
-  season: number
-  episode_number: number
-  title: string | null
-  status: string
-}
-
-type RawAnalysis = {
-  episode_id: string
-  overall_score: number
-  scores_snapshot: Array<{ key: string; label: string; score: number; strength?: string; weakness?: string }> | null
-}
 
 function scoreColor(score?: number): string {
   if (score === undefined) return 'rgba(240,235,225,0.25)'
@@ -40,47 +25,19 @@ export default function MotorPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    async function load() {
-      const supabase = createClient()
-
-      const { data: rawEps } = await supabase
-        .from('episodes')
-        .select('id, season, episode_number, title, status')
-        .eq('season', 1)
-        .order('episode_number')
-
-      if (!rawEps || rawEps.length === 0) {
-        setLoading(false)
-        return
-      }
-
-      const epIds = rawEps.map((e: RawEpisode) => e.id)
-
-      const { data: rawAnalyses } = await supabase
-        .from('script_analyses')
-        .select('episode_id, overall_score, scores_snapshot')
-        .in('episode_id', epIds)
-        .eq('is_current', true)
-
-      const analysisMap = new Map<string, RawAnalysis>()
-      for (const a of (rawAnalyses ?? []) as RawAnalysis[]) {
-        analysisMap.set(a.episode_id, a)
-      }
-
-      const merged: SeasonEpisode[] = (rawEps as RawEpisode[]).map(ep => {
-        const a = analysisMap.get(ep.id)
-        return {
-          ...ep,
-          overall_score: a?.overall_score,
-          scores_snapshot: a?.scores_snapshot ?? undefined,
+    fetch('/api/motor?season=1')
+      .then(r => r.json())
+      .then((data: Array<SeasonEpisode & { overall_score: number | null; scores_snapshot: SeasonEpisode['scores_snapshot'] | null }>) => {
+        if (Array.isArray(data)) {
+          setEpisodes(data.map(ep => ({
+            ...ep,
+            overall_score: ep.overall_score ?? undefined,
+            scores_snapshot: ep.scores_snapshot ?? undefined,
+          })))
         }
       })
-
-      setEpisodes(merged)
-      setLoading(false)
-    }
-
-    load()
+      .catch(() => {})
+      .finally(() => setLoading(false))
   }, [])
 
   const analyzed = episodes.filter(e => e.overall_score !== undefined)
