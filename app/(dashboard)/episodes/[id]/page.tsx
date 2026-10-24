@@ -515,12 +515,25 @@ El original_text debe ser cita LITERAL del guión (para ubicarlo automáticament
   const [pendingChanges, setPendingChanges] = useState<PendingChange[] | null>(null)
   const [savingLog, setSavingLog] = useState(false)
 
-  // Continuity extraction (NUPPA pipeline)
+  // Continuity extraction (NUPPA pipeline) — persisted in localStorage per episode
   const [extracting, setExtracting] = useState(false)
   const [extraction, setExtraction] = useState<ContinuityExtraction | null>(null)
   const [committing, setCommitting] = useState(false)
   const [committed, setCommitted] = useState(false)
   const [extractError, setExtractError] = useState<string | null>(null)
+
+  // Restore extraction + committed state from localStorage on mount
+  useEffect(() => {
+    if (!id) return
+    try {
+      const saved = localStorage.getItem(`nuppa_extraction_${id}`)
+      if (saved) {
+        const { data, committed: wasCommitted } = JSON.parse(saved)
+        setExtraction(data)
+        if (wasCommitted) setCommitted(true)
+      }
+    } catch {}
+  }, [id])
 
   async function handleExtract() {
     setExtracting(true)
@@ -531,6 +544,7 @@ El original_text debe ser cita LITERAL del guión (para ubicarlo automáticament
       const data = await r.json()
       if (!r.ok) throw new Error(data.error ?? 'Error')
       setExtraction(data)
+      localStorage.setItem(`nuppa_extraction_${id}`, JSON.stringify({ data, committed: false }))
     } catch (e: unknown) {
       setExtractError(e instanceof Error ? e.message : 'Error desconocido')
     } finally {
@@ -549,6 +563,7 @@ El original_text debe ser cita LITERAL del guión (para ubicarlo automáticament
       })
       if (r.ok) {
         setCommitted(true)
+        localStorage.setItem(`nuppa_extraction_${id}`, JSON.stringify({ data: extraction, committed: true }))
         saveStatus('completed')
         setEpisode(prev => prev ? { ...prev, status: 'completed' } : prev)
       }
