@@ -137,6 +137,19 @@ function IconSettings() {
   )
 }
 
+function IconMotor() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <circle cx="12" cy="12" r="3" />
+      <circle cx="12" cy="12" r="9" strokeDasharray="2 3" />
+      <line x1="12" y1="3" x2="12" y2="6" />
+      <line x1="12" y1="18" x2="12" y2="21" />
+      <line x1="3" y1="12" x2="6" y2="12" />
+      <line x1="18" y1="12" x2="21" y2="12" />
+    </svg>
+  )
+}
+
 function IconGecko() {
   return (
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -177,6 +190,7 @@ const NAV_SECTIONS: NavSection[] = [
       { href: '/dashboard',  label: 'Dashboard',  icon: <IconHome /> },
       { href: '/episodes',   label: 'Episodios',  icon: <IconFilm /> },
       { href: '/bible',      label: 'Biblia',     icon: <IconBook /> },
+      { href: '/motor',      label: 'Motor NUPPA',icon: <IconMotor /> },
       { href: '/studio',     label: 'Asistente',  icon: <IconSparkle /> },
     ],
   },
