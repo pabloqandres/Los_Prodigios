@@ -132,7 +132,7 @@ function buildLinks(nodes: Node3D[]): Array<{ s: string; t: string; color: strin
   return links
 }
 
-function project(x: number, y: number, z: number, rx: number, ry: number, W: number, H: number) {
+function project(x: number, y: number, z: number, rx: number, ry: number, W: number, H: number, ws = 1) {
   // Rotate Y
   const cosY = Math.cos(ry), sinY = Math.sin(ry)
   const x1 = x * cosY - z * sinY
@@ -142,7 +142,8 @@ function project(x: number, y: number, z: number, rx: number, ry: number, W: num
   const y2 = y * cosX - z1 * sinX
   const z2 = y * sinX + z1 * cosX
   const fov = 600
-  const scale = fov / (fov + z2)
+  // ws scales the world uniformly so the graph always fits the canvas
+  const scale = fov / (fov + z2) * ws
   return { sx: W / 2 + x1 * scale, sy: H / 2 + y2 * scale, scale, z: z2 }
 }
 
@@ -159,6 +160,7 @@ export default function NuppaSeasonGraph({ episodes, seasonLabel = 'T01' }: Prop
 
   const nodesRef = useRef<Node3D[]>([])
   const linksRef = useRef<ReturnType<typeof buildLinks>>([])
+  const wsRef = useRef(1) // world scale: fits graph to canvas size
 
   useEffect(() => {
     nodesRef.current = buildNodes(episodes)
@@ -174,10 +176,11 @@ export default function NuppaSeasonGraph({ episodes, seasonLabel = 'T01' }: Prop
 
   function hitTest(mx: number, my: number, W: number, H: number): Node3D | null {
     const { x: rx, y: ry } = rotRef.current
+    const ws = wsRef.current
     let best: Node3D | null = null
     let bestDist = Infinity
     for (const node of nodesRef.current) {
-      const p = project(node.x, node.y, node.z, rx, ry, W, H)
+      const p = project(node.x, node.y, node.z, rx, ry, W, H, ws)
       const dist = Math.hypot(mx - p.sx, my - p.sy)
       const hitR = Math.max(node.r * p.scale, 14)
       if (dist < hitR && dist < bestDist) {
@@ -195,6 +198,9 @@ export default function NuppaSeasonGraph({ episodes, seasonLabel = 'T01' }: Prop
     const W = canvas.width
     const H = canvas.height
     const { x: rx, y: ry } = rotRef.current
+    // Scale world to always fit inside canvas (design baseline: 700px)
+    const ws = Math.min(W, H) / 700
+    wsRef.current = ws
 
     ctx.clearRect(0, 0, W, H)
 
@@ -241,7 +247,7 @@ export default function NuppaSeasonGraph({ episodes, seasonLabel = 'T01' }: Prop
 
     // Sort nodes by z for depth painting
     const sorted = [...nodesRef.current]
-      .map(n => ({ n, p: project(n.x, n.y, n.z, rx, ry, W, H) }))
+      .map(n => ({ n, p: project(n.x, n.y, n.z, rx, ry, W, H, ws) }))
       .sort((a, b) => a.p.z - b.p.z)
 
     // Draw links first
@@ -249,8 +255,8 @@ export default function NuppaSeasonGraph({ episodes, seasonLabel = 'T01' }: Prop
       const na = nodesRef.current.find(n => n.id === link.s)
       const nb = nodesRef.current.find(n => n.id === link.t)
       if (!na || !nb) continue
-      const pa = project(na.x, na.y, na.z, rx, ry, W, H)
-      const pb = project(nb.x, nb.y, nb.z, rx, ry, W, H)
+      const pa = project(na.x, na.y, na.z, rx, ry, W, H, ws)
+      const pb = project(nb.x, nb.y, nb.z, rx, ry, W, H, ws)
       ctx.beginPath()
       ctx.moveTo(pa.sx, pa.sy)
       ctx.lineTo(pb.sx, pb.sy)
@@ -295,8 +301,8 @@ export default function NuppaSeasonGraph({ episodes, seasonLabel = 'T01' }: Prop
         ctx.stroke()
       }
 
-      // Label
-      if (n.type === 'episode' || n.type === 'season' || isHov) {
+      // Label inside node (episode + season)
+      if (n.type === 'episode' || n.type === 'season') {
         ctx.font = `${n.type === 'season' ? 'bold ' : ''}${Math.max(11, 13 * p.scale)}px "IBM Plex Sans", sans-serif`
         ctx.textAlign = 'center'
         ctx.textBaseline = 'middle'
@@ -306,22 +312,22 @@ export default function NuppaSeasonGraph({ episodes, seasonLabel = 'T01' }: Prop
 
       // Score badge for episode nodes
       if (n.type === 'episode' && n.score !== undefined) {
-        const bx = p.sx + r + 2
+        const bx = p.sx + r + 3
         const by = p.sy - r - 2
-        ctx.font = `${Math.max(9, 10 * p.scale)}px "IBM Plex Sans", sans-serif`
+        ctx.font = `bold ${Math.max(9, 10 * p.scale)}px "IBM Plex Sans", sans-serif`
         ctx.textAlign = 'left'
         ctx.textBaseline = 'bottom'
         ctx.fillStyle = n.color
         ctx.fillText(n.score.toFixed(1), bx, by)
       }
 
-      // Dimension label on hover
-      if (n.type === 'dimension' && isHov) {
-        ctx.font = `8px "IBM Plex Sans", sans-serif`
+      // Dimension label: always visible below node
+      if (n.type === 'dimension') {
+        ctx.font = `${Math.max(8, 9 * p.scale)}px "IBM Plex Sans", sans-serif`
         ctx.textAlign = 'center'
         ctx.textBaseline = 'top'
-        ctx.fillStyle = n.color
-        ctx.fillText(n.label, p.sx, p.sy + r + 3)
+        ctx.fillStyle = n.color + (isHov ? 'FF' : 'AA')
+        ctx.fillText(n.label, p.sx, p.sy + r + 2)
       }
     }
 
@@ -331,7 +337,7 @@ export default function NuppaSeasonGraph({ episodes, seasonLabel = 'T01' }: Prop
       if (hovNode && hovNode.type === 'episode') {
         const ep = episodes.find(e => e.id === hovNode.episodeRef)
         if (ep) {
-          const p = project(hovNode.x, hovNode.y, hovNode.z, rx, ry, W, H)
+          const p = project(hovNode.x, hovNode.y, hovNode.z, rx, ry, W, H, ws)
           const text = ep.title ? `E${String(ep.episode_number).padStart(2,'0')} — ${ep.title}` : `Episodio ${ep.episode_number}`
           const scoreText = ep.overall_score !== undefined ? `  ${ep.overall_score.toFixed(1)} / 5` : '  Sin análisis'
           const fullText = text + scoreText
