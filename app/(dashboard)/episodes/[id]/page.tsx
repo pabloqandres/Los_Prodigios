@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic'
 import { storageUrl } from '@/lib/supabase'
 
 const PDFDownloadSection = dynamic(() => import('@/components/PDFDownloadSection'), { ssr: false })
+const NuppaGraph = dynamic(() => import('@/components/NuppaGraph'), { ssr: false })
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -151,6 +152,7 @@ type CurrentAnalysis = {
   is_current: boolean
   created_at: string
   categories: AnalysisCategory[]
+  scores_snapshot?: AnalysisCategory[]
   findings_count: number
   pending_count: number
   structure?: { acts: AnalysisAct[]; total_scenes: number; structure_notes: string }
@@ -280,7 +282,7 @@ export default function EpisodeBuilderPage() {
   const [nuppaHighlights, setNuppaHighlights] = useState<string[]>([])
 
   // Script mode vs structure mode
-  const [mode, setMode] = useState<'overview' | 'script' | 'structure' | 'produccion'>('overview')
+  const [mode, setMode] = useState<'overview' | 'script' | 'structure' | 'produccion' | 'motor'>('overview')
 
   // Script analysis
   const [analyzingScript, setAnalyzingScript] = useState(false)
@@ -1430,14 +1432,16 @@ El original_text debe ser cita LITERAL del guión (para ubicarlo automáticament
         {/* Mode tabs */}
         <div data-tutorial="episode-tabs" style={{ display: 'flex', gap: '2px', background: '#120D28', borderRadius: '3px', padding: '2px', flexShrink: 0 }}>
           {[
-            { key: 'overview',   label: 'Datos',      tutorialAttr: 'episode-overview' },
-            { key: 'script',     label: 'Guión',       tutorialAttr: 'episode-script-tab' },
-            { key: 'structure',  label: 'Estructura',  tutorialAttr: 'episode-structure-tab' },
-            { key: 'produccion', label: 'Producción',  tutorialAttr: 'episode-produccion-tab' },
+            { key: 'overview',   label: 'Datos',        tutorialAttr: 'episode-overview' },
+            { key: 'script',     label: 'Guión',        tutorialAttr: 'episode-script-tab' },
+            { key: 'structure',  label: 'Estructura',   tutorialAttr: 'episode-structure-tab' },
+            { key: 'produccion', label: 'Producción',   tutorialAttr: 'episode-produccion-tab' },
+            { key: 'motor',      label: 'Motor NUPPA',  tutorialAttr: 'episode-motor-tab' },
           ].map(tab => {
             const dot = tab.key === 'script' ? (scriptDraft.trim().length > 50 ? '#4ECDC4' : null)
               : tab.key === 'structure' ? (episode.scenes.length > 0 ? '#4ECDC4' : null)
               : tab.key === 'produccion' ? (scriptGaps.length > 0 || canonIssues.length > 0 ? (canonIssues.some(i => i.severity === 'error') ? '#D4256A' : '#F5A52A') : null)
+              : tab.key === 'motor' ? (currentAnalysis ? '#DFF818' : null)
               : null
             return (
               <button
@@ -3049,6 +3053,52 @@ El original_text debe ser cita LITERAL del guión (para ubicarlo automáticament
               {!analyzingScript && !analysisError && scriptGaps.length === 0 && canonIssues.length === 0 && scriptDraft && scriptDraft.trim().length >= 50 && (
                 <div style={{ color: 'rgba(240,235,225,0.2)', fontSize: '0.875rem', textAlign: 'center', marginTop: '4rem', lineHeight: 1.8 }}>
                   Presiona "Analizar guión" para detectar<br />assets faltantes y validar el canon.
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ── MOTOR NUPPA ──────────────────────────────────────────── */}
+          {mode === 'motor' && (
+            <div style={{ position: 'relative', width: '100%', height: '100%', minHeight: '600px' }}>
+              {currentAnalysis ? (
+                <>
+                  {/* Labels */}
+                  <div style={{ position: 'absolute', top: 14, left: 16, zIndex: 10 }}>
+                    <div style={{ fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.2em', color: 'rgba(223,248,24,0.55)', textTransform: 'uppercase' }}>Motor NUPPA</div>
+                    <div style={{ fontSize: '0.6rem', color: 'rgba(240,235,225,0.3)', marginTop: 2 }}>
+                      T{episode.season}E{String(episode.episode_number).padStart(2,'0')}{episode.title ? ` — ${episode.title}` : ''} · Análisis activo
+                    </div>
+                  </div>
+                  {/* Score */}
+                  <div style={{ position: 'absolute', top: 14, right: 16, zIndex: 10, textAlign: 'right' }}>
+                    <div style={{ fontSize: '2.8rem', fontWeight: 900, fontFamily: 'Bebas Neue, Impact, sans-serif', color: '#DFF818', lineHeight: 1, textShadow: '0 0 24px rgba(223,248,24,0.4)' }}>
+                      {currentAnalysis.overall_score.toFixed(1)}
+                    </div>
+                    <div style={{ fontSize: '0.55rem', letterSpacing: '0.15em', color: 'rgba(240,235,225,0.3)', textTransform: 'uppercase' }}>Score general / 5.0</div>
+                  </div>
+                  {/* Legend */}
+                  <div style={{ position: 'absolute', bottom: 16, left: 16, zIndex: 10, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    <div style={{ fontSize: '0.55rem', fontWeight: 700, letterSpacing: '0.15em', color: 'rgba(223,248,24,0.45)', textTransform: 'uppercase', marginBottom: 2 }}>Dimensiones</div>
+                    {(currentAnalysis.scores_snapshot ?? []).map((cat: { key: string; label: string; score: number }) => (
+                      <div key={cat.key} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.6rem', color: 'rgba(240,235,225,0.4)' }}>
+                        <div style={{ width: 6, height: 6, borderRadius: '50%', background: ({ narrativa:'#FF6B35', personajes:'#4ECDC4', visual:'#DFF818', actuacion:'#9B6FD4', audiencia:'#FFE66D', franquicia:'#D4256A' } as Record<string,string>)[cat.key] ?? '#AAA', flexShrink: 0 }} />
+                        {cat.label} · {cat.score}/5
+                      </div>
+                    ))}
+                    <div style={{ fontSize: '0.55rem', fontWeight: 700, letterSpacing: '0.15em', color: 'rgba(240,235,225,0.25)', textTransform: 'uppercase', marginTop: 6, marginBottom: 2 }}>Hallazgos</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.6rem', color: 'rgba(240,235,225,0.4)' }}><div style={{ width: 6, height: 6, borderRadius: '50%', background: '#D4256A', flexShrink: 0 }} /> Prioridad alta</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.6rem', color: 'rgba(240,235,225,0.4)' }}><div style={{ width: 6, height: 6, borderRadius: '50%', background: '#F5A52A', flexShrink: 0 }} /> Prioridad media</div>
+                  </div>
+                  <NuppaGraph
+                    analysis={currentAnalysis as { overall_score: number; verdict?: string; scores_snapshot: Array<{ key: string; label: string; score: number; findings?: Array<{ title: string; priority: string; scene_ref?: string }> }> }}
+                    episodeLabel={`T${episode.season}E${String(episode.episode_number).padStart(2,'0')}`}
+                  />
+                </>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 12, color: 'rgba(240,235,225,0.25)' }}>
+                  <div style={{ fontSize: '2rem' }}>⚡</div>
+                  <div style={{ fontSize: '0.8rem' }}>Analiza el guión primero para activar el Motor NUPPA</div>
                 </div>
               )}
             </div>
