@@ -190,8 +190,9 @@ const NAV_SECTIONS: NavSection[] = [
     items: [
       { href: '/dashboard',  label: 'Dashboard',  icon: <IconHome /> },
       { href: '/episodes',   label: 'Episodios',  icon: <IconFilm /> },
-      { href: '/bible',      label: 'Biblia',     icon: <IconBook /> },
+      { href: '/continuity', label: 'Continuidad',icon: <IconLayers /> },
       { href: '/motor',      label: 'Motor NUPPA',icon: <IconMotor /> },
+      { href: '/bible',      label: 'Biblia',     icon: <IconBook /> },
       { href: '/studio',     label: 'Asistente',  icon: <IconSparkle /> },
     ],
   },
@@ -200,7 +201,6 @@ const NAV_SECTIONS: NavSection[] = [
     items: [
       { href: '/approval',   label: 'Biblia Visual', icon: <IconCheck /> },
       { href: '/assets',     label: 'Arte',       icon: <IconPalette /> },
-      { href: '/continuity', label: 'Continuidad',icon: <IconLayers /> },
     ],
   },
   {
