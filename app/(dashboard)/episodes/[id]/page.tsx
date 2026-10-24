@@ -1433,7 +1433,7 @@ El original_text debe ser cita LITERAL del guión (para ubicarlo automáticament
           {[
             { key: 'overview',   label: 'Datos',        tutorialAttr: 'episode-overview' },
             { key: 'script',     label: 'Guión',        tutorialAttr: 'episode-script-tab' },
-            { key: 'structure',  label: 'Estructura',   tutorialAttr: 'episode-structure-tab' },
+            { key: 'structure',  label: 'Análisis',     tutorialAttr: 'episode-structure-tab' },
             { key: 'produccion', label: 'Producción',   tutorialAttr: 'episode-produccion-tab' },
           ].map(tab => {
             const dot = tab.key === 'script' ? (scriptDraft.trim().length > 50 ? '#4ECDC4' : null)
@@ -1593,37 +1593,9 @@ El original_text debe ser cita LITERAL del guión (para ubicarlo automáticament
                   )}
                 </div>
 
-                {/* ── 3 STATS ── */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', borderBottom: '1px solid rgba(240,235,225,0.05)' }}>
-                  <div style={{ padding: '1.75rem 2rem', borderRight: '1px solid rgba(240,235,225,0.05)', cursor: 'pointer' }}
-                    onClick={() => setMode('script')}
-                    onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'rgba(240,235,225,0.02)'}
-                    onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}>
-                    <div style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '4rem', lineHeight: 0.9, color: '#4ECDC4', marginBottom: 6 }}>{totalDurMins}</div>
-                    <div style={{ fontSize: '0.72rem', letterSpacing: '0.12em', fontWeight: 700, color: 'rgba(240,235,225,0.52)', textTransform: 'uppercase' }}>Minutos estimados</div>
-                    {scriptLines > 0 && <div style={{ fontSize: '0.74rem', color: 'rgba(240,235,225,0.48)', marginTop: 5 }}>{totalScenes > 0 ? `${totalScenes} escenas · ` : ''}{scriptLines} líneas</div>}
-                    <div style={{ fontSize: '0.68rem', color: 'rgba(240,235,225,0.3)', marginTop: 10 }}>Ver guión completo →</div>
-                  </div>
-                  <div style={{ padding: '1.75rem 2rem', borderRight: '1px solid rgba(240,235,225,0.05)', cursor: 'pointer' }}
-                    onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'rgba(240,235,225,0.02)'}
-                    onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}>
-                    <div style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '4rem', lineHeight: 0.9, color: '#9B6FD4', marginBottom: 6 }}>{chars.length || '—'}</div>
-                    <div style={{ fontSize: '0.72rem', letterSpacing: '0.12em', fontWeight: 700, color: 'rgba(240,235,225,0.52)', textTransform: 'uppercase' }}>Personajes</div>
-                    {chars.length > 0 && <div style={{ fontSize: '0.74rem', color: 'rgba(240,235,225,0.48)', marginTop: 5 }}>{chars.slice(0, 3).map(([n]) => n).join(', ')}{chars.length > 3 ? ` +${chars.length - 3}` : ''}</div>}
-                    <div style={{ fontSize: '0.68rem', color: 'rgba(240,235,225,0.3)', marginTop: 10 }}>Ver fichas de personajes →</div>
-                  </div>
-                  <div style={{ padding: '1.75rem 2rem', cursor: 'pointer' }}
-                    onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'rgba(240,235,225,0.02)'}
-                    onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}>
-                    <div style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '4rem', lineHeight: 0.9, color: '#F5A52A', marginBottom: 6 }}>{locs.length || '—'}</div>
-                    <div style={{ fontSize: '0.72rem', letterSpacing: '0.12em', fontWeight: 700, color: 'rgba(240,235,225,0.52)', textTransform: 'uppercase' }}>Locaciones</div>
-                    {locs.length > 0 && <div style={{ fontSize: '0.74rem', color: 'rgba(240,235,225,0.48)', marginTop: 5 }}>{locs.slice(0, 2).map(([n]) => n).join(', ')}{locs.length > 2 ? ` +${locs.length - 2}` : ''}</div>}
-                    <div style={{ fontSize: '0.68rem', color: 'rgba(240,235,225,0.3)', marginTop: 10 }}>Ver assets de locaciones →</div>
-                  </div>
-                </div>
 
-                {/* ── STORYBOARD STRIP ── */}
-                {analysisActs.length > 0 && (
+                {/* ── STORYBOARD STRIP — moved to Análisis tab ── */}
+                {false && analysisActs.length > 0 && (
                   <div style={{ padding: '1.5rem 2rem', borderBottom: '1px solid rgba(240,235,225,0.05)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: '1rem' }}>
                       <span style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '1rem', letterSpacing: '0.14em', color: 'rgba(240,235,225,0.55)' }}>Arco narrativo</span>
@@ -1660,11 +1632,8 @@ El original_text debe ser cita LITERAL del guión (para ubicarlo automáticament
                   </div>
                 )}
 
-                {/* ── LOWER 2 COLUMNS ── */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 400px' }}>
-
-                  {/* LEFT COLUMN */}
-                  <div style={{ padding: '2rem', borderRight: '1px solid rgba(240,235,225,0.05)', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                {/* ── EDITORIAL CONTENT ── */}
+                <div style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '2rem', maxWidth: 800 }}>
 
                     {/* Sinopsis */}
                     <div>
@@ -1709,142 +1678,7 @@ El original_text debe ser cita LITERAL del guión (para ubicarlo automáticament
                       </div>
                     </div>
 
-                    {/* Score cards */}
-                    {currentAnalysis && currentAnalysis.categories.length > 0 && (
-                      <div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: '1rem' }}>
-                          <div style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '1rem', letterSpacing: '0.16em', color: 'rgba(240,235,225,0.5)' }}>Score por dimensión</div>
-                          <div style={{ flex: 1, height: 1, background: 'rgba(240,235,225,0.07)' }} />
-                          <span onClick={() => setMode('structure')} style={{ fontSize: '0.68rem', color: 'rgba(240,235,225,0.28)', cursor: 'pointer' }}>Ver análisis completo →</span>
-                        </div>
-                        <div style={{ display: 'grid', gridTemplateColumns: `repeat(${currentAnalysis.categories.length}, 1fr)`, gap: 10 }}>
-                          {currentAnalysis.categories.map(cat => {
-                            const fill = (cat.score / 5) * C28
-                            const color = scoreColor(cat.score)
-                            const pendingCount = cat.findings.filter(f => f.status === 'pending' || f.status === 'in_review').length
-                            return (
-                              <div key={cat.key} onClick={() => setMode('structure')}
-                                style={{ borderRadius: 10, padding: '1rem 0.75rem 0.875rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', position: 'relative', background: `linear-gradient(135deg, ${scoreBg(cat.score)}, rgba(10,7,25,0.4))`, border: `1px solid ${scoreBorder(cat.score)}`, backdropFilter: 'blur(8px)', transition: 'filter 0.12s' }}
-                                onMouseEnter={e => (e.currentTarget as HTMLElement).style.filter = 'brightness(1.12)'}
-                                onMouseLeave={e => (e.currentTarget as HTMLElement).style.filter = 'brightness(1)'}>
-                                {pendingCount > 0 && (
-                                  <div style={{ position: 'absolute', top: 8, right: 8, width: 16, height: 16, borderRadius: '50%', background: '#D4256A', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.52rem', fontWeight: 700, color: '#fff' }}>{pendingCount}</div>
-                                )}
-                                <svg width="70" height="70" viewBox="0 0 70 70">
-                                  <circle cx="35" cy="35" r="28" fill="none" stroke="rgba(240,235,225,0.05)" strokeWidth="5"/>
-                                  <circle cx="35" cy="35" r="28" fill="none" stroke={color} strokeWidth="5"
-                                    strokeDasharray={`${fill} ${C28}`}
-                                    strokeDashoffset={C28 * 0.25}
-                                    strokeLinecap="round"
-                                    style={{ filter: `drop-shadow(0 0 5px ${color}66)` }}
-                                  />
-                                  <text x="35" y="32" textAnchor="middle" dominantBaseline="central" fill={color} fontSize="18" fontWeight="700" fontFamily="Bebas Neue, Impact, sans-serif">{cat.score}</text>
-                                  <text x="35" y="44" textAnchor="middle" dominantBaseline="central" fill="rgba(240,235,225,0.22)" fontSize="8" fontFamily="IBM Plex Sans, sans-serif">/5</text>
-                                </svg>
-                                <div style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '0.78rem', letterSpacing: '0.1em', color: '#F0EBE1', textAlign: 'center', lineHeight: 1.2 }}>{cat.label}</div>
-                              </div>
-                            )
-                          })}
-                        </div>
-                      </div>
-                    )}
 
-                    {/* Continuidad + Locaciones */}
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
-
-                      {/* Continuidad */}
-                      <div>
-                        {secLabel('Continuidad')}
-                        {canonIssues.length === 0 ? (
-                          <div style={{ fontSize: '0.78rem', color: 'rgba(240,235,225,0.28)', fontStyle: 'italic' }}>Sin issues detectados.</div>
-                        ) : (
-                          <>
-                            <div style={{ display: 'flex', gap: 8, marginBottom: '1rem' }}>
-                              {contErrors.length > 0 && (
-                                <div onClick={() => setMode('produccion')} style={{ flex: 1, borderRadius: 5, padding: 10, textAlign: 'center', background: 'rgba(212,37,106,0.09)', border: '1px solid rgba(212,37,106,0.18)', cursor: 'pointer' }}>
-                                  <div style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '2rem', lineHeight: 1, color: '#D4256A' }}>{contErrors.length}</div>
-                                  <div style={{ fontSize: '0.58rem', letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 700, marginTop: 3, color: 'rgba(212,37,106,0.6)' }}>Errores</div>
-                                </div>
-                              )}
-                              {contWarnings.length > 0 && (
-                                <div onClick={() => setMode('produccion')} style={{ flex: 1, borderRadius: 5, padding: 10, textAlign: 'center', background: 'rgba(245,165,42,0.07)', border: '1px solid rgba(245,165,42,0.15)', cursor: 'pointer' }}>
-                                  <div style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '2rem', lineHeight: 1, color: '#F5A52A' }}>{contWarnings.length}</div>
-                                  <div style={{ fontSize: '0.58rem', letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 700, marginTop: 3, color: 'rgba(245,165,42,0.6)' }}>Alertas</div>
-                                </div>
-                              )}
-                            </div>
-                            {canonIssues.slice(0, 4).map((issue, i) => (
-                              <div key={i} onClick={() => setMode('produccion')} style={{ display: 'flex', gap: 8, padding: '8px 0', borderBottom: i < Math.min(3, canonIssues.length - 1) ? '1px solid rgba(240,235,225,0.05)' : 'none', cursor: 'pointer' }}>
-                                <div style={{ width: 7, height: 7, borderRadius: '50%', flexShrink: 0, marginTop: 5, background: issue.severity === 'error' ? '#D4256A' : '#F5A52A', boxShadow: `0 0 5px ${issue.severity === 'error' ? 'rgba(212,37,106,0.5)' : 'rgba(245,165,42,0.4)'}` }} />
-                                <div style={{ flex: 1 }}>
-                                  <div style={{ fontSize: '0.78rem', fontWeight: 600, color: 'rgba(240,235,225,0.85)' }}>{issue.entity}</div>
-                                  <div style={{ fontSize: '0.68rem', color: 'rgba(240,235,225,0.55)', marginTop: 2, lineHeight: 1.45 }}>{issue.issue}</div>
-                                </div>
-                              </div>
-                            ))}
-                          </>
-                        )}
-                      </div>
-
-                      {/* Locaciones */}
-                      <div>
-                        {secLabel('Locaciones')}
-                        {locs.length === 0 ? (
-                          <div style={{ fontSize: '0.78rem', color: 'rgba(240,235,225,0.28)', fontStyle: 'italic' }}>Sin análisis disponible.</div>
-                        ) : (
-                          locs.map(([name, count], i) => (
-                            <div key={name} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px', borderRadius: 6, border: '1px solid transparent', cursor: 'pointer', transition: 'all 0.12s' }}
-                              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(245,165,42,0.05)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(245,165,42,0.14)' }}
-                              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.borderColor = 'transparent' }}>
-                              <div style={{ width: 8, height: 8, borderRadius: 2, flexShrink: 0, background: `rgba(245,165,42,${Math.max(0.25, 1 - i * 0.2)})` }} />
-                              <div style={{ flex: 1, fontSize: '0.85rem', fontWeight: 600, color: 'rgba(240,235,225,0.88)' }}>{name}</div>
-                              <div style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: '0.68rem', color: 'rgba(240,235,225,0.42)' }}>{count} esc.</div>
-                              <div style={{ fontSize: '0.65rem', color: 'rgba(245,165,42,0.55)' }}>→</div>
-                            </div>
-                          ))
-                        )}
-                      </div>
-
-                    </div>
-                  </div>
-
-                  {/* RIGHT COLUMN: PERSONAJES */}
-                  <div style={{ background: '#0A0816', padding: '2rem' }}>
-                    <div style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '1rem', letterSpacing: '0.16em', color: 'rgba(240,235,225,0.5)', display: 'flex', alignItems: 'center', gap: 12, marginBottom: '0.75rem' }}>
-                      Personajes <div style={{ flex: 1, height: 1, background: 'rgba(240,235,225,0.07)' }} />
-                    </div>
-                    {chars.length === 0 ? (
-                      <div style={{ fontSize: '0.78rem', color: 'rgba(240,235,225,0.28)', fontStyle: 'italic', marginTop: 8 }}>Sin análisis de estructura disponible.</div>
-                    ) : (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                        {chars.map(([name, sceneCount], i) => {
-                          const color = CHAR_COLORS[i % CHAR_COLORS.length]
-                          const initial = name.charAt(0).toUpperCase()
-                          const onSegs = new Set<number>()
-                          allScenes.forEach((sc, si) => { if (Array.isArray(sc.characters) && sc.characters.includes(name)) onSegs.add(si) })
-                          const totalSegs = Math.min(Math.max(totalScenes, 14), 14)
-                          return (
-                            <div key={name} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '11px 12px', borderRadius: 7, border: '1px solid transparent', cursor: 'pointer', transition: 'all 0.15s' }}
-                              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(240,235,225,0.04)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(240,235,225,0.09)' }}
-                              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.borderColor = 'transparent' }}>
-                              <div style={{ width: 42, height: 42, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '1.2rem', flexShrink: 0, background: `${color}18`, border: `1px solid ${color}28`, color }}>
-                                {initial}
-                              </div>
-                              <div style={{ flex: 1, minWidth: 0 }}>
-                                <div style={{ fontSize: '0.92rem', fontWeight: 700, color: 'rgba(240,235,225,0.92)' }}>{name}</div>
-                                <div style={{ display: 'flex', gap: 2, marginTop: 6 }}>
-                                  {Array.from({ length: totalSegs }, (_, si) => (
-                                    <div key={si} style={{ height: 3, borderRadius: 1, flex: 1, background: onSegs.has(si) ? color : 'rgba(240,235,225,0.08)', opacity: onSegs.has(si) ? 0.6 : 1 }} />
-                                  ))}
-                                </div>
-                              </div>
-                              <div style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: '0.68rem', color: 'rgba(240,235,225,0.42)', flexShrink: 0 }}>{sceneCount} esc.</div>
-                            </div>
-                          )
-                        })}
-                      </div>
-                    )}
-                  </div>
 
                 </div>
               </div>
