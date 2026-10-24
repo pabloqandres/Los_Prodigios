@@ -200,39 +200,38 @@ export default function NuppaSeasonGraph({ episodes, seasonLabel = 'T01' }: Prop
 
     // Draw hologram (NUPPA head behind graph)
     if (imgRef.current) {
-      const hSize = Math.min(W * 0.32, 260)
+      const hSize = Math.min(W * 0.30, 240)
       const hx = W / 2 - hSize / 2
-      const hy = H / 2 - hSize * 0.6
+      const hy = H / 2 - hSize * 0.55
 
-      // Offscreen for radial mask
+      // Step 1: render image to offscreen, screen-composite over black → removes white background
       const off = document.createElement('canvas')
       off.width = hSize; off.height = hSize
       const octx = off.getContext('2d') as CanvasRenderingContext2D
+      octx.fillStyle = '#000'
+      octx.fillRect(0, 0, hSize, hSize)
+      octx.globalCompositeOperation = 'screen'
       octx.drawImage(imgRef.current, 0, 0, hSize, hSize)
 
-      // Apply cyan hologram filter via colorize
-      octx.globalCompositeOperation = 'multiply'
-      octx.fillStyle = '#00CCDD'
-      octx.fillRect(0, 0, hSize, hSize)
-
-      // Radial fade mask
+      // Step 2: radial fade mask so edges dissolve
       const mask = document.createElement('canvas')
       mask.width = hSize; mask.height = hSize
       const mctx = mask.getContext('2d') as CanvasRenderingContext2D
-      const grad = mctx.createRadialGradient(hSize / 2, hSize / 2, hSize * 0.15, hSize / 2, hSize / 2, hSize * 0.5)
+      const grad = mctx.createRadialGradient(hSize / 2, hSize * 0.4, hSize * 0.05, hSize / 2, hSize * 0.4, hSize * 0.52)
       grad.addColorStop(0, 'rgba(0,0,0,1)')
-      grad.addColorStop(0.6, 'rgba(0,0,0,0.6)')
+      grad.addColorStop(0.55, 'rgba(0,0,0,0.7)')
+      grad.addColorStop(0.85, 'rgba(0,0,0,0.2)')
       grad.addColorStop(1, 'rgba(0,0,0,0)')
       mctx.fillStyle = grad
       mctx.fillRect(0, 0, hSize, hSize)
-
       octx.globalCompositeOperation = 'destination-in'
       octx.drawImage(mask, 0, 0)
 
+      // Step 3: draw to main canvas with cyan tint filter (no hue-rotate — just saturate to cyan)
       ctx.save()
-      ctx.globalAlpha = 0.22
+      ctx.globalAlpha = 0.28
       ctx.globalCompositeOperation = 'screen'
-      ctx.filter = 'brightness(1.4) saturate(4) hue-rotate(175deg) brightness(1.5)'
+      ctx.filter = 'saturate(0) sepia(1) hue-rotate(155deg) brightness(1.6) saturate(5)'
       ctx.drawImage(off, hx, hy)
       ctx.filter = 'none'
       ctx.globalCompositeOperation = 'source-over'
@@ -453,7 +452,7 @@ export default function NuppaSeasonGraph({ episodes, seasonLabel = 'T01' }: Prop
   return (
     <canvas
       ref={canvasRef}
-      style={{ width: '100%', height: '100%', display: 'block', cursor: 'grab' }}
+      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', display: 'block', cursor: 'grab' }}
       onMouseMove={handleMouseMove}
       onMouseDown={handleMouseDown}
       onMouseUp={handleMouseUp}
