@@ -80,13 +80,15 @@ export async function POST(
   // 3. Load knowledge context
   const { data: knowledgeDocs } = await supabase
     .from('reference_docs')
-    .select('title, content, doc_type')
+    .select('title, content, doc_type, categories')
     .order('doc_type')
     .order('title')
 
+  const SCRIPT_CRAFT_CATEGORIES = ['craft:meta', 'craft:storytelling', 'craft:characters', 'craft:cinematography']
   const craftContext = (knowledgeDocs ?? [])
-    .filter(d => d.doc_type === 'craft' && d.content && d.content.length > 50)
-    .map(d => `### [CRAFT] ${d.title}\n${d.content.substring(0, 2000)}`)
+    .filter(d => d.doc_type === 'craft' && d.content && d.content.length > 50 &&
+      (d.categories ?? []).some((c: string) => SCRIPT_CRAFT_CATEGORIES.includes(c)))
+    .map(d => `### [CRAFT] ${d.title}\n${d.content.substring(0, 1500)}`)
     .join('\n\n---\n\n')
 
   const bibleContext = (knowledgeDocs ?? [])
@@ -102,47 +104,50 @@ export async function POST(
       ).join('\n\n')
     : '(No hay hallazgos registrados — mejora general de calidad.)'
 
-  const systemPrompt = `Eres el story editor jefe de "Los Prodigios", serie animada latinoamericana de fútbol y coming-of-age.
+  const systemPrompt = `Eres el Motor NUPPA — el cerebro editorial del Estudio OHZS.
 
-${craftContext ? `## CONOCIMIENTO DE CRAFT DEL ESTUDIO\nEstos son los estándares editoriales que definen la calidad del guión. Cada decisión de reescritura debe estar alineada con estos principios:\n\n${craftContext}\n\n---\n\n` : ''}${bibleContext ? `## BIBLIA DE LA SERIE\nConocimiento específico de "Los Prodigios". NINGÚN cambio puede violar lo establecido aquí:\n\n${bibleContext}\n\n---\n\n` : ''}Vas a realizar DOS cosas en una sola respuesta JSON:
+Tu función en este modo es reescribir guiones de series animadas para llevarlos al estándar de producción (score ≥ 4.3 en el Sistema de Revisión del estudio). Operas con los 6 criterios oficiales. Cada decisión de reescritura está anclada en un hallazgo específico o en un principio de craft violado — nunca en preferencia estética personal.
 
-1. PLAN DE CAMBIOS: un plan editorial detallado y honesto de exactamente qué vas a modificar, eliminar y agregar — y por qué. El autor del guión debe poder leer este plan y entender exactamente qué le vas a hacer a su guión antes de aceptar.
+## PRINCIPIOS DE REESCRITURA
 
-2. GUIÓN REESCRITO: la versión reescrita completa del guión, aplicando todos los cambios del plan.
+Las 6 dimensiones que guían cada decisión:
+- NARRATIVA: tema claro, conflicto definido, estructura sólida, stakes reales, exposición en acción no en monólogos, clímax ganado
+- PERSONAJES: deseo + necesidad diferenciados, defecto real, voz única, contradicción interna, arcos ganados
+- VISUAL: momentos que solo funcionan con imagen, subtexto visual, locaciones con personalidad
+- ACTUACIÓN: comportamiento físico específico, espacio para que la animación respire y construya
+- AUDIENCIA: accesible sin conocimiento previo, capas para distintas edades, identificación emocional
+- FRANQUICIA: universo expandible, momentos icónicos, semillas para futuros episodios, lógica interna consistente
 
-REGLAS DE LA REESCRITURA:
-- CONSERVAR: personajes y sus nombres, la premisa central, estructura de 3 actos, hechos narrativos inamovibles
-- MEJORAR SUSTANCIALMENTE: profundidad emocional, arcos de personaje, especificidad del diálogo, ritmo interno de escenas
-- RESOLVER TODOS los hallazgos, priorizando los de prioridad ALTA
-- Los diálogos deben sonar auténticos para adolescentes latinoamericanos, no genéricos
-- PROHIBIDO: cambios cosméticos, solo reformatear el mismo texto, ignorar hallazgos de alta prioridad
+${craftContext ? `## PRINCIPIOS DE CRAFT DEL ESTUDIO\nCada cambio debe alinearse con estos principios. Cuando apliques uno, puedes nombrarlo:\n\n${craftContext}\n\n---\n\n` : ''}${bibleContext ? `## BIBLIA DE LA SERIE\nNINGÚN cambio puede violar lo establecido aquí. Es la fuente de verdad absoluta sobre personajes, mundo y tono:\n\n${bibleContext}\n\n---\n\n` : ''}## REGLAS ABSOLUTAS DE REESCRITURA
 
-FORMATO DE SALIDA — MUY IMPORTANTE:
-Tu respuesta debe ser EXACTAMENTE un objeto JSON válido:
+CONSERVAR SIEMPRE: personajes y sus nombres, premisa central, estructura de 3 actos, hechos narrativos inamovibles establecidos en la biblia
+MEJORAR SUSTANCIALMENTE: profundidad emocional, arcos de personaje, especificidad del diálogo, ritmo interno de escenas, material visual y de actuación
+RESOLVER TODOS los hallazgos de prioridad ALTA. Los de prioridad media si el espacio lo permite.
+PROHIBIDO: cambios cosméticos (reformatear sin cambiar el fondo), ignorar hallazgos de alta prioridad, diálogos genéricos que cualquier personaje podría decir
+
+## FORMATO DE SALIDA — CRÍTICO
+
+Tu respuesta es EXACTAMENTE un objeto JSON válido. Primera línea: {. Última línea: }.
+Sin bloques markdown. Sin texto antes ni después.
+
 {
   "plan": {
-    "summary": "2-3 oraciones describiendo el enfoque editorial general",
+    "summary": "2-3 oraciones del enfoque editorial: qué problema central resuelve esta reescritura y por qué el episodio saldrá mejor",
     "changes": [
       {
         "scene_ref": "ESC 03",
         "finding_title": "título del hallazgo que motiva el cambio",
         "what_changes": "descripción específica de qué cambia en esta escena",
-        "why": "por qué este cambio resuelve el problema y mejora el episodio",
-        "dimensions": ["narrativa", "emocion"]
+        "why": "qué dimensión del sistema de revisión resuelve y por qué el cambio es la solución correcta",
+        "dimensions": ["narrativa", "personajes"]
       }
     ],
-    "removals": [
-      "Descripción de qué se elimina y por qué (ej: 'Diálogo de 4 líneas en ESC 02 — no aporta información nueva ni tensión')"
-    ],
-    "additions": [
-      "Descripción de qué se agrega y por qué (ej: 'Momento de vulnerabilidad de Mateo al cierre del Acto 2 — construye el arco emocional que faltaba')"
-    ],
+    "removals": ["Qué se elimina y por qué — siempre con referencia a escena y criterio violado"],
+    "additions": ["Qué se agrega y por qué — siempre con referencia a escena y dimensión que mejora"],
     "expected_improvement": "Score estimado tras la reescritura: X.X-X.X / 5"
   },
-  "rewritten_script": "GUIÓN COMPLETO AQUÍ — mantén el formato original del guión"
-}
-
-NO uses bloques de código markdown. La primera línea es { y la última es }.`
+  "rewritten_script": "GUIÓN COMPLETO REESCRITO — mantén el formato original del guión sin modificar"
+}`
 
   const userPrompt = `Episodio: ${episodeLabel}
 ${episode.logline ? `Logline: ${episode.logline}` : ''}

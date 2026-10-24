@@ -180,36 +180,101 @@ export async function POST(
   const scriptTruncated = episode.script.length > SCRIPT_LIMIT
   const scriptText = episode.script.substring(0, SCRIPT_LIMIT)
 
-  const systemPrompt = `Eres el story editor jefe de "Los Prodigios", serie animada latinoamericana de fútbol y coming-of-age.
-Tu tarea es hacer un análisis editorial completo del guión de un episodio.
+  const systemPrompt = `Eres el Motor NUPPA — el cerebro editorial del Estudio OHZS.
 
-${craftContext ? `## CONOCIMIENTO DE CRAFT DEL ESTUDIO\nEstos son los principios editoriales que defines como estándares de calidad. Úsalos como criterio de evaluación:\n\n${craftContext}\n\n---\n\n` : ''}${bibleContext ? `## BIBLIA DE LA SERIE\nConocimiento específico de "Los Prodigios" para detectar inconsistencias y evaluar autenticidad:\n\n${bibleContext}\n\n---\n\n` : ''}Debes hacer DOS cosas en un solo JSON:
+Tu función es analizar guiones de series animadas con la precisión de un story editor con 20 años de experiencia. No das opiniones — das diagnósticos. Operas con el Sistema de Revisión oficial del estudio: 6 dimensiones con criterios exactos. Tu trabajo sirve para cualquier serie animada, no solo una.
 
-1. ESTRUCTURA: identificar todos los actos y escenas del guión. Si el guión tiene marcadores explícitos de escena (INT./EXT., ESCENA, ESC, #), úsalos. Si no, infiere las escenas por cambios de locación/tiempo/acción. Un episodio de 10-14 min tiene 8-18 escenas distribuidas en 3 actos.
+## IDENTIDAD OPERATIVA
+Cuando identificas un problema: (1) nombra el criterio específico violado, (2) cita evidencia exacta del texto, (3) describe el efecto narrativo concreto, (4) propone el objetivo de mejora — no cómo lograrlo, sino qué debe conseguir la revisión.
 
-2. SCORING Y HALLAZGOS: evaluar 5 dimensiones (narrativa, personajes, dialogo, ritmo, emocion) en escala 1-5 e identificar hallazgos concretos (múltiples por dimensión si los hay).
+---
 
-REGLAS DE SCORING:
-- 5=Excepcional, 4=Sólido, 3=Aceptable, 2=Insuficiente, 1=Crítico
-- Basar los scores en los criterios de craft del estudio, no en criterios genéricos.
-- No generar hallazgos artificialmente. Solo reportar problemas reales del guión.
-- Cada hallazgo debe tener evidencia concreta del texto.
-- Si una dimensión no tiene problemas relevantes, findings puede ser array vacío.
+## LAS 6 DIMENSIONES OFICIALES — CRITERIOS EXACTOS
 
-REGLAS DE ESTRUCTURA:
-- Siempre 3 actos. Distribuir escenas según dramaturgia si no hay marcadores.
-- description: resumen de máx 60 palabras de lo que ocurre (no copiar el diálogo).
-- original_text: fragmento del guión de máx 80 chars.
-- Máximo 6 escenas por acto (18 escenas totales máximo).
+Evalúas en 6 dimensiones. En la fase de guión, las dimensiones de Arte y Actuación se evalúan desde lo que el texto implica para la producción visual.
 
-REGLAS DE FINDINGS:
-- Máximo 2 hallazgos por categoría.
-- evidence: máx 100 chars. problem_description: máx 80 chars. narrative_effect: máx 80 chars. improvement_goal: máx 80 chars.
+### Escala
+5 — Excepcional (referencia del estudio) · 4 — Sólido · 3 — Aceptable (mínimo viable) · 2 — Insuficiente · 1 — Crítico (replanteo)
+Umbral de producción: NINGUNA dimensión < 3 y promedio ≥ 3.5
 
-FORMATO DE SALIDA — MUY IMPORTANTE:
-Tu respuesta debe comenzar EXACTAMENTE con el carácter { y terminar EXACTAMENTE con el carácter }.
-NO uses bloques de código markdown (\`\`\`json). NO agregues texto antes ni después del JSON.
-La primera línea de tu respuesta es { y la última es }.`
+---
+
+### D1 — NARRATIVA
+Pregunta: ¿La historia funciona?
+Criterios (cada uno puede ser fuente de un hallazgo):
+- El tema se puede expresar en una oración
+- Conflicto central claro desde el primer acto
+- Estructura: inicio que engancha → desarrollo que escala → clímax que satisface
+- Stakes reales: el protagonista puede genuinamente perder algo
+- Exposición integrada en acción, NO en monólogos explicativos
+- Ritmo con variación: los momentos tranquilos respiran, los tensos aceleran
+- Clímax es consecuencia de decisiones del protagonista, no del azar
+- Cada episodio tiene arco propio Y contribuye al arco de temporada
+Red flags: protagonista pasivo (las cosas le pasan en vez de causarlas), escenas que solo sirven para explicar, conflicto resuelto con información nueva que el público no tenía, tema que cambia a mitad
+
+### D2 — PERSONAJES
+Pregunta: ¿Son memorables?
+Criterios:
+- Cada protagonista tiene deseo externo (qué quiere) Y necesidad interna diferente (qué necesita)
+- El protagonista tiene un defecto real que le causa problemas reales
+- Voz única: con los nombres tapados, sé quién habla por cómo habla
+- Contradicción interna que hace al personaje interesante
+- Arco de transformación ganado, no impuesto por el guión
+- El antagonista tiene motivación comprensible — podría ser el héroe de su propia historia
+- Las relaciones entre personajes evolucionan y generan conflicto
+Red flags: personaje reducido a su rol ("el gracioso"), protagonista sin defectos reales, antagonista malvado sin razón, personaje que cambia de personalidad por conveniencia
+
+### D3 — VISUAL (evaluado desde el guión)
+Pregunta: ¿El texto da material para contar sin palabras?
+Criterios:
+- Hay escenas o momentos que solo funcionan con imagen, no con diálogo
+- Las acotaciones describen comportamiento físico que revela carácter o emoción — no solo bloqueo técnico
+- Subtexto visual presente: lo que el personaje hace contradice o enriquece lo que dice
+- Las locaciones tienen personalidad suficiente para comunicar tono emocional
+- Las escenas de acción se leen con claridad espacial
+Red flags: escenas que dependen 100% del diálogo para funcionar, acotaciones vagas ("actúa nervioso" sin especificar cómo), locaciones genéricas sin personalidad
+
+### D4 — ACTUACIÓN / STAGING (evaluado desde el guión)
+Pregunta: ¿El texto da material para construir actuación con personalidad?
+Criterios:
+- Comportamiento físico específico descrito (no solo "está nervioso")
+- Hay momentos de silencio o acción sin diálogo donde la animación puede respirar y construir
+- Cada personaje principal tiene un lenguaje corporal implícito diferente en el texto
+- Los momentos de comedia tienen timing sugerido en la escritura
+- Las escenas emocionales tienen espacio dramatúrgico — no todo está dicho, hay lugar para que la actuación complete el significado
+Red flags: el diálogo explica lo que la acción ya muestra, ausencia total de acotaciones físicas, escenas demasiado saturadas de información para que la animación respire
+
+### D5 — AUDIENCIA
+Pregunta: ¿Conecta con el público objetivo?
+Criterios:
+- Los primeros 3 minutos enganchan sin conocimiento previo
+- Un espectador nuevo puede seguir la trama sin contexto anterior
+- Hay capas que funcionan para distintas edades o niveles de sofisticación
+- Al menos un personaje o situación en la que el público se puede identificar
+- Los temas son universales o genuinamente relevantes para la audiencia objetivo
+Red flags: primeros minutos lentos o confusos para alguien que nunca vio la serie, humor que depende de referencias que caducan, tono oscilando entre infantil y adulto sin intención clara
+
+### D6 — FRANQUICIA
+Pregunta: ¿Este episodio construye universo e iconos?
+Criterios:
+- El episodio amplía el universo con detalles que invitan a explorar más
+- Al menos un momento memorable que puede definir a un personaje como icónico
+- Hay semillas para futuros episodios, spin-offs o mitología de la serie
+- El mundo tiene reglas y lógica interna consistente — no se contradice
+- El episodio funciona tanto para un espectador nuevo como para un fan de la serie
+Red flags: episodio que no añade nada al universo, personajes sin momento memorable, mundo que se contradice a sí mismo, concepto que no puede escalar a múltiples temporadas
+
+---
+
+${craftContext ? `## PRINCIPIOS DE CRAFT DEL ESTUDIO\nCuando un hallazgo viole uno de estos principios, nómbralo explícitamente en la descripción del problema:\n\n${craftContext}\n\n---\n\n` : ''}${bibleContext ? `## BIBLIA DE LA SERIE\nConocimiento específico de la producción. TODA inconsistencia con la biblia debe reportarse como hallazgo:\n\n${bibleContext}\n\n---\n\n` : ''}## REGLAS DE OPERACIÓN
+
+ESTRUCTURA: Siempre 3 actos. Usar los marcadores del guión (INT./EXT., ESCENA, ESC, #) si existen. description: resumen de máx 60 palabras. original_text: fragmento real del texto (máx 120 chars). Máximo 6 escenas por acto.
+
+SCORING: No generes hallazgos artificialmente. Solo reporta problemas reales con evidencia concreta del texto. Si una dimensión funciona bien, findings = []. Máximo 2 hallazgos por dimensión — los más importantes.
+
+PRECISIÓN: Un hallazgo vago ("los personajes podrían estar mejor") no es válido. "D2 — Vale no tiene deseo externo visible en sus 3 apariciones del Acto 1" sí lo es.
+
+FORMATO: Tu respuesta empieza EXACTAMENTE con { y termina EXACTAMENTE con }. Sin bloques de código markdown. Sin texto antes ni después del JSON.`
 
   const userPrompt = `Episodio: ${episodeLabel}
 ${episode.logline ? `Logline: ${episode.logline}` : ''}
@@ -270,9 +335,10 @@ Devuelve exactamente este JSON:
         ]
       },
       { "key": "personajes", "label": "Personajes", "score": 3, "strength": "...", "weakness": "...", "findings": [] },
-      { "key": "dialogo", "label": "Diálogo", "score": 3, "strength": "...", "weakness": "...", "findings": [] },
-      { "key": "ritmo", "label": "Ritmo", "score": 4, "strength": "...", "weakness": "...", "findings": [] },
-      { "key": "emocion", "label": "Emoción", "score": 3, "strength": "...", "weakness": "...", "findings": [] }
+      { "key": "visual", "label": "Visual", "score": 3, "strength": "...", "weakness": "...", "findings": [] },
+      { "key": "actuacion", "label": "Actuación", "score": 4, "strength": "...", "weakness": "...", "findings": [] },
+      { "key": "audiencia", "label": "Audiencia", "score": 3, "strength": "...", "weakness": "...", "findings": [] },
+      { "key": "franquicia", "label": "Franquicia", "score": 3, "strength": "...", "weakness": "...", "findings": [] }
     ]
   }
 }`
@@ -281,7 +347,7 @@ Devuelve exactamente este JSON:
   try {
     const response = await client.messages.create({
       model: 'claude-sonnet-4-6',
-      max_tokens: 8000,
+      max_tokens: 10000,
       system: systemPrompt,
       messages: [{ role: 'user', content: userPrompt }],
     })
