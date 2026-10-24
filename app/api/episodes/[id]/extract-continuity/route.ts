@@ -57,7 +57,7 @@ export async function POST(
   }
 
   const episodeLabel = `T${episode.season}E${String(episode.episode_number).padStart(2, '0')}${episode.title ? ` — ${episode.title}` : ''}`
-  const scriptText = episode.script.substring(0, 10000)
+  const scriptText = episode.script.substring(0, 7000)
 
   const continuityContext = [
     moduleMap['canon_log'] ? `### canon_log\n${moduleMap['canon_log'].substring(0, 800)}` : '',
@@ -110,7 +110,7 @@ Extrae TODA la información de continuidad del guión y devuelve exactamente est
   try {
     const response = await client.messages.create({
       model: 'claude-sonnet-4-6',
-      max_tokens: 4000,
+      max_tokens: 8000,
       system: systemPrompt,
       messages: [{ role: 'user', content: userPrompt }],
     })
