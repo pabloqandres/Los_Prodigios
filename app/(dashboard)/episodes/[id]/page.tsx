@@ -547,7 +547,11 @@ El original_text debe ser cita LITERAL del guión (para ubicarlo automáticament
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(extraction),
       })
-      if (r.ok) setCommitted(true)
+      if (r.ok) {
+        setCommitted(true)
+        saveStatus('completed')
+        setEpisode(prev => prev ? { ...prev, status: 'completed' } : prev)
+      }
     } finally {
       setCommitting(false)
     }
@@ -1108,6 +1112,10 @@ El original_text debe ser cita LITERAL del guión (para ubicarlo automáticament
       setSavedMsg(true)
       setTimeout(() => setSavedMsg(false), 2000)
 
+      // Auto-advance status to 'script' when a script is uploaded
+      saveStatus('script')
+      setEpisode(prev => prev ? { ...prev, status: 'script' } : prev)
+
       // 4b. Extract metadata in background (logline, sinopsis, tema, cold open, tag)
       fetch(`/api/episodes/${id}/extract-metadata`, { method: 'POST' })
         .then(r => r.ok ? r.json() : null)
@@ -1145,6 +1153,9 @@ El original_text debe ser cita LITERAL del guión (para ubicarlo automáticament
             pending_count: data.findings_count,
             structure: data.structure,
           })
+          // Auto-advance status to 'in_production' after full analysis completes
+          saveStatus('in_production')
+          setEpisode(prev => prev ? { ...prev, status: 'in_production' } : prev)
         } else {
           setAnalyzeFullError(data.error ?? 'Error en el análisis')
         }
@@ -1467,15 +1478,6 @@ El original_text debe ser cita LITERAL del guión (para ubicarlo automáticament
           onBlur={e => saveField('title', e.target.value)}
           style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '1.25rem', letterSpacing: '0.06em', color: '#F0EBE1', minWidth: 0 }}
         />
-
-        {/* Status dropdown */}
-        <select
-          value={episode.status}
-          onChange={e => saveStatus(e.target.value as EpisodeStatus)}
-          style={{ background: '#120D28', border: `1px solid ${statusColor}`, borderRadius: '3px', color: statusColor, fontSize: '0.75rem', padding: '4px 8px', outline: 'none', cursor: 'pointer', fontFamily: 'IBM Plex Sans, sans-serif', flexShrink: 0 }}
-        >
-          {Object.entries(STATUS_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-        </select>
 
         {/* Mode tabs */}
         <div data-tutorial="episode-tabs" style={{ display: 'flex', gap: '2px', background: '#120D28', borderRadius: '3px', padding: '2px', flexShrink: 0 }}>
