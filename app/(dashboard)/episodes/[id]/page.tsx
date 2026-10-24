@@ -174,6 +174,17 @@ type ScriptProposal = {
   updated_at: string
 }
 
+interface ContinuityExtraction {
+  episode_label: string
+  canon_facts: Array<{ fact: string; category: string; entity: string; evidence: string }>
+  character_changes: Array<{ character: string; change_type: string; before: string; after: string; is_permanent: boolean; scene_ref: string }>
+  location_changes: Array<{ location: string; change: string; is_permanent: boolean }>
+  promises_opened: Array<{ id: string; type: string; description: string; urgency: string; related_character: string | null }>
+  promises_closed: Array<{ description: string; resolution: string }>
+  timeline_milestones: Array<{ event: string; significance: string; characters_involved: string[] }>
+  new_entities: Array<{ type: string; name: string; description: string }>
+}
+
 // ── Constants ─────────────────────────────────────────────────────────────────
 
 const STATUS_LABELS: Record<EpisodeStatus, string> = {
@@ -503,6 +514,44 @@ El original_text debe ser cita LITERAL del guión (para ubicarlo automáticament
   type PendingChange = { type: string; entity: string; description: string }
   const [pendingChanges, setPendingChanges] = useState<PendingChange[] | null>(null)
   const [savingLog, setSavingLog] = useState(false)
+
+  // Continuity extraction (NUPPA pipeline)
+  const [extracting, setExtracting] = useState(false)
+  const [extraction, setExtraction] = useState<ContinuityExtraction | null>(null)
+  const [committing, setCommitting] = useState(false)
+  const [committed, setCommitted] = useState(false)
+  const [extractError, setExtractError] = useState<string | null>(null)
+
+  async function handleExtract() {
+    setExtracting(true)
+    setExtractError(null)
+    setExtraction(null)
+    try {
+      const r = await fetch(`/api/episodes/${episode?.id}/extract-continuity`, { method: 'POST' })
+      const data = await r.json()
+      if (!r.ok) throw new Error(data.error ?? 'Error')
+      setExtraction(data)
+    } catch (e: unknown) {
+      setExtractError(e instanceof Error ? e.message : 'Error desconocido')
+    } finally {
+      setExtracting(false)
+    }
+  }
+
+  async function handleCommit() {
+    if (!extraction) return
+    setCommitting(true)
+    try {
+      const r = await fetch(`/api/episodes/${episode?.id}/commit-continuity`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(extraction),
+      })
+      if (r.ok) setCommitted(true)
+    } finally {
+      setCommitting(false)
+    }
+  }
 
   useEffect(() => { setMounted(true) }, [])
 
@@ -2607,6 +2656,68 @@ El original_text debe ser cita LITERAL del guión (para ubicarlo automáticament
                   </div>
                 </div>
               )}
+
+              {/* ── Continuidad automática ── */}
+              <div style={{ marginTop: '2rem', padding: '1.25rem', background: '#0D0D0D', border: '1px solid rgba(223,248,24,0.1)', borderRadius: '6px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                  <div>
+                    <div style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '1rem', letterSpacing: '0.08em', color: '#DFF818' }}>
+                      Continuidad Automática
+                    </div>
+                    <div style={{ fontSize: '0.65rem', color: 'rgba(240,235,225,0.3)', marginTop: '0.15rem' }}>
+                      Extrae hechos canónicos, cambios de personajes y promesas narrativas del guión
+                    </div>
+                  </div>
+                  <button
+                    onClick={handleExtract}
+                    disabled={extracting || !episode?.script}
+                    style={{
+                      padding: '0.45rem 1rem',
+                      background: extracting ? 'rgba(223,248,24,0.08)' : 'rgba(223,248,24,0.12)',
+                      border: '1px solid rgba(223,248,24,0.3)',
+                      borderRadius: '4px',
+                      color: '#DFF818',
+                      fontSize: '0.7rem',
+                      fontWeight: 600,
+                      letterSpacing: '0.1em',
+                      fontFamily: 'Bebas Neue, Impact, sans-serif',
+                      cursor: extracting || !episode?.script ? 'default' : 'pointer',
+                      opacity: !episode?.script ? 0.4 : 1,
+                      flexShrink: 0,
+                    }}
+                  >
+                    {extracting ? 'EXTRAYENDO...' : extraction ? 'RE-EXTRAER' : 'EXTRAER CONTINUIDAD'}
+                  </button>
+                </div>
+
+                {extractError && (
+                  <div style={{ fontSize: '0.75rem', color: '#D4256A', padding: '0.5rem', background: 'rgba(212,37,106,0.08)', borderRadius: '4px', marginBottom: '0.75rem' }}>
+                    {extractError}
+                  </div>
+                )}
+
+                {extracting && (
+                  <div style={{ fontSize: '0.75rem', color: 'rgba(240,235,225,0.3)', textAlign: 'center', padding: '1.5rem' }}>
+                    Claude está leyendo el guión...
+                  </div>
+                )}
+
+                {extraction && !extracting && (
+                  <ContinuityPanel
+                    extraction={extraction}
+                    committing={committing}
+                    committed={committed}
+                    onCommit={handleCommit}
+                  />
+                )}
+
+                {!extraction && !extracting && !extractError && (
+                  <div style={{ fontSize: '0.75rem', color: 'rgba(240,235,225,0.2)', textAlign: 'center', padding: '1rem' }}>
+                    {episode?.script ? 'Presiona "Extraer Continuidad" para analizar el guión' : 'Carga un guión primero'}
+                  </div>
+                )}
+              </div>
+
             </div>
           )}
           {/* PRODUCCIÓN MODE */}
@@ -3218,6 +3329,137 @@ El original_text debe ser cita LITERAL del guión (para ubicarlo automáticament
         </div>
       )}
 
+    </div>
+  )
+}
+
+// ── ContinuityPanel ───────────────────────────────────────────────────────────
+
+function ContinuityPanel({ extraction, committing, committed, onCommit }: {
+  extraction: ContinuityExtraction
+  committing: boolean
+  committed: boolean
+  onCommit: () => void
+}) {
+  const urgencyColor = (u: string) =>
+    u === 'critical' ? '#D4256A' : u === 'high' ? '#FF6B35' : u === 'medium' ? '#FFE66D' : 'rgba(240,235,225,0.4)'
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      {/* Canon facts */}
+      {extraction.canon_facts.length > 0 && (
+        <div>
+          <div style={{ fontSize: '0.6rem', letterSpacing: '0.16em', textTransform: 'uppercase', color: '#4ECDC4', fontWeight: 700, marginBottom: '0.5rem' }}>
+            Hechos canónicos <span style={{ opacity: 0.6 }}>({extraction.canon_facts.length})</span>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+            {extraction.canon_facts.map((f, i) => (
+              <div key={i} style={{ fontSize: '0.75rem', color: 'rgba(240,235,225,0.7)', padding: '0.4rem 0.6rem', background: 'rgba(78,205,196,0.06)', borderLeft: '2px solid rgba(78,205,196,0.3)', borderRadius: '0 3px 3px 0' }}>
+                <span style={{ color: 'rgba(78,205,196,0.6)', fontSize: '0.6rem', marginRight: '0.4rem' }}>[{f.category}]</span>
+                {f.fact}
+                {f.evidence && <span style={{ color: 'rgba(240,235,225,0.3)', marginLeft: '0.4rem' }}>· {f.evidence}</span>}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Character changes */}
+      {extraction.character_changes.length > 0 && (
+        <div>
+          <div style={{ fontSize: '0.6rem', letterSpacing: '0.16em', textTransform: 'uppercase', color: '#FFE66D', fontWeight: 700, marginBottom: '0.5rem' }}>
+            Cambios de personajes <span style={{ opacity: 0.6 }}>({extraction.character_changes.length})</span>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+            {extraction.character_changes.map((c, i) => (
+              <div key={i} style={{ fontSize: '0.75rem', color: 'rgba(240,235,225,0.7)', padding: '0.4rem 0.6rem', background: 'rgba(255,230,109,0.05)', borderLeft: '2px solid rgba(255,230,109,0.25)', borderRadius: '0 3px 3px 0' }}>
+                <span style={{ color: '#FFE66D', fontWeight: 600 }}>{c.character}</span>
+                <span style={{ color: 'rgba(240,235,225,0.3)', margin: '0 0.3rem' }}>({c.change_type})</span>
+                {c.before} → {c.after}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Promises opened */}
+      {extraction.promises_opened.length > 0 && (
+        <div>
+          <div style={{ fontSize: '0.6rem', letterSpacing: '0.16em', textTransform: 'uppercase', color: '#D4256A', fontWeight: 700, marginBottom: '0.5rem' }}>
+            Promesas abiertas <span style={{ opacity: 0.6 }}>({extraction.promises_opened.length})</span>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+            {extraction.promises_opened.map((p, i) => (
+              <div key={i} style={{ fontSize: '0.75rem', color: 'rgba(240,235,225,0.7)', padding: '0.4rem 0.6rem', background: 'rgba(212,37,106,0.06)', borderLeft: `2px solid ${urgencyColor(p.urgency)}`, borderRadius: '0 3px 3px 0' }}>
+                <span style={{ color: urgencyColor(p.urgency), fontSize: '0.6rem', marginRight: '0.4rem' }}>[{p.urgency.toUpperCase()}]</span>
+                {p.description}
+                {p.related_character && <span style={{ color: 'rgba(240,235,225,0.35)', marginLeft: '0.4rem' }}>· {p.related_character}</span>}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Timeline milestones */}
+      {extraction.timeline_milestones.length > 0 && (
+        <div>
+          <div style={{ fontSize: '0.6rem', letterSpacing: '0.16em', textTransform: 'uppercase', color: '#9B6FD4', fontWeight: 700, marginBottom: '0.5rem' }}>
+            Hitos de timeline <span style={{ opacity: 0.6 }}>({extraction.timeline_milestones.length})</span>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+            {extraction.timeline_milestones.map((m, i) => (
+              <div key={i} style={{ fontSize: '0.75rem', color: 'rgba(240,235,225,0.7)', padding: '0.4rem 0.6rem', background: 'rgba(155,111,212,0.06)', borderLeft: '2px solid rgba(155,111,212,0.3)', borderRadius: '0 3px 3px 0' }}>
+                <span style={{ color: '#9B6FD4', fontWeight: 600 }}>{m.event}</span>
+                <span style={{ color: 'rgba(240,235,225,0.35)', marginLeft: '0.4rem' }}>— {m.significance}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* New entities for bible */}
+      {extraction.new_entities.length > 0 && (
+        <div>
+          <div style={{ fontSize: '0.6rem', letterSpacing: '0.16em', textTransform: 'uppercase', color: '#88D8B0', fontWeight: 700, marginBottom: '0.5rem' }}>
+            Nuevas entidades para biblia <span style={{ opacity: 0.6 }}>({extraction.new_entities.length})</span>
+          </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem' }}>
+            {extraction.new_entities.map((e, i) => (
+              <span key={i} style={{ fontSize: '0.65rem', padding: '0.2rem 0.5rem', background: 'rgba(136,216,176,0.1)', border: '1px solid rgba(136,216,176,0.25)', borderRadius: '3px', color: '#88D8B0' }}>
+                {e.name} <span style={{ opacity: 0.5 }}>({e.type})</span>
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Commit button */}
+      <div style={{ borderTop: '1px solid rgba(223,248,24,0.1)', paddingTop: '1rem', marginTop: '0.5rem' }}>
+        <button
+          onClick={onCommit}
+          disabled={committing || committed}
+          style={{
+            padding: '0.6rem 1.5rem',
+            background: committed ? 'rgba(136,216,176,0.15)' : committing ? 'rgba(223,248,24,0.1)' : '#DFF818',
+            border: committed ? '1px solid #88D8B0' : '1px solid transparent',
+            borderRadius: '4px',
+            color: committed ? '#88D8B0' : committing ? '#DFF818' : '#0D0D0D',
+            fontSize: '0.8rem',
+            fontWeight: 700,
+            letterSpacing: '0.08em',
+            fontFamily: 'Bebas Neue, Impact, sans-serif',
+            cursor: committed || committing ? 'default' : 'pointer',
+            transition: 'all 0.2s',
+          }}
+        >
+          {committed ? '✓ GUARDADO EN CONTINUIDAD' : committing ? 'GUARDANDO...' : 'COMMIT A CONTINUIDAD'}
+        </button>
+        {!committed && (
+          <div style={{ marginTop: '0.4rem', fontSize: '0.6rem', color: 'rgba(240,235,225,0.25)', letterSpacing: '0.08em' }}>
+            Actualiza los 6 módulos de continuidad y crea entradas nuevas en la biblia
+          </div>
+        )}
+      </div>
     </div>
   )
 }
