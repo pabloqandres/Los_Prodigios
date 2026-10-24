@@ -6,6 +6,8 @@ import type { SeasonEpisode } from '@/components/NuppaSeasonGraph'
 
 const NuppaSeasonGraph = dynamic(() => import('@/components/NuppaSeasonGraph'), { ssr: false })
 
+const SEASONS = [1, 2, 3, 4, 5]
+
 function scoreColor(score?: number): string {
   if (score === undefined) return 'rgba(240,235,225,0.25)'
   if (score >= 4.3) return '#88D8B0'
@@ -13,19 +15,15 @@ function scoreColor(score?: number): string {
   return '#D4256A'
 }
 
-function scoreLabel(score?: number): string {
-  if (score === undefined) return '–'
-  if (score >= 4.3) return 'Listo'
-  if (score >= 3.5) return 'Revisar'
-  return 'Crítico'
-}
-
 export default function MotorPage() {
+  const [season, setSeason] = useState(1)
   const [episodes, setEpisodes] = useState<SeasonEpisode[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch('/api/motor?season=1')
+    setLoading(true)
+    setEpisodes([])
+    fetch(`/api/motor?season=${season}`)
       .then(r => r.json())
       .then((data: Array<SeasonEpisode & { overall_score: number | null; scores_snapshot: SeasonEpisode['scores_snapshot'] | null }>) => {
         if (Array.isArray(data)) {
@@ -38,7 +36,7 @@ export default function MotorPage() {
       })
       .catch(() => {})
       .finally(() => setLoading(false))
-  }, [])
+  }, [season])
 
   const analyzed = episodes.filter(e => e.overall_score !== undefined)
   const avgScore = analyzed.length > 0
@@ -51,7 +49,6 @@ export default function MotorPage() {
     ? analyzed.reduce((a, b) => (a.overall_score ?? 0) < (b.overall_score ?? 0) ? a : b)
     : undefined
 
-  // Weakest dimension across all analyzed episodes
   const dimTotals: Record<string, { sum: number; count: number; label: string }> = {}
   for (const ep of analyzed) {
     for (const d of ep.scores_snapshot ?? []) {
@@ -60,43 +57,71 @@ export default function MotorPage() {
       dimTotals[d.key].count++
     }
   }
-  const dimAvgs = Object.entries(dimTotals)
-    .map(([key, v]) => ({ key, label: v.label, avg: v.sum / v.count }))
-    .sort((a, b) => a.avg - b.avg)
-  const weakestDim = dimAvgs[0]
+  const weakestDim = Object.entries(dimTotals)
+    .map(([, v]) => ({ label: v.label, avg: v.sum / v.count }))
+    .sort((a, b) => a.avg - b.avg)[0]
+
+  const seasonLabel = `T0${season}`
 
   return (
-    <div style={{
-      height: '100vh',
-      background: '#0D0D0D',
-      display: 'flex',
-      flexDirection: 'column',
-      overflow: 'hidden',
-    }}>
+    <div style={{ height: '100vh', background: '#0D0D0D', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+
       {/* Header */}
       <div style={{
-        padding: '1.25rem 1.75rem 0.75rem',
+        padding: '0.875rem 1.75rem',
         borderBottom: '1px solid rgba(223,248,24,0.08)',
         display: 'flex',
-        alignItems: 'baseline',
-        gap: '1rem',
+        alignItems: 'center',
+        gap: '1.25rem',
         flexShrink: 0,
       }}>
         <div style={{
           fontFamily: 'Bebas Neue, Impact, sans-serif',
-          fontSize: '1.375rem',
+          fontSize: '1.25rem',
           letterSpacing: '0.1em',
           color: '#DFF818',
+          flexShrink: 0,
         }}>
           MOTOR NUPPA
         </div>
-        <div style={{ fontSize: '0.6875rem', color: 'rgba(240,235,225,0.35)', letterSpacing: '0.14em', textTransform: 'uppercase' }}>
-          T01 · Los Prodigios · Salud de temporada
+
+        {/* Season selector */}
+        <div style={{ display: 'flex', gap: '3px', background: 'rgba(255,255,255,0.04)', borderRadius: '4px', padding: '3px' }}>
+          {SEASONS.map(s => {
+            const active = s === season
+            return (
+              <button
+                key={s}
+                onClick={() => setSeason(s)}
+                style={{
+                  padding: '4px 12px',
+                  background: active ? 'rgba(223,248,24,0.15)' : 'transparent',
+                  border: active ? '1px solid rgba(223,248,24,0.4)' : '1px solid transparent',
+                  borderRadius: '3px',
+                  color: active ? '#DFF818' : 'rgba(240,235,225,0.35)',
+                  fontSize: '0.75rem',
+                  fontFamily: 'Bebas Neue, Impact, sans-serif',
+                  letterSpacing: '0.1em',
+                  cursor: 'pointer',
+                  transition: 'all 0.12s',
+                }}
+                onMouseEnter={e => { if (!active) e.currentTarget.style.color = 'rgba(240,235,225,0.7)' }}
+                onMouseLeave={e => { if (!active) e.currentTarget.style.color = 'rgba(240,235,225,0.35)' }}
+              >
+                T0{s}
+              </button>
+            )
+          })}
         </div>
-        {analyzed.length > 0 && avgScore !== undefined && (
-          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <span style={{ fontSize: '0.6875rem', color: 'rgba(240,235,225,0.35)', letterSpacing: '0.12em', textTransform: 'uppercase' }}>
-              Media T01
+
+        <div style={{ fontSize: '0.625rem', color: 'rgba(240,235,225,0.3)', letterSpacing: '0.14em', textTransform: 'uppercase' }}>
+          Los Prodigios · {episodes.length > 0 ? `${episodes.length} episodios` : 'Sin episodios'} · Click en nodo = ir al episodio
+        </div>
+
+        {avgScore !== undefined && (
+          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
+            <span style={{ fontSize: '0.5625rem', color: 'rgba(240,235,225,0.3)', letterSpacing: '0.14em', textTransform: 'uppercase' }}>
+              Media {seasonLabel}
             </span>
             <span style={{
               fontFamily: 'Bebas Neue, Impact, sans-serif',
@@ -113,87 +138,57 @@ export default function MotorPage() {
       {/* Graph */}
       <div style={{ flex: 1, position: 'relative', minHeight: 0 }}>
         {loading ? (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'rgba(240,235,225,0.3)', fontSize: '0.875rem', letterSpacing: '0.08em' }}>
-            Cargando temporada...
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'rgba(240,235,225,0.3)', fontSize: '0.8rem', letterSpacing: '0.1em' }}>
+            Cargando {seasonLabel}...
           </div>
         ) : episodes.length === 0 ? (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: '0.75rem' }}>
-            <div style={{ color: 'rgba(240,235,225,0.25)', fontSize: '0.875rem', letterSpacing: '0.06em' }}>
-              No hay episodios en T01
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: '0.5rem' }}>
+            <div style={{ color: 'rgba(240,235,225,0.2)', fontSize: '0.8rem', letterSpacing: '0.06em' }}>
+              No hay episodios en {seasonLabel}
+            </div>
+            <div style={{ color: 'rgba(240,235,225,0.12)', fontSize: '0.65rem' }}>
+              Crea episodios desde la sección Episodios
             </div>
           </div>
         ) : (
-          <NuppaSeasonGraph episodes={episodes} seasonLabel="T01" />
+          <NuppaSeasonGraph episodes={episodes} seasonLabel={seasonLabel} />
         )}
 
-        {/* Legend overlay — bottom left */}
+        {/* Legend — bottom left */}
         {!loading && episodes.length > 0 && (
-          <div style={{
-            position: 'absolute',
-            bottom: '1.25rem',
-            left: '1.5rem',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '0.375rem',
-          }}>
+          <div style={{ position: 'absolute', bottom: '1.25rem', left: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
             {[
-              { color: '#88D8B0', label: 'Score ≥ 4.3 — Listo para producción' },
+              { color: '#88D8B0', label: 'Score ≥ 4.3 — Listo' },
               { color: '#FFE66D', label: 'Score 3.5–4.2 — Revisar' },
-              { color: '#D4256A', label: 'Score < 3.5 — Atención crítica' },
+              { color: '#D4256A', label: 'Score < 3.5 — Crítico' },
               { color: '#555555', label: 'Sin análisis' },
             ].map(({ color, label }) => (
               <div key={label} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: color, flexShrink: 0 }} />
-                <span style={{ fontSize: '0.625rem', color: 'rgba(240,235,225,0.35)', letterSpacing: '0.08em' }}>{label}</span>
+                <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: color, flexShrink: 0 }} />
+                <span style={{ fontSize: '0.5625rem', color: 'rgba(240,235,225,0.3)', letterSpacing: '0.06em' }}>{label}</span>
               </div>
             ))}
-            <div style={{ marginTop: '0.25rem', fontSize: '0.5625rem', color: 'rgba(240,235,225,0.2)', letterSpacing: '0.06em' }}>
-              Nodos pequeños = dimensión débil del episodio · Click = ir al episodio
-            </div>
           </div>
         )}
       </div>
 
-      {/* Stats bar — bottom */}
+      {/* Stats bar */}
       {analyzed.length > 0 && (
         <div style={{
           borderTop: '1px solid rgba(223,248,24,0.08)',
-          padding: '0.875rem 1.75rem',
+          padding: '0.75rem 1.75rem',
           display: 'flex',
           gap: '2.5rem',
+          alignItems: 'center',
           flexShrink: 0,
           background: 'rgba(0,0,0,0.4)',
         }}>
-          <StatBlock
-            label="Episodios analizados"
-            value={`${analyzed.length} / ${episodes.length}`}
-            color="rgba(240,235,225,0.7)"
-          />
-          {best && (
-            <StatBlock
-              label="Mejor episodio"
-              value={`E${String(best.episode_number).padStart(2,'0')}  ${best.overall_score?.toFixed(1)}`}
-              color={scoreColor(best.overall_score)}
-            />
-          )}
-          {worst && (
-            <StatBlock
-              label="Necesita atención"
-              value={`E${String(worst.episode_number).padStart(2,'0')}  ${worst.overall_score?.toFixed(1)}`}
-              color={scoreColor(worst.overall_score)}
-            />
-          )}
-          {weakestDim && (
-            <StatBlock
-              label="Dimensión más débil"
-              value={`${weakestDim.label}  ${weakestDim.avg.toFixed(1)}`}
-              color="rgba(240,235,225,0.5)"
-            />
-          )}
-          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center' }}>
-            <span style={{ fontSize: '0.5625rem', color: 'rgba(240,235,225,0.18)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-              Arrastra para rotar · Click para navegar
-            </span>
+          <StatBlock label="Analizados" value={`${analyzed.length} / ${episodes.length}`} color="rgba(240,235,225,0.6)" />
+          {best && <StatBlock label="Mejor" value={`E${String(best.episode_number).padStart(2,'0')}  ${best.overall_score?.toFixed(1)}`} color={scoreColor(best.overall_score)} />}
+          {worst && best?.id !== worst?.id && <StatBlock label="Atención" value={`E${String(worst.episode_number).padStart(2,'0')}  ${worst.overall_score?.toFixed(1)}`} color={scoreColor(worst.overall_score)} />}
+          {weakestDim && <StatBlock label="Dimensión débil" value={`${weakestDim.label}  ${weakestDim.avg.toFixed(1)}`} color="rgba(240,235,225,0.45)" />}
+          <div style={{ marginLeft: 'auto', fontSize: '0.5rem', color: 'rgba(240,235,225,0.15)', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+            Arrastra para rotar
           </div>
         </div>
       )}
@@ -203,11 +198,11 @@ export default function MotorPage() {
 
 function StatBlock({ label, value, color }: { label: string; value: string; color: string }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
-      <div style={{ fontSize: '0.5rem', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(240,235,225,0.28)', fontWeight: 600 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.15rem' }}>
+      <div style={{ fontSize: '0.45rem', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(240,235,225,0.25)', fontWeight: 600 }}>
         {label}
       </div>
-      <div style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '1.125rem', letterSpacing: '0.06em', color }}>
+      <div style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '1rem', letterSpacing: '0.06em', color }}>
         {value}
       </div>
     </div>
