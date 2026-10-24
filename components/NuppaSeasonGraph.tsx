@@ -99,7 +99,7 @@ function buildNodes(episodes: SeasonEpisode[]): Node3D[] {
         nodes.push({
           id: `dim_${ep.id}_${dim.key}`,
           type: 'dimension',
-          label: dim.label.slice(0, 3).toUpperCase(),
+          label: dim.label,
           color: DIM_COLORS[dim.key] ?? '#888',
           r: 8,
           x: dx, y: dy, z: dz,
@@ -321,32 +321,37 @@ export default function NuppaSeasonGraph({ episodes, seasonLabel = 'T01' }: Prop
         ctx.fillText(n.score.toFixed(1), bx, by)
       }
 
-      // Dimension label: always visible below node
+      // Dimension: full label + score always visible below node
       if (n.type === 'dimension') {
-        ctx.font = `${Math.max(8, 9 * p.scale)}px "IBM Plex Sans", sans-serif`
+        const dimFontSize = Math.max(9, 10 * p.scale)
+        ctx.font = `${dimFontSize}px "IBM Plex Sans", sans-serif`
         ctx.textAlign = 'center'
         ctx.textBaseline = 'top'
-        ctx.fillStyle = n.color + (isHov ? 'FF' : 'AA')
-        ctx.fillText(n.label, p.sx, p.sy + r + 2)
+        ctx.fillStyle = n.color + (isHov ? 'FF' : 'CC')
+        ctx.fillText(n.label, p.sx, p.sy + r + 3)
+        if (n.score !== undefined) {
+          ctx.font = `bold ${dimFontSize}px "IBM Plex Sans", sans-serif`
+          ctx.fillStyle = n.color + (isHov ? 'FF' : '99')
+          ctx.fillText(n.score.toFixed(1), p.sx, p.sy + r + 3 + dimFontSize + 1)
+        }
       }
     }
 
-    // Hover tooltip for episode
+    // Hover tooltip
     if (hoveredIdRef.current) {
       const hovNode = nodesRef.current.find(n => n.id === hoveredIdRef.current)
-      if (hovNode && hovNode.type === 'episode') {
+      if (!hovNode) { /* skip */ }
+      else if (hovNode.type === 'episode') {
         const ep = episodes.find(e => e.id === hovNode.episodeRef)
         if (ep) {
           const p = project(hovNode.x, hovNode.y, hovNode.z, rx, ry, W, H, ws)
           const text = ep.title ? `E${String(ep.episode_number).padStart(2,'0')} — ${ep.title}` : `Episodio ${ep.episode_number}`
           const scoreText = ep.overall_score !== undefined ? `  ${ep.overall_score.toFixed(1)} / 5` : '  Sin análisis'
           const fullText = text + scoreText
-
           ctx.font = '11px "IBM Plex Sans", sans-serif'
           const tw = ctx.measureText(fullText).width
           const tx = Math.min(Math.max(p.sx - tw / 2 - 8, 4), W - tw - 20)
-          const ty = p.sy - hovNode.r * p.scale - 30
-
+          const ty = Math.max(p.sy - hovNode.r * p.scale - 32, 6)
           ctx.fillStyle = 'rgba(19,19,19,0.92)'
           ctx.beginPath()
           ctx.roundRect(tx, ty, tw + 16, 22, 4)
@@ -354,13 +359,37 @@ export default function NuppaSeasonGraph({ episodes, seasonLabel = 'T01' }: Prop
           ctx.strokeStyle = hovNode.color + '88'
           ctx.lineWidth = 1
           ctx.stroke()
-
           ctx.fillStyle = '#F2EEEA'
           ctx.textAlign = 'left'
           ctx.textBaseline = 'middle'
           ctx.fillText(text, tx + 8, ty + 11)
           ctx.fillStyle = hovNode.color
           ctx.fillText(scoreText, tx + 8 + ctx.measureText(text).width, ty + 11)
+        }
+      } else if (hovNode.type === 'dimension') {
+        const ep = episodes.find(e => e.id === hovNode.episodeRef)
+        if (ep && hovNode.score !== undefined) {
+          const p = project(hovNode.x, hovNode.y, hovNode.z, rx, ry, W, H, ws)
+          const line1 = `${hovNode.label}  ${hovNode.score.toFixed(1)} / 5`
+          const line2 = ep.title ? `E${String(ep.episode_number).padStart(2,'0')} ${ep.title}` : `Episodio ${ep.episode_number}`
+          ctx.font = 'bold 11px "IBM Plex Sans", sans-serif'
+          const tw = Math.max(ctx.measureText(line1).width, ctx.measureText(line2).width)
+          const tx = Math.min(Math.max(p.sx - tw / 2 - 10, 4), W - tw - 24)
+          const ty = Math.max(p.sy - hovNode.r * p.scale - 52, 6)
+          ctx.fillStyle = 'rgba(19,19,19,0.94)'
+          ctx.beginPath()
+          ctx.roundRect(tx, ty, tw + 20, 38, 4)
+          ctx.fill()
+          ctx.strokeStyle = hovNode.color + 'AA'
+          ctx.lineWidth = 1
+          ctx.stroke()
+          ctx.fillStyle = hovNode.color
+          ctx.textAlign = 'left'
+          ctx.textBaseline = 'middle'
+          ctx.fillText(line1, tx + 10, ty + 12)
+          ctx.font = '10px "IBM Plex Sans", sans-serif'
+          ctx.fillStyle = 'rgba(240,235,225,0.5)'
+          ctx.fillText(line2 + ' · Click para abrir', tx + 10, ty + 27)
         }
       }
     }
