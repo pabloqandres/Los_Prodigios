@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { signOut, useSession } from 'next-auth/react'
 import Image from 'next/image'
+import { useEffect, useState } from 'react'
 
 interface NavItem {
   href: string
@@ -229,6 +230,14 @@ const NAV_SECTIONS: NavSection[] = [
 export function Sidebar() {
   const pathname = usePathname()
   const { data: session } = useSession()
+  const [stats, setStats] = useState<{ total_episodes: number; analyzed_episodes: number } | null>(null)
+
+  useEffect(() => {
+    fetch('/api/stats')
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d) setStats(d) })
+      .catch(() => {})
+  }, [])
 
   function isActive(href: string) {
     const base = href.split('?')[0]
@@ -405,12 +414,17 @@ export function Sidebar() {
                 Episodios
               </span>
               <span style={{ fontSize: '0.625rem', fontFamily: 'Bebas Neue, Impact, sans-serif', color: 'rgba(240,235,225,0.35)', letterSpacing: '0.06em' }}>
-                0 / 50
+                {stats ? `${stats.total_episodes} / 50` : '— / 50'}
               </span>
             </div>
             <div style={{ height: '2px', background: 'rgba(223,248,24,0.08)', borderRadius: '1px', overflow: 'hidden' }}>
-              <div style={{ height: '100%', width: '0%', background: 'linear-gradient(90deg, #DFF818, #EAFF4D)', borderRadius: '1px' }} />
+              <div style={{ height: '100%', width: `${stats ? (stats.total_episodes / 50) * 100 : 0}%`, background: 'linear-gradient(90deg, #DFF818, #EAFF4D)', borderRadius: '1px', transition: 'width 0.6s ease' }} />
             </div>
+            {stats && stats.analyzed_episodes > 0 && (
+              <div style={{ marginTop: '0.25rem', fontSize: '0.5rem', color: 'rgba(240,235,225,0.2)', letterSpacing: '0.1em' }}>
+                {stats.analyzed_episodes} analizado{stats.analyzed_episodes !== 1 ? 's' : ''}
+              </div>
+            )}
           </div>
         </div>
       </div>
