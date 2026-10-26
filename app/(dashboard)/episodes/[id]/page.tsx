@@ -2373,6 +2373,67 @@ El original_text debe ser cita LITERAL del guión (para ubicarlo automáticament
                       })}
                     </div>
 
+                    {/* ── Continuidad automática ── */}
+                    <div style={{ marginBottom: '2rem', padding: '1.25rem', background: '#0D0D0D', border: '1px solid rgba(223,248,24,0.1)', borderRadius: '6px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                        <div>
+                          <div style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '1rem', letterSpacing: '0.08em', color: '#DFF818' }}>
+                            Continuidad Automática
+                          </div>
+                          <div style={{ fontSize: '0.65rem', color: 'rgba(240,235,225,0.3)', marginTop: '0.15rem' }}>
+                            Extrae hechos canónicos, cambios de personajes y promesas narrativas del guión
+                          </div>
+                        </div>
+                        <button
+                          onClick={handleExtract}
+                          disabled={extracting || !episode?.script}
+                          style={{
+                            padding: '0.45rem 1rem',
+                            background: extracting ? 'rgba(223,248,24,0.08)' : 'rgba(223,248,24,0.12)',
+                            border: '1px solid rgba(223,248,24,0.3)',
+                            borderRadius: '4px',
+                            color: '#DFF818',
+                            fontSize: '0.7rem',
+                            fontWeight: 600,
+                            letterSpacing: '0.1em',
+                            fontFamily: 'Bebas Neue, Impact, sans-serif',
+                            cursor: extracting || !episode?.script ? 'default' : 'pointer',
+                            opacity: !episode?.script ? 0.4 : 1,
+                            flexShrink: 0,
+                          }}
+                        >
+                          {extracting ? 'EXTRAYENDO...' : extraction ? 'RE-EXTRAER' : 'EXTRAER CONTINUIDAD'}
+                        </button>
+                      </div>
+
+                      {extractError && (
+                        <div style={{ fontSize: '0.75rem', color: '#D4256A', padding: '0.5rem', background: 'rgba(212,37,106,0.08)', borderRadius: '4px', marginBottom: '0.75rem' }}>
+                          {extractError}
+                        </div>
+                      )}
+
+                      {extracting && (
+                        <div style={{ fontSize: '0.75rem', color: 'rgba(240,235,225,0.3)', textAlign: 'center', padding: '1.5rem' }}>
+                          Claude está leyendo el guión...
+                        </div>
+                      )}
+
+                      {extraction && !extracting && (
+                        <ContinuityPanel
+                          extraction={extraction}
+                          committing={committing}
+                          committed={committed}
+                          onCommit={handleCommit}
+                        />
+                      )}
+
+                      {!extraction && !extracting && !extractError && (
+                        <div style={{ fontSize: '0.75rem', color: 'rgba(240,235,225,0.2)', textAlign: 'center', padding: '1rem' }}>
+                          {episode?.script ? 'Presiona "Extraer Continuidad" para analizar el guión' : 'Carga un guión primero'}
+                        </div>
+                      )}
+                    </div>
+
                     {/* ── FINDINGS ACCORDION ───────────────────────────── */}
                     {currentAnalysis.categories.some(c => c.findings.length > 0) && (
                       <div style={{ marginBottom: '2rem' }}>
@@ -2695,67 +2756,6 @@ El original_text debe ser cita LITERAL del guión (para ubicarlo automáticament
                   </div>
                 </div>
               )}
-
-              {/* ── Continuidad automática ── */}
-              <div style={{ marginTop: '2rem', padding: '1.25rem', background: '#0D0D0D', border: '1px solid rgba(223,248,24,0.1)', borderRadius: '6px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                  <div>
-                    <div style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '1rem', letterSpacing: '0.08em', color: '#DFF818' }}>
-                      Continuidad Automática
-                    </div>
-                    <div style={{ fontSize: '0.65rem', color: 'rgba(240,235,225,0.3)', marginTop: '0.15rem' }}>
-                      Extrae hechos canónicos, cambios de personajes y promesas narrativas del guión
-                    </div>
-                  </div>
-                  <button
-                    onClick={handleExtract}
-                    disabled={extracting || !episode?.script}
-                    style={{
-                      padding: '0.45rem 1rem',
-                      background: extracting ? 'rgba(223,248,24,0.08)' : 'rgba(223,248,24,0.12)',
-                      border: '1px solid rgba(223,248,24,0.3)',
-                      borderRadius: '4px',
-                      color: '#DFF818',
-                      fontSize: '0.7rem',
-                      fontWeight: 600,
-                      letterSpacing: '0.1em',
-                      fontFamily: 'Bebas Neue, Impact, sans-serif',
-                      cursor: extracting || !episode?.script ? 'default' : 'pointer',
-                      opacity: !episode?.script ? 0.4 : 1,
-                      flexShrink: 0,
-                    }}
-                  >
-                    {extracting ? 'EXTRAYENDO...' : extraction ? 'RE-EXTRAER' : 'EXTRAER CONTINUIDAD'}
-                  </button>
-                </div>
-
-                {extractError && (
-                  <div style={{ fontSize: '0.75rem', color: '#D4256A', padding: '0.5rem', background: 'rgba(212,37,106,0.08)', borderRadius: '4px', marginBottom: '0.75rem' }}>
-                    {extractError}
-                  </div>
-                )}
-
-                {extracting && (
-                  <div style={{ fontSize: '0.75rem', color: 'rgba(240,235,225,0.3)', textAlign: 'center', padding: '1.5rem' }}>
-                    Claude está leyendo el guión...
-                  </div>
-                )}
-
-                {extraction && !extracting && (
-                  <ContinuityPanel
-                    extraction={extraction}
-                    committing={committing}
-                    committed={committed}
-                    onCommit={handleCommit}
-                  />
-                )}
-
-                {!extraction && !extracting && !extractError && (
-                  <div style={{ fontSize: '0.75rem', color: 'rgba(240,235,225,0.2)', textAlign: 'center', padding: '1rem' }}>
-                    {episode?.script ? 'Presiona "Extraer Continuidad" para analizar el guión' : 'Carga un guión primero'}
-                  </div>
-                )}
-              </div>
 
             </div>
           )}
