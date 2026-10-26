@@ -1135,7 +1135,7 @@ El original_text debe ser cita LITERAL del guión (para ubicarlo automáticament
 
       // Auto-advance status to 'script' when a script is uploaded
       saveStatus('script')
-      setEpisode(prev => prev ? { ...prev, status: 'script' } : prev)
+      setEpisode(prev => prev ? { ...prev, status: 'script', script: text } : prev)
 
       // 4b. Extract metadata in background (logline, sinopsis, tema, cold open, tag)
       fetch(`/api/episodes/${id}/extract-metadata`, { method: 'POST' })
