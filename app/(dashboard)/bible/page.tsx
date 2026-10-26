@@ -1567,6 +1567,7 @@ export default function BiblePage() {
   const [showUpload, setShowUpload] = useState(false)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [editDoc, setEditDoc] = useState<RefDoc | null>(null)
+  const [filterCat, setFilterCat] = useState<string | null>(null)
 
   // Canon editor flow
   const [confirm1Doc, setConfirm1Doc] = useState<RefDoc | null>(null)
@@ -1769,6 +1770,52 @@ export default function BiblePage() {
         </div>
       ) : (
         <>
+          {/* ── CATEGORY FILTER BAR ──────────────────────────────────────── */}
+          {(() => {
+            const activeCats = ALL_CATEGORIES.filter(cat =>
+              docs.some(d => Array.isArray(d.categories) && d.categories.includes(cat.key))
+            )
+            if (activeCats.length < 2) return null
+            return (
+              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '1rem' }}>
+                <button
+                  onClick={() => { setFilterCat(null); setSelectedId(null) }}
+                  style={{
+                    padding: '4px 14px', borderRadius: '20px', fontSize: '0.7rem', fontWeight: 600,
+                    letterSpacing: '0.08em', fontFamily: 'IBM Plex Sans, sans-serif', cursor: 'pointer',
+                    border: `1px solid ${filterCat === null ? 'rgba(245,165,42,0.5)' : 'rgba(245,165,42,0.18)'}`,
+                    background: filterCat === null ? 'rgba(245,165,42,0.12)' : 'transparent',
+                    color: filterCat === null ? '#F5A52A' : 'rgba(240,235,225,0.35)',
+                    transition: 'all 0.15s',
+                  }}
+                >
+                  Todos ({docs.length})
+                </button>
+                {activeCats.map(cat => {
+                  const count = docs.filter(d => Array.isArray(d.categories) && d.categories.includes(cat.key)).length
+                  const active = filterCat === cat.key
+                  const stripe = SPINE_COLORS[cat.key]?.stripe ?? '#9B6FD4'
+                  return (
+                    <button
+                      key={cat.key}
+                      onClick={() => { setFilterCat(active ? null : cat.key); setSelectedId(null) }}
+                      style={{
+                        padding: '4px 14px', borderRadius: '20px', fontSize: '0.7rem', fontWeight: 600,
+                        letterSpacing: '0.08em', fontFamily: 'IBM Plex Sans, sans-serif', cursor: 'pointer',
+                        border: `1px solid ${active ? stripe + '80' : stripe + '30'}`,
+                        background: active ? stripe + '18' : 'transparent',
+                        color: active ? stripe : 'rgba(240,235,225,0.35)',
+                        transition: 'all 0.15s',
+                      }}
+                    >
+                      {cat.label} ({count})
+                    </button>
+                  )
+                })}
+              </div>
+            )
+          })()}
+
           {/* Shelf */}
           <div style={{
             background: 'linear-gradient(180deg, #0A0716 0%, #0F0B1E 60%, #0D0920 100%)',
@@ -1781,7 +1828,7 @@ export default function BiblePage() {
           }}>
             <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '1px', background: 'linear-gradient(90deg, transparent, rgba(245,165,42,0.08), transparent)' }} />
             <div data-tutorial="bible-grid" style={{ display: 'flex', gap: '6px', alignItems: 'flex-end', minHeight: '220px', paddingBottom: '0' }}>
-              {docs.map((doc) => (
+              {docs.filter(doc => !filterCat || (Array.isArray(doc.categories) && doc.categories.includes(filterCat))).map((doc) => (
                 <BookSpine
                   key={doc.id}
                   doc={doc}
