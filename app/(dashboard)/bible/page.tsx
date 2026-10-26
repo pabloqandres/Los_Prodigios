@@ -1617,9 +1617,10 @@ export default function BiblePage() {
   }
 
   async function handleBulkAssign() {
+    const knownKeys = new Set(ALL_CATEGORIES.map(c => c.key))
     const targets = selectedBulk.size > 0
       ? docs.filter(d => selectedBulk.has(d.id))
-      : docs.filter(d => !Array.isArray(d.categories) || d.categories.length === 0)
+      : docs.filter(d => !Array.isArray(d.categories) || !d.categories.some(c => knownKeys.has(c)))
     if (targets.length === 0 || !bulkCat) return
     setBulkAssigning(true)
     await Promise.all(targets.map(d =>
@@ -1797,10 +1798,12 @@ export default function BiblePage() {
         <>
           {/* ── CATEGORY FILTER BAR ──────────────────────────────────────── */}
           {(() => {
+            const knownKeys = new Set(ALL_CATEGORIES.map(c => c.key))
+            const hasKnownCat = (d: RefDoc) => Array.isArray(d.categories) && d.categories.some(c => knownKeys.has(c))
             const activeCats = ALL_CATEGORIES.filter(cat =>
               docs.some(d => Array.isArray(d.categories) && d.categories.includes(cat.key))
             )
-            const uncategorized = docs.filter(d => !Array.isArray(d.categories) || d.categories.length === 0)
+            const uncategorized = docs.filter(d => !hasKnownCat(d))
             return (
               <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '1rem' }}>
                 <button
@@ -1858,7 +1861,8 @@ export default function BiblePage() {
 
           {/* ── BULK ASSIGN PANEL ────────────────────────────────────────── */}
           {filterCat === '__none__' && (() => {
-            const uncatDocs = docs.filter(d => !Array.isArray(d.categories) || d.categories.length === 0)
+            const knownKeys = new Set(ALL_CATEGORIES.map(c => c.key))
+            const uncatDocs = docs.filter(d => !Array.isArray(d.categories) || !d.categories.some(c => knownKeys.has(c)))
             const allSelected = uncatDocs.length > 0 && uncatDocs.every(d => selectedBulk.has(d.id))
             return (
               <div style={{ marginBottom: '1rem', background: 'rgba(232,122,74,0.06)', border: '1px solid rgba(232,122,74,0.2)', borderRadius: '8px', overflow: 'hidden' }}>
@@ -1923,7 +1927,7 @@ export default function BiblePage() {
             <div data-tutorial="bible-grid" style={{ display: 'flex', gap: '6px', alignItems: 'flex-end', minHeight: '220px', paddingBottom: '0' }}>
               {docs.filter(doc => {
                 if (!filterCat) return true
-                if (filterCat === '__none__') return !Array.isArray(doc.categories) || doc.categories.length === 0
+                if (filterCat === '__none__') { const kk = new Set(ALL_CATEGORIES.map(c => c.key)); return !Array.isArray(doc.categories) || !doc.categories.some(c => kk.has(c)) }
                 return Array.isArray(doc.categories) && doc.categories.includes(filterCat)
               }).map((doc) => (
                 <BookSpine
