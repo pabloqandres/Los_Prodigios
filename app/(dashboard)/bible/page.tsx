@@ -1572,6 +1572,9 @@ export default function BiblePage() {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [editDoc, setEditDoc] = useState<RefDoc | null>(null)
   const [filterCat, setFilterCat] = useState<string | null>(null)
+  const [bulkCat, setBulkCat] = useState('conocimiento')
+  const [bulkAssigning, setBulkAssigning] = useState(false)
+  const [selectedBulk, setSelectedBulk] = useState<Set<string>>(new Set())
 
   // Canon editor flow
   const [confirm1Doc, setConfirm1Doc] = useState<RefDoc | null>(null)
@@ -1610,6 +1613,24 @@ export default function BiblePage() {
     if (!confirm('¿Eliminar este documento? No se puede deshacer.')) return
     await fetch(`/api/reference-docs?id=${id}`, { method: 'DELETE' })
     setSelectedId(null)
+    fetchDocs()
+  }
+
+  async function handleBulkAssign() {
+    const targets = selectedBulk.size > 0
+      ? docs.filter(d => selectedBulk.has(d.id))
+      : docs.filter(d => !Array.isArray(d.categories) || d.categories.length === 0)
+    if (targets.length === 0 || !bulkCat) return
+    setBulkAssigning(true)
+    await Promise.all(targets.map(d =>
+      fetch(`/api/reference-docs?id=${d.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: d.title, description: d.description, categories: [bulkCat], accent_color: d.accent_color }),
+      })
+    ))
+    setBulkAssigning(false)
+    setSelectedBulk(new Set())
     fetchDocs()
   }
 
@@ -1831,6 +1852,59 @@ export default function BiblePage() {
                     Sin categoría ({uncategorized.length})
                   </button>
                 )}
+              </div>
+            )
+          })()}
+
+          {/* ── BULK ASSIGN PANEL ────────────────────────────────────────── */}
+          {filterCat === '__none__' && (() => {
+            const uncatDocs = docs.filter(d => !Array.isArray(d.categories) || d.categories.length === 0)
+            const allSelected = uncatDocs.length > 0 && uncatDocs.every(d => selectedBulk.has(d.id))
+            return (
+              <div style={{ marginBottom: '1rem', background: 'rgba(232,122,74,0.06)', border: '1px solid rgba(232,122,74,0.2)', borderRadius: '8px', overflow: 'hidden' }}>
+                {/* Header */}
+                <div style={{ padding: '0.875rem 1.25rem', display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap', borderBottom: '1px solid rgba(232,122,74,0.1)' }}>
+                  <div style={{ fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.1em', color: '#E87A4A', fontFamily: 'Bebas Neue, Impact, sans-serif' }}>
+                    ASIGNAR CATEGORÍA EN BULK
+                  </div>
+                  <div style={{ fontSize: '0.65rem', color: 'rgba(240,235,225,0.3)' }}>
+                    {selectedBulk.size > 0 ? `${selectedBulk.size} seleccionados` : `${uncatDocs.length} sin categoría`}
+                  </div>
+                  <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                    <select
+                      value={bulkCat}
+                      onChange={e => setBulkCat(e.target.value)}
+                      style={{ padding: '5px 10px', background: '#0D0920', border: '1px solid rgba(232,122,74,0.3)', borderRadius: '4px', color: '#F0EBE1', fontSize: '0.75rem', fontFamily: 'IBM Plex Sans, sans-serif', cursor: 'pointer' }}
+                    >
+                      {ALL_CATEGORIES.map(c => <option key={c.key} value={c.key}>{c.label}</option>)}
+                    </select>
+                    <button
+                      onClick={handleBulkAssign}
+                      disabled={bulkAssigning}
+                      style={{ padding: '5px 16px', background: bulkAssigning ? 'rgba(232,122,74,0.08)' : 'rgba(232,122,74,0.15)', border: '1px solid rgba(232,122,74,0.4)', borderRadius: '4px', color: '#E87A4A', fontSize: '0.75rem', fontWeight: 700, fontFamily: 'Bebas Neue, Impact, sans-serif', letterSpacing: '0.08em', cursor: bulkAssigning ? 'default' : 'pointer' }}
+                    >
+                      {bulkAssigning ? 'ASIGNANDO...' : selectedBulk.size > 0 ? `ASIGNAR A ${selectedBulk.size}` : `ASIGNAR A TODOS (${uncatDocs.length})`}
+                    </button>
+                  </div>
+                </div>
+                {/* Doc list */}
+                <div style={{ maxHeight: '240px', overflowY: 'auto', padding: '0.5rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '4px 8px', marginBottom: '2px' }}>
+                    <input type="checkbox" checked={allSelected} onChange={() => {
+                      if (allSelected) setSelectedBulk(new Set())
+                      else setSelectedBulk(new Set(uncatDocs.map(d => d.id)))
+                    }} style={{ cursor: 'pointer', accentColor: '#E87A4A' }} />
+                    <span style={{ fontSize: '0.65rem', color: 'rgba(240,235,225,0.3)', letterSpacing: '0.08em' }}>SELECCIONAR TODOS</span>
+                  </div>
+                  {uncatDocs.map(doc => (
+                    <div key={doc.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '6px 8px', borderRadius: '4px', background: selectedBulk.has(doc.id) ? 'rgba(232,122,74,0.08)' : 'transparent', cursor: 'pointer' }}
+                      onClick={() => setSelectedBulk(prev => { const s = new Set(prev); s.has(doc.id) ? s.delete(doc.id) : s.add(doc.id); return s })}>
+                      <input type="checkbox" checked={selectedBulk.has(doc.id)} onChange={() => {}} style={{ cursor: 'pointer', accentColor: '#E87A4A', flexShrink: 0 }} />
+                      <div style={{ width: '10px', height: '10px', borderRadius: '2px', background: doc.accent_color || '#9B6FD4', flexShrink: 0 }} />
+                      <span style={{ fontSize: '0.8rem', color: '#F0EBE1', flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{doc.title}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             )
           })()}
