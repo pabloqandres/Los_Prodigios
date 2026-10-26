@@ -57,6 +57,20 @@ export async function POST(
     }
   }
 
+  // 3. Load bible / reference docs
+  const { data: refDocs } = await supabase
+    .from('reference_docs')
+    .select('title, categories, content')
+    .order('created_at', { ascending: true })
+
+  const bibleContext = refDocs && refDocs.length > 0
+    ? refDocs.map(doc => {
+        const cats = Array.isArray(doc.categories) ? doc.categories.join(', ') : ''
+        const excerpt = (doc.content ?? '').substring(0, 1200)
+        return `### ${doc.title}${cats ? ` [${cats}]` : ''}\n${excerpt}`
+      }).join('\n\n')
+    : ''
+
   const episodeLabel = `T${episode.season}E${String(episode.episode_number).padStart(2, '0')}${episode.title ? ` — ${episode.title}` : ''}`
   const scriptText = episode.script.substring(0, 7000)
 
@@ -68,10 +82,13 @@ export async function POST(
     moduleMap['open_issues'] ? `### open_issues\n${moduleMap['open_issues'].substring(0, 800)}` : '',
   ].filter(Boolean).join('\n\n')
 
-  const systemPrompt = `Eres el Supervisor de Continuidad de 'Los Prodigios', serie animada latinoamericana de fútbol/coming-of-age. Tu único trabajo es extraer del guión TODO lo que debe quedar registrado en el sistema de continuidad de la serie. Eres obsesivo con los detalles — ningún hecho canónico, cambio de personaje, promesa narrativa o hito puede escaparse. Responde ÚNICAMENTE con JSON válido.`
+  const systemPrompt = `Eres el Supervisor de Continuidad de 'Los Prodigios', serie animada latinoamericana de fútbol/coming-of-age. Tu único trabajo es extraer del guión TODO lo que debe quedar registrado en el sistema de continuidad de la serie. Eres obsesivo con los detalles — ningún hecho canónico, cambio de personaje, promesa narrativa o hito puede escaparse.${bibleContext ? ' Tienes acceso a la biblia de la serie: úsala para contrastar — confirma consistencia con lo ya documentado, y en new_entities incluye SOLO entidades que NO existen aún en la biblia. Si el guión contradice la biblia, marca el hecho canónico con category "CONTRADICCIÓN".' : ''} Responde ÚNICAMENTE con JSON válido.`
 
   const userPrompt = `Episodio: ${episodeLabel}
-
+${bibleContext ? `
+## BIBLIA Y CÁNONES DE LA SERIE:
+${bibleContext}
+` : ''}
 ## ESTADO ACTUAL DEL SISTEMA DE CONTINUIDAD:
 ${continuityContext || '(Sin registros previos — esta es la primera extracción)'}
 
