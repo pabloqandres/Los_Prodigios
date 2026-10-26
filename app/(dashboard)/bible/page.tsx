@@ -3,16 +3,18 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 
 const ALL_CATEGORIES = [
-  { key: 'personajes', label: 'Personajes' },
-  { key: 'arte', label: 'Arte' },
-  { key: 'guion', label: 'Guión' },
-  { key: 'continuidad', label: 'Continuidad' },
-  { key: 'marketing', label: 'Marketing' },
-  { key: 'merchandise', label: 'Merchandise' },
-  { key: 'trailers', label: 'Trailers' },
-  { key: 'redes', label: 'Redes' },
-  { key: 'licensing', label: 'Licensing' },
-  { key: 'general', label: 'General' },
+  { key: 'personajes',   label: 'Personajes'   },
+  { key: 'arte',         label: 'Arte'         },
+  { key: 'guion',        label: 'Guión'        },
+  { key: 'continuidad',  label: 'Continuidad'  },
+  { key: 'conocimiento', label: 'Conocimiento' },
+  { key: 'produccion',   label: 'Producción'   },
+  { key: 'marketing',    label: 'Marketing'    },
+  { key: 'merchandise',  label: 'Merchandise'  },
+  { key: 'trailers',     label: 'Trailers'     },
+  { key: 'redes',        label: 'Redes'        },
+  { key: 'licensing',    label: 'Licensing'    },
+  { key: 'general',      label: 'General'      },
 ]
 
 // Palette of accent colors for book spines — editorial choice, independent of categories
@@ -29,16 +31,18 @@ const ACCENT_COLORS = [
 
 // Keep for category tag colors in modals
 const SPINE_COLORS: Record<string, { stripe: string }> = {
-  personajes:  { stripe: '#4A8FE8' },
-  arte:        { stripe: '#4ECDC4' },
-  guion:       { stripe: '#9B6FD4' },
-  continuidad: { stripe: '#D4256A' },
-  marketing:   { stripe: '#F5A52A' },
-  merchandise: { stripe: '#8BC34A' },
-  trailers:    { stripe: '#FF5722' },
-  redes:       { stripe: '#29B6F6' },
-  licensing:   { stripe: '#66BB6A' },
-  general:     { stripe: '#F5A52A' },
+  personajes:   { stripe: '#4A8FE8' },
+  arte:         { stripe: '#4ECDC4' },
+  guion:        { stripe: '#9B6FD4' },
+  continuidad:  { stripe: '#D4256A' },
+  conocimiento: { stripe: '#E87A4A' },
+  produccion:   { stripe: '#DFF818' },
+  marketing:    { stripe: '#F5A52A' },
+  merchandise:  { stripe: '#8BC34A' },
+  trailers:     { stripe: '#FF5722' },
+  redes:        { stripe: '#29B6F6' },
+  licensing:    { stripe: '#66BB6A' },
+  general:      { stripe: '#F5A52A' },
 }
 
 function getSpineStyle(accentColor: string) {
@@ -1775,7 +1779,7 @@ export default function BiblePage() {
             const activeCats = ALL_CATEGORIES.filter(cat =>
               docs.some(d => Array.isArray(d.categories) && d.categories.includes(cat.key))
             )
-            if (activeCats.length < 2) return null
+            const uncategorized = docs.filter(d => !Array.isArray(d.categories) || d.categories.length === 0)
             return (
               <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '1rem' }}>
                 <button
@@ -1812,6 +1816,21 @@ export default function BiblePage() {
                     </button>
                   )
                 })}
+                {uncategorized.length > 0 && (
+                  <button
+                    onClick={() => { setFilterCat('__none__'); setSelectedId(null) }}
+                    style={{
+                      padding: '4px 14px', borderRadius: '20px', fontSize: '0.7rem', fontWeight: 600,
+                      letterSpacing: '0.08em', fontFamily: 'IBM Plex Sans, sans-serif', cursor: 'pointer',
+                      border: `1px solid ${filterCat === '__none__' ? 'rgba(240,235,225,0.3)' : 'rgba(240,235,225,0.1)'}`,
+                      background: filterCat === '__none__' ? 'rgba(240,235,225,0.06)' : 'transparent',
+                      color: filterCat === '__none__' ? 'rgba(240,235,225,0.5)' : 'rgba(240,235,225,0.2)',
+                      transition: 'all 0.15s',
+                    }}
+                  >
+                    Sin categoría ({uncategorized.length})
+                  </button>
+                )}
               </div>
             )
           })()}
@@ -1828,7 +1847,11 @@ export default function BiblePage() {
           }}>
             <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '1px', background: 'linear-gradient(90deg, transparent, rgba(245,165,42,0.08), transparent)' }} />
             <div data-tutorial="bible-grid" style={{ display: 'flex', gap: '6px', alignItems: 'flex-end', minHeight: '220px', paddingBottom: '0' }}>
-              {docs.filter(doc => !filterCat || (Array.isArray(doc.categories) && doc.categories.includes(filterCat))).map((doc) => (
+              {docs.filter(doc => {
+                if (!filterCat) return true
+                if (filterCat === '__none__') return !Array.isArray(doc.categories) || doc.categories.length === 0
+                return Array.isArray(doc.categories) && doc.categories.includes(filterCat)
+              }).map((doc) => (
                 <BookSpine
                   key={doc.id}
                   doc={doc}
