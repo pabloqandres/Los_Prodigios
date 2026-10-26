@@ -147,7 +147,7 @@ export async function POST(
         .insert({
           title: entity.name,
           content,
-          category,
+          categories: [category],
           created_by: token.email,
           updated_at: new Date().toISOString(),
         })
