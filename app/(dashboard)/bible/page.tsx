@@ -1576,6 +1576,8 @@ export default function BiblePage() {
   const [bulkCat, setBulkCat] = useState('conocimiento')
   const [bulkAssigning, setBulkAssigning] = useState(false)
   const [selectedBulk, setSelectedBulk] = useState<Set<string>>(new Set())
+  const [generatingDescs, setGeneratingDescs] = useState(false)
+  const [genDescResult, setGenDescResult] = useState<string | null>(null)
 
   // Canon editor flow
   const [confirm1Doc, setConfirm1Doc] = useState<RefDoc | null>(null)
@@ -1615,6 +1617,25 @@ export default function BiblePage() {
     await fetch(`/api/reference-docs?id=${id}`, { method: 'DELETE' })
     setSelectedId(null)
     fetchDocs()
+  }
+
+  async function handleGenerateDescriptions() {
+    setGeneratingDescs(true)
+    setGenDescResult(null)
+    try {
+      const res = await fetch('/api/reference-docs/generate-descriptions', { method: 'POST' })
+      const data = await res.json()
+      if (data.updated === 0) {
+        setGenDescResult('Todos los documentos ya tienen descripción.')
+      } else {
+        setGenDescResult(`${data.updated} de ${data.total} documentos actualizados.`)
+        fetchDocs()
+      }
+    } catch {
+      setGenDescResult('Error al generar descripciones.')
+    } finally {
+      setGeneratingDescs(false)
+    }
   }
 
   async function handleBulkAssign() {
@@ -1739,33 +1760,76 @@ export default function BiblePage() {
           </div>
         </div>
 
-        {/* Action */}
-        <button
-          onClick={() => setShowUpload(true)}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            padding: '0.75rem 1.5rem',
-            background: '#4A8FE8',
-            border: 'none',
-            borderRadius: '4px',
-            color: '#F0EBE1',
-            fontSize: '0.875rem',
-            fontWeight: 600,
-            cursor: 'pointer',
-            fontFamily: 'IBM Plex Sans, sans-serif',
-            whiteSpace: 'nowrap',
-            flexShrink: 0,
-            letterSpacing: '0.01em',
-          }}
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <line x1="12" y1="5" x2="12" y2="19"/>
-            <line x1="5" y1="12" x2="19" y2="12"/>
-          </svg>
-          Agregar volumen
-        </button>
+        {/* Actions */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.5rem', flexShrink: 0 }}>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            {/* Generate descriptions */}
+            <button
+              onClick={handleGenerateDescriptions}
+              disabled={generatingDescs}
+              title="Genera descripciones automáticas para los documentos que no tienen una"
+              style={{
+                display: 'flex', alignItems: 'center', gap: '0.4rem',
+                padding: '0.625rem 1rem',
+                background: generatingDescs ? 'rgba(232,122,74,0.06)' : 'rgba(232,122,74,0.1)',
+                border: '1px solid rgba(232,122,74,0.35)',
+                borderRadius: '4px',
+                color: '#E87A4A',
+                fontSize: '0.8125rem',
+                fontWeight: 600,
+                cursor: generatingDescs ? 'default' : 'pointer',
+                fontFamily: 'IBM Plex Sans, sans-serif',
+                whiteSpace: 'nowrap',
+                letterSpacing: '0.01em',
+                opacity: generatingDescs ? 0.6 : 1,
+              }}
+            >
+              {generatingDescs ? (
+                <>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ animation: 'spin 1s linear infinite' }}>
+                    <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+                  </svg>
+                  Generando...
+                </>
+              ) : (
+                <>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+                  </svg>
+                  Auto-describir
+                </>
+              )}
+            </button>
+            <button
+              onClick={() => setShowUpload(true)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '0.5rem',
+                padding: '0.625rem 1.25rem',
+                background: '#4A8FE8',
+                border: 'none',
+                borderRadius: '4px',
+                color: '#F0EBE1',
+                fontSize: '0.875rem',
+                fontWeight: 600,
+                cursor: 'pointer',
+                fontFamily: 'IBM Plex Sans, sans-serif',
+                whiteSpace: 'nowrap',
+                letterSpacing: '0.01em',
+              }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <line x1="12" y1="5" x2="12" y2="19"/>
+                <line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              Agregar volumen
+            </button>
+          </div>
+          {genDescResult && (
+            <span style={{ fontSize: '0.75rem', color: 'rgba(232,122,74,0.8)', textAlign: 'right' }}>
+              {genDescResult}
+            </span>
+          )}
+        </div>
       </div>
 
       {/* ── MARQUEE STRIP ────────────────────────────────────────────────── */}
