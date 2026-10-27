@@ -41,13 +41,14 @@ export async function GET(request: NextRequest) {
   if (!token || !token.email) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const supabase = createServerClient()
-  const limit = parseInt(request.nextUrl.searchParams.get('limit') ?? '20')
+  const limit = parseInt(request.nextUrl.searchParams.get('limit') ?? '10')
+  const offset = parseInt(request.nextUrl.searchParams.get('offset') ?? '0')
 
   const { data, error } = await supabase
     .from('activity_log')
     .select('*')
     .order('created_at', { ascending: false })
-    .limit(limit)
+    .range(offset, offset + limit - 1)
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 

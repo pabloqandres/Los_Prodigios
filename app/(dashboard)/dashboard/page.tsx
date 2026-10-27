@@ -173,16 +173,25 @@ export default function DashboardPage() {
   const firstName = session?.user?.name?.split(' ')[0] ?? 'Equipo'
   const [activity, setActivity] = useState<ActivityItem[]>([])
   const [loadingActivity, setLoadingActivity] = useState(true)
-  const [activityExpanded, setActivityExpanded] = useState(false)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [activityOffset, setActivityOffset] = useState(0)
+  const [activityHasMore, setActivityHasMore] = useState(false)
+  const ACTIVITY_PAGE = 10
 
   const [stats, setStats] = useState<StatsData | null>(null)
   const [promises, setPromises] = useState<PromiseItem[]>([])
   const [episodes, setEpisodes] = useState<EpisodeItem[]>([])
 
   useEffect(() => {
-    fetch('/api/activity')
+    fetch(`/api/activity?limit=${ACTIVITY_PAGE}&offset=0`)
       .then(r => r.json())
-      .then(d => { if (Array.isArray(d)) setActivity(d) })
+      .then(d => {
+        if (Array.isArray(d)) {
+          setActivity(d)
+          setActivityOffset(d.length)
+          setActivityHasMore(d.length === ACTIVITY_PAGE)
+        }
+      })
       .catch(() => {})
       .finally(() => setLoadingActivity(false))
 
@@ -574,7 +583,7 @@ export default function DashboardPage() {
             </div>
           ) : (
             <div style={{ background: '#0D0920', border: '1px solid rgba(245,165,42,0.07)', borderRadius: '4px', overflow: 'hidden' }}>
-              {(activityExpanded ? activity : activity.slice(0, 5)).map((item, i, arr) => (
+              {activity.map((item, i, arr) => (
                 <Link
                   key={item.id}
                   href={item.href}
@@ -606,14 +615,30 @@ export default function DashboardPage() {
                   </div>
                 </Link>
               ))}
-              {activity.length > 5 && (
+              {activityHasMore && (
                 <button
-                  onClick={() => setActivityExpanded(e => !e)}
-                  style={{ width: '100%', padding: '0.625rem', background: 'rgba(245,165,42,0.03)', border: 'none', borderTop: '1px solid rgba(245,165,42,0.05)', color: 'rgba(240,235,225,0.35)', fontSize: '0.7rem', cursor: 'pointer', fontFamily: 'IBM Plex Sans, sans-serif', letterSpacing: '0.06em' }}
-                  onMouseEnter={e => (e.currentTarget.style.color = 'rgba(240,235,225,0.65)')}
+                  disabled={loadingMore}
+                  onClick={async () => {
+                    setLoadingMore(true)
+                    try {
+                      const res = await fetch(`/api/activity?limit=${ACTIVITY_PAGE}&offset=${activityOffset}`)
+                      const next = await res.json()
+                      if (Array.isArray(next) && next.length > 0) {
+                        setActivity(prev => [...prev, ...next])
+                        setActivityOffset(o => o + next.length)
+                        setActivityHasMore(next.length === ACTIVITY_PAGE)
+                      } else {
+                        setActivityHasMore(false)
+                      }
+                    } finally {
+                      setLoadingMore(false)
+                    }
+                  }}
+                  style={{ width: '100%', padding: '0.625rem', background: 'rgba(245,165,42,0.03)', border: 'none', borderTop: '1px solid rgba(245,165,42,0.05)', color: 'rgba(240,235,225,0.35)', fontSize: '0.7rem', cursor: loadingMore ? 'default' : 'pointer', fontFamily: 'IBM Plex Sans, sans-serif', letterSpacing: '0.06em' }}
+                  onMouseEnter={e => { if (!loadingMore) e.currentTarget.style.color = 'rgba(240,235,225,0.65)' }}
                   onMouseLeave={e => (e.currentTarget.style.color = 'rgba(240,235,225,0.35)')}
                 >
-                  {activityExpanded ? `▲ Mostrar menos` : `▼ Ver ${activity.length - 5} más`}
+                  {loadingMore ? 'Cargando...' : '▼ Cargar más'}
                 </button>
               )}
             </div>

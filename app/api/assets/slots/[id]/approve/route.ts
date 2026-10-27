@@ -19,7 +19,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   if (!reviewerName) return NextResponse.json({ error: 'No autorizado para revisar assets' }, { status: 403 })
 
   const { id: slotId } = await params
-  const { approved, note } = await req.json()
+  const { approved, note, loaded_at } = await req.json()
 
   const supabase = createServerClient()
 
@@ -31,6 +31,11 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
   if (slotErr || !slot) return NextResponse.json({ error: 'Slot no encontrado' }, { status: 404 })
   if (!slot.pending_drive_file_id) return NextResponse.json({ error: 'No hay imagen subida para revisar' }, { status: 400 })
+
+  // Optimistic lock: if caller sent loaded_at and slot was updated since then → conflict
+  if (loaded_at && slot.updated_at && new Date(slot.updated_at) > new Date(loaded_at)) {
+    return NextResponse.json({ error: 'conflict', updated_at: slot.updated_at }, { status: 409 })
+  }
 
   // Upsert vote
   const { error: approvalErr } = await supabase

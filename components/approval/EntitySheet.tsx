@@ -174,6 +174,9 @@ function SlotRow({
   const [copiedFilename, setCopiedFilename] = useState(false)
   const [copiedPrompt, setCopiedPrompt] = useState(false)
   const [showReplace, setShowReplace] = useState(false)
+  const [conflictWarning, setConflictWarning] = useState(false)
+  // Record when this slot was loaded to detect concurrent edits
+  const loadedAt = useRef(slot.updated_at ?? new Date().toISOString())
   const isReviewer  = !!REVIEWERS[userEmail]
   const myApproval  = slot.approvals?.find(a => a.reviewer_email === userEmail)
   const reviewerNames = Object.values(REVIEWERS)
@@ -207,14 +210,31 @@ function SlotRow({
   async function vote(approved: boolean, note?: string) {
     if (voting) return
     setVoting(true)
+    setConflictWarning(false)
     try {
       const res = await fetch(`/api/assets/slots/${slot.id}/approve`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ approved, note: note ?? null }),
+        body: JSON.stringify({ approved, note: note ?? null, loaded_at: loadedAt.current }),
       })
+      if (res.status === 409) {
+        setConflictWarning(true)
+        // Reload slot with latest data
+        const fresh = await fetch(`/api/assets/slots/${slot.id}`)
+        if (fresh.ok) {
+          const freshData = await fresh.json()
+          if (freshData) {
+            onUpdated(freshData)
+            loadedAt.current = freshData.updated_at ?? new Date().toISOString()
+          }
+        }
+        return
+      }
       const data = await res.json()
-      if (data.slot) onUpdated(data.slot)
+      if (data.slot) {
+        onUpdated(data.slot)
+        loadedAt.current = data.slot.updated_at ?? new Date().toISOString()
+      }
     } finally {
       setVoting(false)
     }
@@ -464,6 +484,12 @@ function SlotRow({
             />
           ))}
         </div>
+        {conflictWarning && (
+          <div style={{ width: '100%', marginBottom: '0.5rem', padding: '0.5rem 0.75rem', background: 'rgba(245,165,42,0.08)', border: '1px solid rgba(245,165,42,0.25)', borderRadius: 3, fontSize: '0.75rem', color: '#F5A52A', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            Este slot fue modificado mientras lo revisabas — se recargó con los datos más recientes.
+          </div>
+        )}
         {isReviewer && (
           <button
             onClick={deleteSlot}

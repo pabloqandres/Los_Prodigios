@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Sidebar } from './Sidebar'
 import Tutorial from './Tutorial'
+import SessionExpiryWarning from './SessionExpiryWarning'
 
 function MobileGate() {
   const [width, setWidth] = useState(0)
@@ -157,6 +158,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       </main>
 
       <Tutorial />
+      <SessionExpiryWarning />
     </div>
   )
 }
