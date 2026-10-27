@@ -60,6 +60,7 @@ type RefDoc = {
   description: string | null
   categories: string[]
   accent_color: string
+  doc_type: string   // 'bible' | 'craft'
   filename: string
   created_by: string
   created_at: string
@@ -96,6 +97,14 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
   const [editingSuggestion, setEditingSuggestion] = useState(false)
   const [editLabel, setEditLabel] = useState('')
   const [editType, setEditType] = useState('personaje_jugador')
+  // Step 2 — entity linking
+  const [entitySearchQuery, setEntitySearchQuery] = useState('')
+  const [entitySearchResults, setEntitySearchResults] = useState<{ entity_name: string; entity_label: string; category: string }[]>([])
+  const [searchingEntities, setSearchingEntities] = useState(false)
+  const [linkedEntity, setLinkedEntity] = useState<{ entity_name: string; entity_label: string; entity_category: string } | null>(null)
+  const [linkType, setLinkType] = useState<'primary' | 'supporting' | 'reference'>('primary')
+  const [showEntityLink, setShowEntityLink] = useState(false)
+  const entitySearchTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const MANUAL_TYPES = [
@@ -146,6 +155,20 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
   async function applyEditedSuggestion() {
     await applySuggestionFromType(editLabel, editType, createAssetSlots)
     setEditingSuggestion(false)
+  }
+
+  function handleEntitySearchChange(q: string) {
+    setEntitySearchQuery(q)
+    if (entitySearchTimer.current) clearTimeout(entitySearchTimer.current)
+    entitySearchTimer.current = setTimeout(async () => {
+      setSearchingEntities(true)
+      try {
+        const res = await fetch(`/api/entity-doc-links?search=${encodeURIComponent(q)}`)
+        if (res.ok) setEntitySearchResults(await res.json())
+      } finally {
+        setSearchingEntities(false)
+      }
+    }, 300)
   }
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -279,6 +302,21 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
             matrix_key: assetSuggestion.matrix_key,
             entity_name: assetSuggestion.entity_name,
             entity_label: assetSuggestion.entity_label,
+          }),
+        })
+      }
+
+      // Si el usuario vinculó el tomo a una entidad canónica
+      if (linkedEntity && data.id) {
+        await fetch('/api/entity-doc-links', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            doc_id: data.id,
+            entity_name: linkedEntity.entity_name,
+            entity_label: linkedEntity.entity_label,
+            entity_category: linkedEntity.entity_category,
+            link_type: linkType,
           }),
         })
       }
@@ -645,6 +683,99 @@ Confidencial — Uso interno de desarrollo, guion, arte, producción y licencias
               </div>
             )
           })()}
+
+          {/* ── Paso 2: Vincular a entidad canónica ────────────────────────── */}
+          {!analyzing && file && (
+            <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '0.875rem' }}>
+              {!showEntityLink ? (
+                <button
+                  onClick={() => { setShowEntityLink(true); handleEntitySearchChange('') }}
+                  style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: '0.75rem', color: linkedEntity ? 'rgba(78,205,196,0.7)' : 'rgba(240,235,225,0.3)', fontFamily: 'IBM Plex Sans, sans-serif', display: 'flex', alignItems: 'center', gap: '0.375rem' }}
+                >
+                  {linkedEntity ? (
+                    <>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+                      Vinculado a <strong style={{ color: '#4ECDC4' }}>{linkedEntity.entity_label}</strong> · cambiar
+                    </>
+                  ) : (
+                    <>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+                      Vincular a entidad canónica (opcional)
+                    </>
+                  )}
+                </button>
+              ) : (
+                <div style={{ background: 'rgba(78,205,196,0.05)', border: '1px solid rgba(78,205,196,0.18)', borderRadius: '4px', padding: '0.875rem 1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ fontSize: '0.8125rem', color: 'rgba(78,205,196,0.9)', fontWeight: 600 }}>Vincular a entidad canónica</div>
+                    <button onClick={() => setShowEntityLink(false)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', color: 'rgba(240,235,225,0.25)', fontSize: '0.7rem', fontFamily: 'IBM Plex Sans, sans-serif' }}>cerrar</button>
+                  </div>
+
+                  {/* Selected entity pill */}
+                  {linkedEntity && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 0.75rem', background: 'rgba(78,205,196,0.1)', border: '1px solid rgba(78,205,196,0.3)', borderRadius: '3px' }}>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#4ECDC4" strokeWidth="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                      <span style={{ flex: 1, fontSize: '0.8125rem', color: '#4ECDC4', fontWeight: 600 }}>{linkedEntity.entity_label}</span>
+                      <span style={{ fontSize: '0.6875rem', color: 'rgba(78,205,196,0.5)' }}>{linkedEntity.entity_category}</span>
+                      <button onClick={() => setLinkedEntity(null)} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', color: 'rgba(78,205,196,0.4)', lineHeight: 1 }}>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Search input */}
+                  <div style={{ position: 'relative' }}>
+                    <input
+                      value={entitySearchQuery}
+                      onChange={e => handleEntitySearchChange(e.target.value)}
+                      placeholder="Buscar personaje, locación, prop..."
+                      style={{ width: '100%', background: '#1A1235', border: '1px solid rgba(78,205,196,0.2)', borderRadius: '2px', color: '#F0EBE1', fontFamily: 'IBM Plex Sans, sans-serif', fontSize: '0.8125rem', padding: '0.5rem 0.625rem', outline: 'none', boxSizing: 'border-box' }}
+                    />
+                    {searchingEntities && (
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(78,205,196,0.6)" strokeWidth="2" style={{ position: 'absolute', right: '0.625rem', top: '50%', transform: 'translateY(-50%)', animation: 'spin 1s linear infinite' }}>
+                        <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+                      </svg>
+                    )}
+                  </div>
+
+                  {/* Results */}
+                  {entitySearchResults.length > 0 && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', maxHeight: '160px', overflowY: 'auto' }}>
+                      {entitySearchResults.map(ent => (
+                        <button
+                          key={ent.entity_name}
+                          onClick={() => { setLinkedEntity({ entity_name: ent.entity_name, entity_label: ent.entity_label, entity_category: ent.category }); setShowEntityLink(false) }}
+                          style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.4rem 0.625rem', background: linkedEntity?.entity_name === ent.entity_name ? 'rgba(78,205,196,0.12)' : 'rgba(255,255,255,0.03)', border: `1px solid ${linkedEntity?.entity_name === ent.entity_name ? 'rgba(78,205,196,0.3)' : 'rgba(255,255,255,0.06)'}`, borderRadius: '2px', cursor: 'pointer', textAlign: 'left' }}
+                        >
+                          <span style={{ fontSize: '0.8125rem', color: '#F0EBE1', fontFamily: 'IBM Plex Sans, sans-serif' }}>{ent.entity_label}</span>
+                          <span style={{ fontSize: '0.6875rem', color: 'rgba(240,235,225,0.35)', fontFamily: 'IBM Plex Sans, sans-serif' }}>{ent.category}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  {entitySearchQuery.length > 0 && !searchingEntities && entitySearchResults.length === 0 && (
+                    <div style={{ fontSize: '0.75rem', color: 'rgba(240,235,225,0.25)' }}>Sin resultados para "{entitySearchQuery}"</div>
+                  )}
+
+                  {/* Link type selector (only show if entity selected) */}
+                  {linkedEntity && (
+                    <div style={{ display: 'flex', gap: '0.375rem' }}>
+                      {(['primary', 'supporting', 'reference'] as const).map(lt => (
+                        <button
+                          key={lt}
+                          onClick={() => setLinkType(lt)}
+                          style={{ padding: '0.3rem 0.75rem', borderRadius: '2px', fontSize: '0.6875rem', cursor: 'pointer', fontFamily: 'IBM Plex Sans, sans-serif', background: linkType === lt ? 'rgba(78,205,196,0.15)' : 'transparent', border: `1px solid ${linkType === lt ? 'rgba(78,205,196,0.4)' : 'rgba(255,255,255,0.07)'}`, color: linkType === lt ? '#4ECDC4' : 'rgba(240,235,225,0.35)' }}
+                        >
+                          {lt === 'primary' ? 'Principal' : lt === 'supporting' ? 'Secundario' : 'Referencia'}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Manual entity fallback — shown when analysis ran but found nothing */}
           {!analyzing && analysisRan && !assetSuggestion && (
@@ -1578,6 +1709,7 @@ export default function BiblePage() {
   const [selectedBulk, setSelectedBulk] = useState<Set<string>>(new Set())
   const [generatingDescs, setGeneratingDescs] = useState(false)
   const [genDescResult, setGenDescResult] = useState<string | null>(null)
+  const [activeTab, setActiveTab] = useState<'canon' | 'taller'>('canon')
 
   // Canon editor flow
   const [confirm1Doc, setConfirm1Doc] = useState<RefDoc | null>(null)
@@ -1603,6 +1735,9 @@ export default function BiblePage() {
   }, [])
 
   const selectedDoc = docs.find((d) => d.id === selectedId) ?? null
+  const bibleDocs = docs.filter(d => d.doc_type === 'bible' || !d.doc_type || (d.doc_type !== 'craft'))
+  const craftDocs = docs.filter(d => d.doc_type === 'craft')
+  const activeDocs = activeTab === 'canon' ? bibleDocs : craftDocs
 
   function handleToggle(id: string) {
     setSelectedId((prev) => prev === id ? null : id)
@@ -1669,8 +1804,195 @@ export default function BiblePage() {
 
   return (
     <div style={{ width: '100%' }}>
-      {/* ── PAGE HEADER ──────────────────────────────────────────────────── */}
+
+      {/* ── TAB SWITCHER ─────────────────────────────────────────────────── */}
       <div style={{
+        display: 'flex',
+        background: '#08060F',
+        borderBottom: '1px solid rgba(255,255,255,0.06)',
+        padding: '0 2.5rem',
+        gap: 0,
+      }}>
+        {([
+          { key: 'canon',  label: 'Canon Prodigios', count: bibleDocs.length },
+          { key: 'taller', label: 'Taller de Escritura', count: craftDocs.length },
+        ] as const).map(tab => (
+          <button
+            key={tab.key}
+            onClick={() => { setActiveTab(tab.key); setSelectedId(null); setSearch(''); setFilterCat(null) }}
+            style={{
+              padding: '0.875rem 1.5rem',
+              background: 'transparent',
+              border: 'none',
+              borderBottom: activeTab === tab.key
+                ? `2px solid ${tab.key === 'canon' ? '#C8924A' : '#7A9E7E'}`
+                : '2px solid transparent',
+              color: activeTab === tab.key
+                ? (tab.key === 'canon' ? '#C8924A' : '#7A9E7E')
+                : 'rgba(240,235,225,0.35)',
+              fontSize: '0.8125rem',
+              fontWeight: 600,
+              fontFamily: 'IBM Plex Sans, sans-serif',
+              letterSpacing: '0.06em',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              transition: 'color 0.15s, border-color 0.15s',
+              marginBottom: '-1px',
+            }}
+          >
+            {tab.label}
+            <span style={{
+              fontSize: '0.625rem',
+              fontWeight: 700,
+              padding: '1px 5px',
+              borderRadius: '10px',
+              background: activeTab === tab.key
+                ? (tab.key === 'canon' ? 'rgba(200,146,74,0.15)' : 'rgba(122,158,126,0.15)')
+                : 'rgba(255,255,255,0.06)',
+              color: activeTab === tab.key
+                ? (tab.key === 'canon' ? '#C8924A' : '#7A9E7E')
+                : 'rgba(240,235,225,0.3)',
+            }}>
+              {tab.count}
+            </span>
+          </button>
+        ))}
+      </div>
+
+      {/* ── CANON PRODIGIOS HEADER ────────────────────────────────────────── */}
+      {activeTab === 'canon' && <div style={{
+        position: 'relative',
+        overflow: 'hidden',
+        background: 'linear-gradient(135deg, #0F0905 0%, #1A0E05 40%, #140A10 100%)',
+        borderBottom: '1px solid rgba(200,146,74,0.15)',
+        padding: '3rem 2.5rem 2.5rem',
+        display: 'flex',
+        alignItems: 'flex-end',
+        justifyContent: 'space-between',
+        gap: '1.5rem',
+        flexWrap: 'wrap',
+      }}>
+        {/* Warm library atmosphere */}
+        <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+          {/* Candlelight glow top-left */}
+          <div style={{ position: 'absolute', top: '-40px', left: '10%', width: '300px', height: '300px', borderRadius: '50%', background: 'radial-gradient(ellipse, rgba(200,146,74,0.12) 0%, transparent 70%)', filter: 'blur(40px)' }} />
+          {/* Deep amber glow right */}
+          <div style={{ position: 'absolute', bottom: '-20px', right: '15%', width: '250px', height: '200px', borderRadius: '50%', background: 'radial-gradient(ellipse, rgba(160,100,40,0.1) 0%, transparent 70%)', filter: 'blur(30px)' }} />
+          {/* Arch window silhouette */}
+          <svg style={{ position: 'absolute', top: 0, right: '2.5rem', opacity: 0.06 }} width="120" height="160" viewBox="0 0 120 160">
+            <path d="M10 160 L10 60 Q10 10 60 10 Q110 10 110 60 L110 160 Z" fill="none" stroke="#C8924A" strokeWidth="2"/>
+            <path d="M25 160 L25 65 Q25 25 60 25 Q95 25 95 65 L95 160 Z" fill="none" stroke="#C8924A" strokeWidth="1"/>
+          </svg>
+          {/* Decorative text */}
+          <div style={{ position: 'absolute', right: '1.5rem', top: '50%', transform: 'translateY(-50%)', fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: 'clamp(5rem, 11vw, 9rem)', letterSpacing: '-0.03em', color: '#C8924A', opacity: 0.04, lineHeight: 1, userSelect: 'none', pointerEvents: 'none' }}>
+            CANON
+          </div>
+          {/* Top accent line */}
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '2px', background: 'linear-gradient(90deg, #C8924A 0%, rgba(200,146,74,0.3) 40%, transparent 100%)' }} />
+        </div>
+
+        <div>
+          <div style={{ fontSize: '0.625rem', letterSpacing: '0.22em', textTransform: 'uppercase', color: '#C8924A', fontWeight: 600, marginBottom: '0.75rem', opacity: 0.85 }}>
+            Biblioteca de Nueva Corona · Canon oficial
+          </div>
+          <h1 style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: 'clamp(3.5rem, 7vw, 5.5rem)', letterSpacing: '0.04em', color: '#F0EBE1', lineHeight: 0.9, marginBottom: '1rem' }}>
+            CANON PRODIGIOS
+          </h1>
+          <p style={{ fontSize: '0.9375rem', color: 'rgba(240,235,225,0.45)', marginBottom: '1.5rem' }}>
+            {bibleDocs.length === 0 ? 'Sin volúmenes canónicos — sube el primer tomo.' : `${bibleDocs.length} ${bibleDocs.length === 1 ? 'volumen' : 'volúmenes'} en el canon oficial`}
+          </p>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.375rem' }}>
+            <span style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '1.25rem', color: '#C8924A', letterSpacing: '0.04em' }}>{bibleDocs.length}</span>
+            <span style={{ fontSize: '0.625rem', letterSpacing: '0.16em', textTransform: 'uppercase', color: 'rgba(240,235,225,0.35)', fontWeight: 600 }}>Volúmenes</span>
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.5rem', flexShrink: 0 }}>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <button onClick={handleGenerateDescriptions} disabled={generatingDescs} title="Genera descripciones automáticas" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.625rem 1rem', background: generatingDescs ? 'rgba(200,146,74,0.06)' : 'rgba(200,146,74,0.1)', border: '1px solid rgba(200,146,74,0.35)', borderRadius: '4px', color: '#C8924A', fontSize: '0.8125rem', fontWeight: 600, cursor: generatingDescs ? 'default' : 'pointer', fontFamily: 'IBM Plex Sans, sans-serif', whiteSpace: 'nowrap', opacity: generatingDescs ? 0.6 : 1 }}>
+              {generatingDescs ? <><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ animation: 'spin 1s linear infinite' }}><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>Generando...</> : <><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>Auto-describir</>}
+            </button>
+            <button onClick={() => setShowUpload(true)} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.625rem 1.25rem', background: '#C8924A', border: 'none', borderRadius: '4px', color: '#08060F', fontSize: '0.875rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'IBM Plex Sans, sans-serif', whiteSpace: 'nowrap' }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Agregar volumen
+            </button>
+          </div>
+          {genDescResult && <span style={{ fontSize: '0.75rem', color: 'rgba(200,146,74,0.8)', textAlign: 'right' }}>{genDescResult}</span>}
+        </div>
+      </div>}
+
+      {/* ── TALLER DE ESCRITURA HEADER ────────────────────────────────────── */}
+      {activeTab === 'taller' && <div style={{
+        position: 'relative',
+        overflow: 'hidden',
+        background: 'linear-gradient(135deg, #080A06 0%, #0D120A 40%, #080B07 100%)',
+        borderBottom: '1px solid rgba(122,158,126,0.15)',
+        padding: '3rem 2.5rem 2.5rem',
+        display: 'flex',
+        alignItems: 'flex-end',
+        justifyContent: 'space-between',
+        gap: '1.5rem',
+        flexWrap: 'wrap',
+      }}>
+        <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+          {/* Green lamp glow */}
+          <div style={{ position: 'absolute', top: '-30px', right: '25%', width: '200px', height: '200px', borderRadius: '50%', background: 'radial-gradient(ellipse, rgba(122,158,126,0.1) 0%, transparent 70%)', filter: 'blur(35px)' }} />
+          {/* Paper texture lines */}
+          {[0,1,2,3,4].map(i => <div key={i} style={{ position: 'absolute', left: '2.5rem', right: '2.5rem', top: `${40 + i * 22}px`, height: '1px', background: 'rgba(180,160,120,0.04)' }} />)}
+          {/* Typewriter key silhouette */}
+          <svg style={{ position: 'absolute', top: '1rem', right: '2.5rem', opacity: 0.05 }} width="140" height="100" viewBox="0 0 140 100">
+            {[0,1,2,3,4,5,6,7,8,9].map(i => <rect key={i} x={8 + i*13} y="8" width="11" height="11" rx="2" fill="#7A9E7E"/>)}
+            {[0,1,2,3,4,5,6,7,8].map(i => <rect key={i} x={14 + i*13} y="26" width="11" height="11" rx="2" fill="#7A9E7E"/>)}
+            {[0,1,2,3,4,5,6,7].map(i => <rect key={i} x={20 + i*13} y="44" width="11" height="11" rx="2" fill="#7A9E7E"/>)}
+            <rect x="30" y="62" width="80" height="12" rx="3" fill="#7A9E7E"/>
+          </svg>
+          <div style={{ position: 'absolute', right: '1.5rem', top: '50%', transform: 'translateY(-50%)', fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: 'clamp(5rem, 11vw, 9rem)', letterSpacing: '-0.03em', color: '#7A9E7E', opacity: 0.04, lineHeight: 1, userSelect: 'none' }}>CRAFT</div>
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '2px', background: 'linear-gradient(90deg, #7A9E7E 0%, rgba(122,158,126,0.3) 40%, transparent 100%)' }} />
+        </div>
+
+        <div>
+          <div style={{ fontSize: '0.625rem', letterSpacing: '0.22em', textTransform: 'uppercase', color: '#7A9E7E', fontWeight: 600, marginBottom: '0.75rem', opacity: 0.85 }}>
+            Conocimiento de producción · Solo consulta
+          </div>
+          <h1 style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: 'clamp(3.5rem, 7vw, 5.5rem)', letterSpacing: '0.04em', color: '#F0EBE1', lineHeight: 0.9, marginBottom: '1rem' }}>
+            TALLER DE ESCRITURA
+          </h1>
+          <p style={{ fontSize: '0.9375rem', color: 'rgba(240,235,225,0.45)', marginBottom: '1.5rem' }}>
+            {craftDocs.length} tomos de conocimiento — consultados por NUPPA al analizar guiones
+          </p>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.375rem' }}>
+            <span style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '1.25rem', color: '#7A9E7E', letterSpacing: '0.04em' }}>{craftDocs.length}</span>
+            <span style={{ fontSize: '0.625rem', letterSpacing: '0.16em', textTransform: 'uppercase', color: 'rgba(240,235,225,0.35)', fontWeight: 600 }}>Tomos de conocimiento</span>
+          </div>
+        </div>
+
+        {/* Info pill — read-only */}
+        <div style={{ padding: '0.625rem 1rem', background: 'rgba(122,158,126,0.08)', border: '1px solid rgba(122,158,126,0.2)', borderRadius: '4px', color: '#7A9E7E', fontSize: '0.8125rem', fontFamily: 'IBM Plex Sans, sans-serif', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          Solo lectura — gestionado por el sistema
+        </div>
+      </div>}
+
+      {/* ── MARQUEE STRIP ────────────────────────────────────────────────── */}
+      {activeTab === 'canon' && <div style={{ background: '#C8924A', overflow: 'hidden', padding: '0.55rem 0' }}>
+        <div style={{ display: 'inline-block', whiteSpace: 'nowrap', animation: 'marquee 26s linear infinite' }}>
+          <span style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '0.9375rem', letterSpacing: '0.14em', color: '#08060F' }}>
+            {Array(8).fill('PERSONAJES\u2003—\u2003LOCACIONES\u2003—\u2003PROPS\u2003—\u2003CRIATURAS\u2003—\u2003ORGANIZACIONES\u2003—\u2003SÍMBOLOS\u2003—\u2003VESTUARIO\u2003—\u2003').join('')}
+          </span>
+        </div>
+      </div>}
+      {activeTab === 'taller' && <div style={{ background: '#7A9E7E', overflow: 'hidden', padding: '0.55rem 0' }}>
+        <div style={{ display: 'inline-block', whiteSpace: 'nowrap', animation: 'marquee 26s linear infinite' }}>
+          <span style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '0.9375rem', letterSpacing: '0.14em', color: '#08060F' }}>
+            {Array(8).fill('NARRATIVA\u2003—\u2003PERSONAJES\u2003—\u2003VISUAL\u2003—\u2003ANIMACIÓN\u2003—\u2003SONIDO\u2003—\u2003WORLDBUILDING\u2003—\u2003CINEMATOGRAFÍA\u2003—\u2003BRANDING\u2003—\u2003').join('')}
+          </span>
+        </div>
+      </div>}
+
+      {/* ── LEGACY HEADER (hidden — replaced above) ──────────────────────── */}
+      {false && <div style={{
         position: 'relative',
         overflow: 'hidden',
         background: '#0D0920',
@@ -1824,24 +2146,20 @@ export default function BiblePage() {
               Agregar volumen
             </button>
           </div>
-          {genDescResult && (
-            <span style={{ fontSize: '0.75rem', color: 'rgba(232,122,74,0.8)', textAlign: 'right' }}>
-              {genDescResult}
-            </span>
-          )}
+          {/* (legacy actions removed) */}
         </div>
-      </div>
+      </div>}
 
-      {/* ── MARQUEE STRIP ────────────────────────────────────────────────── */}
-      <div style={{ background: '#4A8FE8', overflow: 'hidden', padding: '0.55rem 0' }}>
-        <div style={{ display: 'inline-block', whiteSpace: 'nowrap', animation: 'marquee 26s linear infinite' }}>
-          <span style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '0.9375rem', letterSpacing: '0.14em', color: '#F0EBE1' }}>
-            {Array(8).fill('PERSONAJES\u2003—\u2003ARTE\u2003—\u2003GUIÓN\u2003—\u2003CONTINUIDAD\u2003—\u2003MARKETING\u2003—\u2003LOCACIONES\u2003—\u2003WORLDBUILDING\u2003—\u2003').join('')}
-          </span>
-        </div>
-      </div>
-
-    <div className="px-4 py-6 md:px-10 md:py-6" style={{ maxWidth: '1100px', width: '100%' }}>
+    <div
+      className="px-4 py-6 md:px-10 md:py-6"
+      style={{
+        maxWidth: '1100px',
+        width: '100%',
+        background: activeTab === 'canon'
+          ? 'linear-gradient(180deg, rgba(26,14,5,0.6) 0%, transparent 200px)'
+          : 'linear-gradient(180deg, rgba(8,10,6,0.6) 0%, transparent 200px)',
+      }}
+    >
 
       {loading ? (
         <div style={{ display: 'flex', gap: '3px', alignItems: 'flex-end', padding: '2rem 0', flexWrap: 'wrap' }}>
@@ -1849,19 +2167,19 @@ export default function BiblePage() {
             <div key={i} className="skeleton" style={{ width: 28, height: h, borderRadius: '2px 2px 0 0', flexShrink: 0 }} />
           ))}
         </div>
-      ) : docs.length === 0 ? (
-        <div style={{ background: '#0D0920', border: '1px solid rgba(245,165,42,0.08)', borderRadius: '2px', padding: '5rem 2rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', textAlign: 'center' }}>
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(245,165,42,0.15)" strokeWidth="0.75">
+      ) : activeDocs.length === 0 ? (
+        <div style={{ background: activeTab === 'canon' ? 'rgba(26,14,5,0.6)' : '#0D0920', border: `1px solid ${activeTab === 'canon' ? 'rgba(200,146,74,0.1)' : 'rgba(122,158,126,0.08)'}`, borderRadius: '2px', padding: '5rem 2rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', textAlign: 'center' }}>
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke={activeTab === 'canon' ? 'rgba(200,146,74,0.15)' : 'rgba(122,158,126,0.15)'} strokeWidth="0.75">
             <path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>
           </svg>
-          <p style={{ fontSize: '1rem', color: 'rgba(240,235,225,0.3)', fontWeight: 500 }}>La biblioteca está vacía</p>
-          <p style={{ fontSize: '0.875rem', color: 'rgba(240,235,225,0.2)' }}>Sube tu primer documento del Writers Room.</p>
-          <button
-            onClick={() => setShowUpload(true)}
-            style={{ marginTop: '0.5rem', padding: '0.625rem 1.5rem', background: 'rgba(245,165,42,0.08)', border: '1px solid rgba(245,165,42,0.2)', borderRadius: '2px', color: '#F5A52A', fontSize: '0.875rem', cursor: 'pointer', fontFamily: 'IBM Plex Sans, sans-serif' }}
-          >
-            Agregar primer volumen
-          </button>
+          <p style={{ fontSize: '1rem', color: 'rgba(240,235,225,0.3)', fontWeight: 500 }}>
+            {activeTab === 'canon' ? 'Sin volúmenes canónicos' : 'Sin tomos de conocimiento'}
+          </p>
+          {activeTab === 'canon' && (
+            <button onClick={() => setShowUpload(true)} style={{ marginTop: '0.5rem', padding: '0.625rem 1.5rem', background: 'rgba(200,146,74,0.08)', border: '1px solid rgba(200,146,74,0.2)', borderRadius: '2px', color: '#C8924A', fontSize: '0.875rem', cursor: 'pointer', fontFamily: 'IBM Plex Sans, sans-serif' }}>
+              Agregar primer volumen
+            </button>
+          )}
         </div>
       ) : (
         <>
@@ -1914,9 +2232,9 @@ export default function BiblePage() {
             const knownKeys = new Set(ALL_CATEGORIES.map(c => c.key))
             const hasKnownCat = (d: RefDoc) => Array.isArray(d.categories) && d.categories.some(c => knownKeys.has(c))
             const activeCats = ALL_CATEGORIES.filter(cat =>
-              docs.some(d => Array.isArray(d.categories) && d.categories.includes(cat.key))
+              activeDocs.some(d => Array.isArray(d.categories) && d.categories.includes(cat.key))
             )
-            const uncategorized = docs.filter(d => !hasKnownCat(d))
+            const uncategorized = activeDocs.filter(d => !hasKnownCat(d))
             return (
               <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '1rem' }}>
                 <button
@@ -1930,10 +2248,10 @@ export default function BiblePage() {
                     transition: 'all 0.15s',
                   }}
                 >
-                  Todos ({docs.length})
+                  Todos ({activeDocs.length})
                 </button>
                 {activeCats.map(cat => {
-                  const count = docs.filter(d => Array.isArray(d.categories) && d.categories.includes(cat.key)).length
+                  const count = activeDocs.filter(d => Array.isArray(d.categories) && d.categories.includes(cat.key)).length
                   const active = filterCat === cat.key
                   const stripe = SPINE_COLORS[cat.key]?.stripe ?? '#9B6FD4'
                   return (
@@ -1972,10 +2290,10 @@ export default function BiblePage() {
             )
           })()}
 
-          {/* ── BULK ASSIGN PANEL ────────────────────────────────────────── */}
-          {filterCat === '__none__' && (() => {
+          {/* ── BULK ASSIGN PANEL (canon only) ───────────────────────────── */}
+          {activeTab === 'canon' && filterCat === '__none__' && (() => {
             const knownKeys = new Set(ALL_CATEGORIES.map(c => c.key))
-            const uncatDocs = docs.filter(d => {
+            const uncatDocs = activeDocs.filter(d => {
               if (Array.isArray(d.categories) && d.categories.some(c => knownKeys.has(c))) return false
               if (search) {
                 const q = search.toLowerCase()
@@ -2035,18 +2353,20 @@ export default function BiblePage() {
 
           {/* Shelf */}
           <div style={{
-            background: 'linear-gradient(180deg, #0A0716 0%, #0F0B1E 60%, #0D0920 100%)',
-            border: '1px solid rgba(245,165,42,0.06)',
+            background: activeTab === 'canon'
+              ? 'linear-gradient(180deg, #120A04 0%, #1A0E05 60%, #140B06 100%)'
+              : 'linear-gradient(180deg, #080A06 0%, #0D120A 60%, #090C07 100%)',
+            border: `1px solid ${activeTab === 'canon' ? 'rgba(200,146,74,0.08)' : 'rgba(122,158,126,0.08)'}`,
             borderRadius: '2px 2px 0 0',
             padding: '2rem 1.5rem 0',
             minHeight: '280px',
             position: 'relative',
             overflowX: 'auto',
           }}>
-            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '1px', background: 'linear-gradient(90deg, transparent, rgba(245,165,42,0.08), transparent)' }} />
+            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '1px', background: activeTab === 'canon' ? 'linear-gradient(90deg, transparent, rgba(200,146,74,0.1), transparent)' : 'linear-gradient(90deg, transparent, rgba(122,158,126,0.08), transparent)' }} />
             <div data-tutorial="bible-grid" style={{ display: 'flex', gap: '6px', alignItems: 'flex-end', minHeight: '220px', paddingBottom: '0' }}>
               {(() => {
-                const filtered = docs.filter(doc => {
+                const filtered = activeDocs.filter(doc => {
                   if (filterCat) {
                     if (filterCat === '__none__') { const kk = new Set(ALL_CATEGORIES.map(c => c.key)); if (Array.isArray(doc.categories) && doc.categories.some(c => kk.has(c))) return false }
                     else if (!(Array.isArray(doc.categories) && doc.categories.includes(filterCat))) return false
@@ -2075,33 +2395,37 @@ export default function BiblePage() {
                   />
                 ))
               })()}
-              <button
-                onClick={() => setShowUpload(true)}
-                style={{
-                  width: '48px', minWidth: '48px', height: '210px',
-                  background: 'transparent',
-                  border: '1px dashed rgba(245,165,42,0.15)',
-                  borderRadius: '2px 4px 4px 2px',
-                  cursor: 'pointer',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  color: 'rgba(245,165,42,0.25)',
-                  transition: 'all 0.15s ease',
-                  flexShrink: 0,
-                }}
-                onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgba(245,165,42,0.35)'; e.currentTarget.style.color = 'rgba(245,165,42,0.5)' }}
-                onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(245,165,42,0.15)'; e.currentTarget.style.color = 'rgba(245,165,42,0.25)' }}
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              </button>
+              {activeTab === 'canon' && (
+                <button
+                  onClick={() => setShowUpload(true)}
+                  style={{
+                    width: '48px', minWidth: '48px', height: '210px',
+                    background: 'transparent',
+                    border: '1px dashed rgba(200,146,74,0.2)',
+                    borderRadius: '2px 4px 4px 2px',
+                    cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    color: 'rgba(200,146,74,0.3)',
+                    transition: 'all 0.15s ease',
+                    flexShrink: 0,
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgba(200,146,74,0.4)'; e.currentTarget.style.color = 'rgba(200,146,74,0.6)' }}
+                  onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(200,146,74,0.2)'; e.currentTarget.style.color = 'rgba(200,146,74,0.3)' }}
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                </button>
+              )}
             </div>
           </div>
 
           {/* Shelf board */}
           <div style={{
             height: '18px',
-            background: 'linear-gradient(180deg, #1A1000 0%, #120C00 100%)',
-            border: '1px solid rgba(245,165,42,0.12)',
-            borderTop: '2px solid rgba(245,165,42,0.15)',
+            background: activeTab === 'canon'
+              ? 'linear-gradient(180deg, #2A1A08 0%, #1A0E04 100%)'
+              : 'linear-gradient(180deg, #1A2018 0%, #0F160D 100%)',
+            border: `1px solid ${activeTab === 'canon' ? 'rgba(200,146,74,0.18)' : 'rgba(122,158,126,0.15)'}`,
+            borderTop: `2px solid ${activeTab === 'canon' ? 'rgba(200,146,74,0.22)' : 'rgba(122,158,126,0.2)'}`,
             borderRadius: '0 0 2px 2px',
             boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
           }} />
