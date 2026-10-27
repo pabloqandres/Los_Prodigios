@@ -311,6 +311,371 @@ function EditModal({ module, initialContent, onClose, onSave }: EditModalProps) 
   )
 }
 
+// ── Canon Log Viewer ──────────────────────────────────────────────────────────
+
+interface CanonFact {
+  category: string
+  fact: string
+  entity: string
+  evidence: string
+  isContradiction: boolean
+}
+
+interface CanonEpisode {
+  label: string
+  facts: CanonFact[]
+}
+
+const CATEGORY_COLORS: Record<string, string> = {
+  personaje:     '#4A8FE8',
+  locación:      '#4ECDC4',
+  locacion:      '#4ECDC4',
+  relación:      '#9B6FD4',
+  relacion:      '#9B6FD4',
+  mundo:         '#F5A52A',
+  regla:         '#8BC34A',
+  CONTRADICCIÓN: '#D4256A',
+  CONTRADICCION: '#D4256A',
+}
+
+function parseCanonLog(raw: string): CanonEpisode[] {
+  const lines = raw.split('\n')
+  const episodes: CanonEpisode[] = []
+  let current: CanonEpisode | null = null
+
+  for (const line of lines) {
+    const trimmed = line.trim()
+    if (!trimmed) continue
+
+    // Episode header: ## T01E01 — Primer Toque — 2026-10-27
+    if (trimmed.startsWith('## ')) {
+      // Strip trailing date if present (last segment after —)
+      const headerText = trimmed.replace(/^##\s*/, '').replace(/\s*—\s*\d{4}-\d{2}-\d{2}\s*$/, '').trim()
+      current = { label: headerText, facts: [] }
+      episodes.push(current)
+      continue
+    }
+
+    // Fact line: - **[category]** text *(entity · evidence)*
+    if (trimmed.startsWith('- **[') && current) {
+      const isContradiction = trimmed.includes('**[CONTRADICCIÓN]**') || trimmed.includes('**[CONTRADICCION]**')
+
+      // Extract category
+      const catMatch = trimmed.match(/\*\*\[([^\]]+)\]\*\*/)
+      const category = catMatch ? catMatch[1] : 'otro'
+
+      // Extract fact text (after `]** ` up to ` *(` or end)
+      const afterCat = trimmed.replace(/^-\s*\*\*\[[^\]]+\]\*\*\s*/, '')
+      const factMatch = afterCat.match(/^(.*?)(?:\s*\*\(|$)/)
+      const fact = factMatch ? factMatch[1].trim() : afterCat.trim()
+
+      // Extract entity and evidence from *(entity · evidence)*
+      const metaMatch = afterCat.match(/\*\(([^·)]+)·([^)]+)\)/)
+      const entity = metaMatch ? metaMatch[1].trim() : ''
+      const evidence = metaMatch ? metaMatch[2].trim() : ''
+
+      current.facts.push({ category, fact, entity, evidence, isContradiction })
+    }
+  }
+
+  return episodes.filter(ep => ep.facts.length > 0)
+}
+
+interface CanonLogViewerProps {
+  content: string | undefined
+}
+
+function CanonLogViewer({ content }: CanonLogViewerProps) {
+  const [search, setSearch] = useState('')
+  const [activeCategories, setActiveCategories] = useState<Set<string>>(new Set())
+
+  const episodes = content && content.trim() ? parseCanonLog(content) : []
+  const totalFacts = episodes.reduce((n, ep) => n + ep.facts.length, 0)
+
+  // Collect unique categories across all facts
+  const allCategories = Array.from(
+    new Set(episodes.flatMap(ep => ep.facts.map(f => f.category)))
+  )
+
+  const toggleCategory = (cat: string) => {
+    setActiveCategories(prev => {
+      const next = new Set(prev)
+      if (next.has(cat)) next.delete(cat)
+      else next.add(cat)
+      return next
+    })
+  }
+
+  const searchLower = search.toLowerCase()
+  const filteredEpisodes = episodes.map(ep => ({
+    ...ep,
+    facts: ep.facts.filter(f => {
+      if (activeCategories.size > 0 && !activeCategories.has(f.category)) return false
+      if (searchLower) {
+        const haystack = `${f.entity} ${f.fact} ${f.category}`.toLowerCase()
+        if (!haystack.includes(searchLower)) return false
+      }
+      return true
+    }),
+  })).filter(ep => ep.facts.length > 0)
+
+  return (
+    <div style={{ marginBottom: '2.5rem' }}>
+      {/* Section label */}
+      <div style={{
+        fontSize: '0.625rem',
+        letterSpacing: '0.18em',
+        textTransform: 'uppercase',
+        color: 'rgba(240,235,225,0.30)',
+        fontWeight: 600,
+        marginBottom: '1rem',
+      }}>
+        Canon log visual
+      </div>
+
+      {/* Header bar */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: '1rem',
+        marginBottom: '0.875rem',
+        flexWrap: 'wrap',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
+          <span style={{
+            fontFamily: 'Bebas Neue, Impact, sans-serif',
+            fontSize: '1.375rem',
+            letterSpacing: '0.04em',
+            color: '#F0EBE1',
+            lineHeight: 1,
+          }}>
+            CANON LOG VISUAL
+          </span>
+          <span style={{
+            fontSize: '0.625rem',
+            letterSpacing: '0.12em',
+            textTransform: 'uppercase',
+            color: 'rgba(240,235,225,0.25)',
+            fontWeight: 600,
+          }}>
+            {totalFacts} {totalFacts === 1 ? 'hecho canónico' : 'hechos canónicos'}
+          </span>
+        </div>
+        {/* Search */}
+        <div style={{ position: 'relative', flexShrink: 0 }}>
+          <svg
+            width="12" height="12" viewBox="0 0 24 24" fill="none"
+            stroke="rgba(240,235,225,0.25)" strokeWidth="2"
+            style={{ position: 'absolute', left: '0.625rem', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}
+          >
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+          <input
+            type="text"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Buscar entidad o hecho…"
+            style={{
+              background: '#0D0920',
+              border: '1px solid rgba(255,255,255,0.07)',
+              borderRadius: '4px',
+              color: '#F0EBE1',
+              fontSize: '0.75rem',
+              padding: '0.4rem 0.75rem 0.4rem 2rem',
+              outline: 'none',
+              width: '220px',
+              fontFamily: 'inherit',
+            }}
+          />
+        </div>
+      </div>
+
+      {/* Category filter pills */}
+      {allCategories.length > 0 && (
+        <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
+          {allCategories.map(cat => {
+            const color = CATEGORY_COLORS[cat] ?? 'rgba(240,235,225,0.3)'
+            const isActive = activeCategories.has(cat)
+            return (
+              <button
+                key={cat}
+                onClick={() => toggleCategory(cat)}
+                style={{
+                  background: isActive ? `${color}22` : 'transparent',
+                  border: `1px solid ${isActive ? color : `${color}40`}`,
+                  borderRadius: '20px',
+                  color: isActive ? color : `${color}99`,
+                  fontSize: '0.5625rem',
+                  fontWeight: 700,
+                  letterSpacing: '0.12em',
+                  textTransform: 'uppercase',
+                  padding: '0.25rem 0.625rem',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s',
+                }}
+              >
+                {cat}
+              </button>
+            )
+          })}
+        </div>
+      )}
+
+      {/* Content */}
+      {episodes.length === 0 ? (
+        <div style={{
+          padding: '2.5rem 2rem',
+          background: '#0D0920',
+          border: '1px solid rgba(255,255,255,0.05)',
+          borderRadius: '4px',
+          textAlign: 'center',
+          color: 'rgba(240,235,225,0.2)',
+          fontSize: '0.8125rem',
+          lineHeight: 1.6,
+        }}>
+          Sin hechos registrados aún.<br />
+          <span style={{ fontSize: '0.75rem', opacity: 0.7 }}>
+            Corre el primer Commit de Continuidad.
+          </span>
+        </div>
+      ) : filteredEpisodes.length === 0 ? (
+        <div style={{
+          padding: '1.5rem',
+          background: '#0D0920',
+          border: '1px solid rgba(255,255,255,0.05)',
+          borderRadius: '4px',
+          textAlign: 'center',
+          color: 'rgba(240,235,225,0.2)',
+          fontSize: '0.8125rem',
+        }}>
+          No hay hechos que coincidan con el filtro actual.
+        </div>
+      ) : (
+        <div style={{
+          maxHeight: '560px',
+          overflowY: 'auto',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '0',
+          background: '#0D0920',
+          border: '1px solid rgba(255,255,255,0.06)',
+          borderRadius: '4px',
+          padding: '0.75rem',
+        }}>
+          {filteredEpisodes.map((ep, epIdx) => (
+            <div key={epIdx} style={{ marginBottom: epIdx < filteredEpisodes.length - 1 ? '1rem' : 0 }}>
+              {/* Episode separator */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.625rem',
+                marginBottom: '0.5rem',
+                paddingBottom: '0.375rem',
+                borderBottom: '1px solid rgba(212,37,106,0.12)',
+              }}>
+                <div style={{ width: '3px', height: '12px', background: '#D4256A', borderRadius: '2px', flexShrink: 0 }} />
+                <span style={{
+                  fontFamily: 'Bebas Neue, Impact, sans-serif',
+                  fontSize: '0.9375rem',
+                  letterSpacing: '0.08em',
+                  color: '#F0EBE1',
+                }}>
+                  {ep.label}
+                </span>
+                <span style={{
+                  fontSize: '0.5625rem',
+                  color: 'rgba(240,235,225,0.2)',
+                  letterSpacing: '0.08em',
+                  marginLeft: 'auto',
+                }}>
+                  {ep.facts.length} {ep.facts.length === 1 ? 'hecho' : 'hechos'}
+                </span>
+              </div>
+
+              {/* Fact cards */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+                {ep.facts.map((fact, fIdx) => {
+                  const color = CATEGORY_COLORS[fact.category] ?? 'rgba(240,235,225,0.3)'
+                  return (
+                    <div
+                      key={fIdx}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        gap: '0.625rem',
+                        padding: '0.5rem 0.625rem',
+                        background: fact.isContradiction
+                          ? 'rgba(212,37,106,0.05)'
+                          : 'rgba(255,255,255,0.02)',
+                        border: `1px solid ${fact.isContradiction ? 'rgba(212,37,106,0.18)' : 'rgba(255,255,255,0.04)'}`,
+                        borderLeft: `3px solid ${fact.isContradiction ? '#D4256A' : color}`,
+                        borderRadius: '3px',
+                      }}
+                    >
+                      {/* Category pill */}
+                      <span style={{
+                        flexShrink: 0,
+                        fontSize: '0.5rem',
+                        fontWeight: 700,
+                        letterSpacing: '0.1em',
+                        textTransform: 'uppercase',
+                        color: color,
+                        background: `${color}18`,
+                        border: `1px solid ${color}30`,
+                        borderRadius: '2px',
+                        padding: '0.15rem 0.35rem',
+                        marginTop: '2px',
+                        whiteSpace: 'nowrap',
+                      }}>
+                        {fact.category}
+                      </span>
+
+                      {/* Content */}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.35rem', flexWrap: 'wrap' }}>
+                          {fact.entity && (
+                            <span style={{
+                              fontSize: '0.75rem',
+                              fontWeight: 700,
+                              color: fact.isContradiction ? '#D4256A' : '#F0EBE1',
+                              letterSpacing: '0.01em',
+                            }}>
+                              {fact.entity}
+                            </span>
+                          )}
+                          <span style={{
+                            fontSize: '0.75rem',
+                            color: fact.isContradiction ? 'rgba(212,37,106,0.75)' : 'rgba(240,235,225,0.62)',
+                            lineHeight: 1.5,
+                          }}>
+                            {fact.fact}
+                          </span>
+                        </div>
+                        {fact.evidence && (
+                          <span style={{
+                            fontSize: '0.6563rem',
+                            color: 'rgba(240,235,225,0.25)',
+                            fontStyle: 'italic',
+                            lineHeight: 1.4,
+                          }}>
+                            {fact.evidence}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ── Page ───────────────────────────────────────────────────────────────────────
 
 // ── Promise urgency config ─────────────────────────────────────────────────────
@@ -990,6 +1355,9 @@ export default function ContinuityPage() {
             )
           })}
         </div>
+
+        {/* ── CANON LOG VISUAL ─────────────────────────────────────────── */}
+        <CanonLogViewer content={moduleData['canon_log']?.content} />
 
         {/* ── PROMESAS NARRATIVAS ───────────────────────────────────────── */}
         <div style={{

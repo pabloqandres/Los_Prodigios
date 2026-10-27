@@ -135,6 +135,26 @@ type ActivityItem = {
   href: string
 }
 
+type StatsData = { total_episodes: number; analyzed_episodes: number }
+type PromiseItem = { urgency: string; status: string }
+type EpisodeItem = { id: string; season: number; episode_number: number; status: string; title: string | null }
+
+const STATUS_COLORS: Record<string, string> = {
+  draft:         '#6B7280',
+  outline:       '#4A8FE8',
+  script:        '#9B6FD4',
+  in_production: '#F5A52A',
+  completed:     '#4ECDC4',
+}
+
+const STATUS_LABELS: Record<string, string> = {
+  draft:         'Borrador',
+  outline:       'Outline',
+  script:        'Guión',
+  in_production: 'En producción',
+  completed:     'Completado',
+}
+
 function timeAgo(ts: string) {
   const diff = Date.now() - new Date(ts).getTime()
   const mins = Math.floor(diff / 60000)
@@ -155,12 +175,26 @@ export default function DashboardPage() {
   const [loadingActivity, setLoadingActivity] = useState(true)
   const [activityExpanded, setActivityExpanded] = useState(false)
 
+  const [stats, setStats] = useState<StatsData | null>(null)
+  const [promises, setPromises] = useState<PromiseItem[]>([])
+  const [episodes, setEpisodes] = useState<EpisodeItem[]>([])
+
   useEffect(() => {
     fetch('/api/activity')
       .then(r => r.json())
       .then(d => { if (Array.isArray(d)) setActivity(d) })
       .catch(() => {})
       .finally(() => setLoadingActivity(false))
+
+    Promise.all([
+      fetch('/api/stats').then(r => r.json()).catch(() => null),
+      fetch('/api/promises').then(r => r.json()).catch(() => []),
+      fetch('/api/episodes').then(r => r.json()).catch(() => []),
+    ]).then(([s, p, e]) => {
+      if (s && typeof s.total_episodes === 'number') setStats(s)
+      if (Array.isArray(p)) setPromises(p)
+      if (Array.isArray(e)) setEpisodes(e)
+    })
   }, [])
 
   return (
@@ -376,6 +410,139 @@ export default function DashboardPage() {
               </Link>
             ))}
           </div>
+        </div>
+
+        {/* ── SALUD DE LA SERIE ──────────────────────────────────────────── */}
+        <div style={{ marginBottom: '2.5rem' }}>
+          <div style={{ fontSize: '0.625rem', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(240,235,225,0.30)', fontWeight: 600, marginBottom: '1rem' }}>
+            Salud de la serie
+          </div>
+
+          {/* Row 1 — 4 stat cards */}
+          {(() => {
+            const openPromises  = promises.filter(p => p.status !== 'closed').length
+            const criticalPromises = promises.filter(p => p.urgency === 'critical' && p.status !== 'closed').length
+            const inProduction  = episodes.filter(e => e.status === 'in_production' || e.status === 'completed').length
+            const totalEp       = stats?.total_episodes ?? 0
+            const analyzedEp    = stats?.analyzed_episodes ?? 0
+
+            const healthCards = [
+              {
+                label: 'Episodios',
+                value: totalEp > 0 ? `${analyzedEp} / ${totalEp}` : '—',
+                sub: 'analizados',
+                accent: '#4ECDC4',
+              },
+              {
+                label: 'Promesas abiertas',
+                value: promises.length > 0 ? String(openPromises) : '—',
+                sub: 'sin cerrar',
+                accent: '#4A8FE8',
+              },
+              {
+                label: 'Promesas críticas',
+                value: promises.length > 0 ? String(criticalPromises) : '—',
+                sub: 'urgencia crítica',
+                accent: criticalPromises > 0 ? '#D4256A' : '#4A8FE8',
+                highlight: criticalPromises > 0,
+              },
+              {
+                label: 'En producción',
+                value: episodes.length > 0 ? String(inProduction) : '—',
+                sub: 'ep. activos',
+                accent: '#F5A52A',
+              },
+            ]
+
+            return (
+              <div className="grid grid-cols-2 md:grid-cols-4" style={{ gap: '0.75rem', marginBottom: '1rem' }}>
+                {healthCards.map(card => (
+                  <div
+                    key={card.label}
+                    style={{
+                      background: '#0D0920',
+                      border: `1px solid ${(card as { highlight?: boolean }).highlight ? 'rgba(212,37,106,0.35)' : 'rgba(255,255,255,0.06)'}`,
+                      borderRadius: '8px',
+                      padding: '1rem',
+                      boxShadow: (card as { highlight?: boolean }).highlight ? '0 0 16px rgba(212,37,106,0.12)' : 'none',
+                    }}
+                  >
+                    <div style={{ fontSize: '0.6rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(240,235,225,0.35)', marginBottom: '0.5rem', fontWeight: 600 }}>
+                      {card.label}
+                    </div>
+                    <div style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '2rem', letterSpacing: '0.02em', color: card.accent, lineHeight: 1, marginBottom: '0.25rem' }}>
+                      {card.value}
+                    </div>
+                    <div style={{ fontSize: '0.65rem', color: 'rgba(240,235,225,0.30)', letterSpacing: '0.06em' }}>
+                      {card.sub}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )
+          })()}
+
+          {/* Row 2 — Episode pipeline */}
+          {episodes.length === 0 ? (
+            <div style={{ background: '#0D0920', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', padding: '2rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <span style={{ fontSize: '0.8125rem', color: 'rgba(240,235,225,0.25)' }}>
+                Crea el primer episodio para ver métricas
+              </span>
+            </div>
+          ) : (
+            <div style={{ background: '#0D0920', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '8px', padding: '1.25rem' }}>
+              {/* Title */}
+              {(() => {
+                const seasons = [...new Set(episodes.map(e => e.season))].sort()
+                const activeSeason = seasons[0] ?? 1
+                const seasonEps = episodes.filter(e => e.season === activeSeason)
+                const statusOrder: string[] = ['draft', 'outline', 'script', 'in_production', 'completed']
+                const counts: Record<string, number> = {}
+                for (const s of statusOrder) counts[s] = 0
+                for (const ep of seasonEps) {
+                  if (counts[ep.status] !== undefined) counts[ep.status]++
+                  else counts[ep.status] = (counts[ep.status] ?? 0) + 1
+                }
+
+                return (
+                  <>
+                    <div style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '0.9rem', letterSpacing: '0.14em', color: 'rgba(240,235,225,0.45)', marginBottom: '0.875rem' }}>
+                      PIPELINE T0{activeSeason}
+                    </div>
+
+                    {/* Dot track */}
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px', marginBottom: '0.875rem' }}>
+                      {seasonEps.sort((a, b) => a.episode_number - b.episode_number).map(ep => (
+                        <div
+                          key={ep.id}
+                          title={`E${String(ep.episode_number).padStart(2, '0')} ${ep.title ?? ''} · ${STATUS_LABELS[ep.status] ?? ep.status}`}
+                          style={{
+                            width: '10px',
+                            height: '10px',
+                            borderRadius: '50%',
+                            background: STATUS_COLORS[ep.status] ?? '#6B7280',
+                            flexShrink: 0,
+                          }}
+                        />
+                      ))}
+                    </div>
+
+                    {/* Legend */}
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
+                      {statusOrder.filter(s => counts[s] > 0).map(s => (
+                        <div key={s} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                          <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: STATUS_COLORS[s], flexShrink: 0 }} />
+                          <span style={{ fontSize: '0.65rem', color: 'rgba(240,235,225,0.40)', letterSpacing: '0.06em' }}>
+                            {STATUS_LABELS[s]} ({counts[s]})
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )
+              })()}
+            </div>
+          )}
         </div>
 
         {/* Recent activity */}

@@ -1572,6 +1572,7 @@ export default function BiblePage() {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [editDoc, setEditDoc] = useState<RefDoc | null>(null)
   const [filterCat, setFilterCat] = useState<string | null>(null)
+  const [search, setSearch] = useState('')
   const [bulkCat, setBulkCat] = useState('conocimiento')
   const [bulkAssigning, setBulkAssigning] = useState(false)
   const [selectedBulk, setSelectedBulk] = useState<Set<string>>(new Set())
@@ -1796,6 +1797,50 @@ export default function BiblePage() {
         </div>
       ) : (
         <>
+          {/* ── SEARCH BAR ───────────────────────────────────────────────── */}
+          <div style={{ position: 'relative', marginBottom: '0.75rem' }}>
+            <svg
+              width="14" height="14" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" strokeWidth="2"
+              style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#F0EBE1', opacity: 0.4, pointerEvents: 'none' }}
+            >
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Buscar por título o descripción..."
+              style={{
+                width: '100%',
+                background: 'rgba(255,255,255,0.03)',
+                border: '1px solid rgba(245,165,42,0.15)',
+                borderRadius: '6px',
+                padding: '8px 36px 8px 36px',
+                color: '#F0EBE1',
+                fontSize: '0.8rem',
+                fontFamily: 'IBM Plex Sans, sans-serif',
+                outline: 'none',
+                boxSizing: 'border-box',
+              }}
+            />
+            {search && (
+              <button
+                onClick={() => setSearch('')}
+                style={{
+                  position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)',
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  color: 'rgba(240,235,225,0.4)', padding: '2px', lineHeight: 1,
+                  display: 'flex', alignItems: 'center',
+                }}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
+            )}
+          </div>
+
           {/* ── CATEGORY FILTER BAR ──────────────────────────────────────── */}
           {(() => {
             const knownKeys = new Set(ALL_CATEGORIES.map(c => c.key))
@@ -1862,7 +1907,14 @@ export default function BiblePage() {
           {/* ── BULK ASSIGN PANEL ────────────────────────────────────────── */}
           {filterCat === '__none__' && (() => {
             const knownKeys = new Set(ALL_CATEGORIES.map(c => c.key))
-            const uncatDocs = docs.filter(d => !Array.isArray(d.categories) || !d.categories.some(c => knownKeys.has(c)))
+            const uncatDocs = docs.filter(d => {
+              if (Array.isArray(d.categories) && d.categories.some(c => knownKeys.has(c))) return false
+              if (search) {
+                const q = search.toLowerCase()
+                return d.title.toLowerCase().includes(q) || (d.description ?? '').toLowerCase().includes(q)
+              }
+              return true
+            })
             const allSelected = uncatDocs.length > 0 && uncatDocs.every(d => selectedBulk.has(d.id))
             return (
               <div style={{ marginBottom: '1rem', background: 'rgba(232,122,74,0.06)', border: '1px solid rgba(232,122,74,0.2)', borderRadius: '8px', overflow: 'hidden' }}>
@@ -1925,18 +1977,36 @@ export default function BiblePage() {
           }}>
             <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '1px', background: 'linear-gradient(90deg, transparent, rgba(245,165,42,0.08), transparent)' }} />
             <div data-tutorial="bible-grid" style={{ display: 'flex', gap: '6px', alignItems: 'flex-end', minHeight: '220px', paddingBottom: '0' }}>
-              {docs.filter(doc => {
-                if (!filterCat) return true
-                if (filterCat === '__none__') { const kk = new Set(ALL_CATEGORIES.map(c => c.key)); return !Array.isArray(doc.categories) || !doc.categories.some(c => kk.has(c)) }
-                return Array.isArray(doc.categories) && doc.categories.includes(filterCat)
-              }).map((doc) => (
-                <BookSpine
-                  key={doc.id}
-                  doc={doc}
-                  selected={selectedId === doc.id}
-                  onClick={() => { handleToggle(doc.id); window.dispatchEvent(new Event('tutorial:bible_opened')) }}
-                />
-              ))}
+              {(() => {
+                const filtered = docs.filter(doc => {
+                  if (filterCat) {
+                    if (filterCat === '__none__') { const kk = new Set(ALL_CATEGORIES.map(c => c.key)); if (Array.isArray(doc.categories) && doc.categories.some(c => kk.has(c))) return false }
+                    else if (!(Array.isArray(doc.categories) && doc.categories.includes(filterCat))) return false
+                  }
+                  if (search) {
+                    const q = search.toLowerCase()
+                    return doc.title.toLowerCase().includes(q) || (doc.description ?? '').toLowerCase().includes(q)
+                  }
+                  return true
+                })
+                if (filtered.length === 0 && search) {
+                  return (
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', minHeight: '180px' }}>
+                      <span style={{ fontFamily: 'IBM Plex Sans, sans-serif', fontSize: '0.8125rem', color: 'rgba(240,235,225,0.25)', fontStyle: 'italic' }}>
+                        Sin resultados para &ldquo;{search}&rdquo;
+                      </span>
+                    </div>
+                  )
+                }
+                return filtered.map((doc) => (
+                  <BookSpine
+                    key={doc.id}
+                    doc={doc}
+                    selected={selectedId === doc.id}
+                    onClick={() => { handleToggle(doc.id); window.dispatchEvent(new Event('tutorial:bible_opened')) }}
+                  />
+                ))
+              })()}
               <button
                 onClick={() => setShowUpload(true)}
                 style={{
