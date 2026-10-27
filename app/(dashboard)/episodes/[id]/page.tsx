@@ -275,6 +275,7 @@ export default function EpisodeBuilderPage() {
 
   const [episode, setEpisode] = useState<Episode | null>(null)
   const [loading, setLoading] = useState(true)
+  const [adjEpisodes, setAdjEpisodes] = useState<{ prev: { id: string; code: string } | null; next: { id: string; code: string } | null }>({ prev: null, next: null })
   const [saving, setSaving] = useState(false)
   const [savedMsg, setSavedMsg] = useState(false)
   const [mounted, setMounted] = useState(false)
@@ -600,11 +601,22 @@ El original_text debe ser cita LITERAL del guión (para ubicarlo automáticament
       fetch(`/api/episode-continuity-log?episode_id=${id}`).then(r => r.json()),
       fetch(`/api/episodes/${id}/analyze-script`).then(r => r.json()),
       fetch(`/api/episodes/${id}/analyses`).then(r => r.json()),
+      fetch('/api/episodes').then(r => r.json()),
     ])
-      .then(([ep, chat, log, gaps, analysis]) => {
+      .then(([ep, chat, log, gaps, analysis, allEps]) => {
         if (ep.id) {
           setEpisode(ep)
           setScriptDraft(ep.script ?? '')
+          // Compute adjacent episodes
+          if (Array.isArray(allEps)) {
+            const idx = allEps.findIndex((e: { id: string }) => e.id === id)
+            const toCode = (e: { season: number; episode_number: number }) =>
+              `T${e.season}E${String(e.episode_number).padStart(2, '0')}`
+            setAdjEpisodes({
+              prev: idx > 0 ? { id: allEps[idx - 1].id, code: toCode(allEps[idx - 1]) } : null,
+              next: idx < allEps.length - 1 ? { id: allEps[idx + 1].id, code: toCode(allEps[idx + 1]) } : null,
+            })
+          }
         }
         if (Array.isArray(chat) && chat.length > 0) {
           setAiMessages(chat.map((m: { role: 'user' | 'assistant'; content: string }) => ({ role: m.role, content: m.content })))
@@ -1486,6 +1498,25 @@ El original_text debe ser cita LITERAL del guión (para ubicarlo automáticament
         {/* Back */}
         <button onClick={() => router.push('/episodes')} style={{ background: 'none', border: 'none', color: 'rgba(240,235,225,0.35)', cursor: 'pointer', fontSize: '0.8125rem', padding: '4px 8px 4px 0', display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
           ← Episodios
+        </button>
+        <div style={{ width: '1px', height: '20px', background: 'rgba(212,37,106,0.2)', flexShrink: 0 }} />
+
+        {/* Prev / Next */}
+        <button
+          onClick={() => adjEpisodes.prev && router.push(`/episodes/${adjEpisodes.prev.id}`)}
+          disabled={!adjEpisodes.prev}
+          title={adjEpisodes.prev ? adjEpisodes.prev.code : ''}
+          style={{ background: 'none', border: 'none', color: adjEpisodes.prev ? 'rgba(240,235,225,0.45)' : 'rgba(240,235,225,0.12)', cursor: adjEpisodes.prev ? 'pointer' : 'default', padding: '4px 4px', flexShrink: 0, display: 'flex', alignItems: 'center', fontSize: '0.85rem' }}
+        >
+          ‹
+        </button>
+        <button
+          onClick={() => adjEpisodes.next && router.push(`/episodes/${adjEpisodes.next.id}`)}
+          disabled={!adjEpisodes.next}
+          title={adjEpisodes.next ? adjEpisodes.next.code : ''}
+          style={{ background: 'none', border: 'none', color: adjEpisodes.next ? 'rgba(240,235,225,0.45)' : 'rgba(240,235,225,0.12)', cursor: adjEpisodes.next ? 'pointer' : 'default', padding: '4px 4px', flexShrink: 0, display: 'flex', alignItems: 'center', fontSize: '0.85rem' }}
+        >
+          ›
         </button>
         <div style={{ width: '1px', height: '20px', background: 'rgba(212,37,106,0.2)', flexShrink: 0 }} />
 
