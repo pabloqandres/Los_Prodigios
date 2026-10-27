@@ -73,19 +73,22 @@ export default function Tutorial() {
     setActiveSteps([])
   }
 
-  function handleExplore() {
+  function handleNavigate() {
     if (step?.route) router.push(step.route)
   }
 
-  const hasImage    = !!step?.image
-  const cardWidth   = hasImage ? 480 : 340
-  const dialogue    = step
+  // Must be on the correct route to advance (just visit — no data creation needed)
+  const needsNavigation = step?.route ? !pathname.startsWith(step.route) : false
+
+  const hasImage  = !!step?.image
+  const cardWidth = hasImage ? 480 : 340
+  const dialogue  = step
     ? (isAdmin && step.dialogueAdmin ? step.dialogueAdmin : step.dialogue)
     : ''
-  const bitImage    = step
+  const bitImage  = step
     ? (isAdmin && step.bitAdmin ? BIT_IMAGES[step.bitAdmin] : BIT_IMAGES[step.bit])
     : BIT_IMAGES.happy
-  const progress    = activeSteps.length > 1 ? stepIndex / (activeSteps.length - 1) : 1
+  const progress  = activeSteps.length > 1 ? stepIndex / (activeSteps.length - 1) : 1
 
   return (
     <>
@@ -207,49 +210,47 @@ export default function Tutorial() {
                 </div>
               </div>
 
-              {/* Footer: optional Explore link + Next */}
+              {/* Footer */}
               <div style={{
                 padding: '0.5rem 0.875rem 0.875rem',
                 display: 'flex',
-                alignItems: 'center',
-                justifyContent: step?.route ? 'space-between' : 'flex-end',
-                gap: '0.5rem',
+                justifyContent: 'flex-end',
               }}>
-                {step?.route && (
+                {needsNavigation ? (
+                  // User must navigate to the section first
                   <button
-                    onClick={handleExplore}
+                    onClick={handleNavigate}
                     style={{
-                      background: 'none', border: 'none',
-                      color: 'rgba(245,165,42,0.45)',
-                      fontSize: '0.6875rem',
-                      cursor: 'pointer',
-                      fontFamily: 'IBM Plex Sans, sans-serif',
-                      letterSpacing: '0.04em',
-                      padding: '0.25rem 0',
-                      textDecoration: 'underline',
-                      textDecorationColor: 'rgba(245,165,42,0.2)',
+                      padding: '0.5rem 1.125rem',
+                      background: 'rgba(245,165,42,0.1)',
+                      border: '1px solid rgba(245,165,42,0.35)',
+                      borderRadius: '3px', color: '#F5A52A',
+                      fontSize: '0.8125rem', fontWeight: 600,
+                      fontFamily: 'IBM Plex Sans, sans-serif', cursor: 'pointer',
                     }}
-                    onMouseEnter={e => { e.currentTarget.style.color = 'rgba(245,165,42,0.8)' }}
-                    onMouseLeave={e => { e.currentTarget.style.color = 'rgba(245,165,42,0.45)' }}
+                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(245,165,42,0.18)' }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'rgba(245,165,42,0.1)' }}
                   >
-                    {step.navLabel ?? `Explorar sección →`}
+                    {step.navLabel ?? `Ir a la sección →`}
+                  </button>
+                ) : (
+                  // Already on the right page — can advance
+                  <button
+                    onClick={handleNext}
+                    style={{
+                      padding: '0.5rem 1.25rem',
+                      background: '#F5A52A',
+                      border: 'none', borderRadius: '3px',
+                      color: '#08060F',
+                      fontSize: '0.8125rem', fontWeight: 700,
+                      fontFamily: 'IBM Plex Sans, sans-serif',
+                      cursor: 'pointer',
+                      letterSpacing: '0.02em',
+                    }}
+                  >
+                    {step.buttonLabel}
                   </button>
                 )}
-                <button
-                  onClick={handleNext}
-                  style={{
-                    padding: '0.5rem 1.25rem',
-                    background: '#F5A52A',
-                    border: 'none', borderRadius: '3px',
-                    color: '#08060F',
-                    fontSize: '0.8125rem', fontWeight: 700,
-                    fontFamily: 'IBM Plex Sans, sans-serif',
-                    cursor: 'pointer',
-                    letterSpacing: '0.02em',
-                  }}
-                >
-                  {step.buttonLabel}
-                </button>
               </div>
 
               {/* Gold progress bar */}
