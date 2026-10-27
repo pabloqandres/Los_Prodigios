@@ -3000,7 +3000,7 @@ El original_text debe ser cita LITERAL del guión (para ubicarlo automáticament
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
                                   {(gap.status === 'created' || gap.status === 'linked') && (
                                     <a
-                                      href="/approval"
+                                      href={`/assets?tab=canon&entity=${encodeURIComponent(gap.entity_name)}`}
                                       style={{
                                         fontSize: '0.7rem', color: '#9B6FD4',
                                         textDecoration: 'none', whiteSpace: 'nowrap',
@@ -3010,7 +3010,7 @@ El original_text debe ser cita LITERAL del guión (para ubicarlo automáticament
                                         background: 'rgba(155,111,212,0.08)',
                                       }}
                                     >
-                                      Ver en Biblia Visual →
+                                      Ver slots →
                                     </a>
                                   )}
                                   {isDone ? (

@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { DocumentsList } from '@/components/DocumentsList'
 
@@ -102,6 +103,7 @@ function formatSize(bytes?: string) {
 }
 
 export default function AssetsPage() {
+  const searchParams = useSearchParams()
   const [categories, setCategories] = useState<DriveCategory[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -112,6 +114,16 @@ export default function AssetsPage() {
   const [canonSlots, setCanonSlots]     = useState<any[]>([])
   const [canonLoading, setCanonLoading] = useState(false)
   const [activeTab, setActiveTab]       = useState<'drive' | 'canon'>('drive')
+  const [highlightEntity, setHighlightEntity] = useState<string | null>(null)
+  const highlightRef = useRef<HTMLDivElement | null>(null)
+
+  // Read deep-link params on mount
+  useEffect(() => {
+    const tab = searchParams.get('tab')
+    const entity = searchParams.get('entity')
+    if (tab === 'canon') setActiveTab('canon')
+    if (entity) setHighlightEntity(entity)
+  }, [])
 
   useEffect(() => {
     fetch('/api/drive/categories')
@@ -132,6 +144,13 @@ export default function AssetsPage() {
       .catch(() => {})
       .finally(() => setCanonLoading(false))
   }, [])
+
+  // Scroll to highlighted entity once slots are loaded
+  useEffect(() => {
+    if (highlightEntity && !canonLoading && highlightRef.current) {
+      highlightRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+  }, [highlightEntity, canonLoading])
 
   async function openCategory(cat: DriveCategory) {
     if (activeCategory?.id === cat.id) { setActiveCategory(null); setFiles([]); return }
@@ -420,8 +439,22 @@ export default function AssetsPage() {
                         <div style={{ flex: 1, height: '1px', background: 'rgba(245,165,42,0.07)' }} />
                         <span style={{ fontSize: '0.6875rem', color: '#4ECDC4' }}>{catSlots.length} aprobados</span>
                       </div>
-                      {Object.entries(byEntity).map(([entityName, entitySlots]) => (
-                        <div key={entityName} style={{ marginBottom: '1.5rem' }}>
+                      {Object.entries(byEntity).map(([entityName, entitySlots]) => {
+                        const isHighlighted = entityName === highlightEntity
+                        return (
+                        <div
+                          key={entityName}
+                          ref={isHighlighted ? highlightRef : null}
+                          style={{
+                            marginBottom: '1.5rem',
+                            ...(isHighlighted ? {
+                              border: '1px solid rgba(155,111,212,0.4)',
+                              boxShadow: '0 0 0 1px rgba(155,111,212,0.15)',
+                              borderRadius: '6px',
+                              padding: '0.75rem',
+                            } : {}),
+                          }}
+                        >
                           <div style={{ fontSize: '0.875rem', fontWeight: 600, color: '#F0EBE1', marginBottom: '0.5rem' }}>
                             {entitySlots[0].entity_label}
                           </div>
@@ -454,7 +487,8 @@ export default function AssetsPage() {
                             ))}
                           </div>
                         </div>
-                      ))}
+                      )
+                      })}
                     </div>
                   )
                 })}
