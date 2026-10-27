@@ -186,21 +186,26 @@ function IconSignOut() {
 
 const NAV_SECTIONS: NavSection[] = [
   {
+    title: 'CONOCIMIENTO',
+    items: [
+      { href: '/dashboard', label: 'Dashboard', icon: <IconHome /> },
+      { href: '/bible',     label: 'Biblia',    icon: <IconBook /> },
+      { href: '/studio',    label: 'Asistente', icon: <IconSparkle /> },
+    ],
+  },
+  {
     title: 'PRODUCCIÓN',
     items: [
-      { href: '/dashboard',  label: 'Dashboard',  icon: <IconHome /> },
       { href: '/episodes',   label: 'Episodios',  icon: <IconFilm /> },
-      { href: '/continuity', label: 'Continuidad',icon: <IconLayers /> },
-      { href: '/motor',      label: 'Motor NUPPA',icon: <IconMotor /> },
-      { href: '/bible',      label: 'Biblia',     icon: <IconBook /> },
-      { href: '/studio',     label: 'Asistente',  icon: <IconSparkle /> },
+      { href: '/continuity', label: 'Continuidad', icon: <IconLayers /> },
+      { href: '/motor',      label: 'Motor NUPPA', icon: <IconMotor /> },
     ],
   },
   {
     title: 'DISEÑO & ARTE',
     items: [
-      { href: '/approval',   label: 'Biblia Visual', icon: <IconCheck /> },
-      { href: '/assets',     label: 'Arte',       icon: <IconPalette /> },
+      { href: '/approval', label: 'Biblia Visual', icon: <IconCheck /> },
+      { href: '/assets',   label: 'Arte',          icon: <IconPalette /> },
     ],
   },
   {
@@ -208,15 +213,13 @@ const NAV_SECTIONS: NavSection[] = [
     items: [
       { href: '/artwork',    label: 'Artwork Flow', icon: <IconFlow /> },
       { href: '/video-flow', label: 'Video Flow',   icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg> },
-      { href: '/workflows',  label: 'Workflows',    icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M17.5 14v7M14 17.5h7"/></svg> },
     ],
   },
   {
-    title: 'FRANQUICIA',
+    title: 'ESTUDIO',
     items: [
-      { href: '/marketing',                 label: 'Marketing',      icon: <IconMegaphone /> },
-      { href: '/marketing?tab=merchandise', label: 'Merchandise',    icon: <IconTag /> },
-      { href: '/marketing?tab=redes',       label: 'Redes Sociales', icon: <IconShare /> },
+      { href: '/marketing', label: 'Marketing',  icon: <IconMegaphone /> },
+      { href: '/workflows', label: 'Workflows',  icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M17.5 14v7M14 17.5h7"/></svg> },
     ],
   },
   {
