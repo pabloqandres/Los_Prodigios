@@ -558,7 +558,7 @@ function AssetsContent() {
 
         {/* LEFT — category / entity nav ─────────────────────────────────── */}
         <div style={{
-          width: 252, flexShrink: 0,
+          width: 300, flexShrink: 0,
           borderRight: '1px solid rgba(255,255,255,0.05)',
           overflowY: 'auto',
           background: '#06040F',
@@ -601,8 +601,8 @@ function AssetsContent() {
                     }} />
                     <span style={{
                       fontFamily: 'Bebas Neue, Impact, sans-serif',
-                      fontSize: '0.8125rem', letterSpacing: '0.08em',
-                      color: isOpen ? '#F0EBE1' : 'rgba(240,235,225,0.4)',
+                      fontSize: '0.9375rem', letterSpacing: '0.07em',
+                      color: isOpen ? '#F0EBE1' : 'rgba(240,235,225,0.45)',
                       flex: 1, transition: 'color 0.15s',
                     }}>
                       {cat.label}
@@ -638,8 +638,8 @@ function AssetsContent() {
                             onClick={() => selectEntity(entity.entity_name, cat.category)}
                             style={{
                               width: '100%',
-                              display: 'flex', alignItems: 'center', gap: '0.625rem',
-                              padding: '0.4rem 1rem 0.4rem 1.25rem',
+                              display: 'flex', alignItems: 'center', gap: '0.75rem',
+                              padding: '0.5rem 1rem 0.5rem 1.375rem',
                               background: isSel ? `${color}12` : 'none',
                               border: 'none',
                               borderLeft: isSel ? `2px solid ${color}` : '2px solid transparent',
@@ -649,7 +649,7 @@ function AssetsContent() {
                           >
                             {/* Mini portrait */}
                             <div style={{
-                              width: 26, height: 26, borderRadius: 4,
+                              width: 32, height: 32, borderRadius: 5,
                               overflow: 'hidden', background: '#0D0920', flexShrink: 0,
                               border: `1px solid ${isSel ? color + '44' : 'rgba(255,255,255,0.05)'}`,
                             }}>
@@ -675,16 +675,16 @@ function AssetsContent() {
                             </div>
 
                             <span style={{
-                              fontSize: '0.75rem',
-                              color: isSel ? '#F0EBE1' : 'rgba(240,235,225,0.45)',
+                              fontSize: '0.875rem',
+                              color: isSel ? '#F0EBE1' : 'rgba(240,235,225,0.55)',
                               fontFamily: 'IBM Plex Sans, sans-serif',
                               flex: 1, lineHeight: 1.25,
                             }}>
                               {entity.entity_label}
                             </span>
                             <span style={{
-                              fontSize: '0.5rem', fontFamily: 'monospace',
-                              color: isSel ? color : 'rgba(240,235,225,0.18)', flexShrink: 0,
+                              fontSize: '0.625rem', fontFamily: 'monospace',
+                              color: isSel ? color : 'rgba(240,235,225,0.22)', flexShrink: 0,
                             }}>
                               {entity.slots.length}
                             </span>
