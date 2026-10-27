@@ -159,5 +159,44 @@ export async function POST(
     }
   }
 
-  return NextResponse.json({ ok: true, modules_updated: 5, new_bible_docs: newBibleDocs })
+  // 5. Insert new open promises into narrative_promises (deduplicated by promise_id)
+  let newPromisesInserted = 0
+
+  if (body.promises_opened.length > 0) {
+    // Fetch existing promise_ids to avoid duplicates across re-runs
+    const { data: existingPromises } = await supabase
+      .from('narrative_promises')
+      .select('promise_id')
+
+    const existingIds = new Set(
+      (existingPromises ?? []).map((p: { promise_id: string }) => p.promise_id)
+    )
+
+    for (const p of body.promises_opened) {
+      if (existingIds.has(p.id)) continue
+
+      const { error } = await supabase
+        .from('narrative_promises')
+        .insert({
+          promise_id: p.id,
+          episode_label: label,
+          type: p.type,
+          description: p.description,
+          urgency: p.urgency,
+          related_character: p.related_character ?? null,
+          status: 'open',
+          resolution: null,
+          resolved_in_episode: null,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        })
+
+      if (!error) {
+        newPromisesInserted++
+        existingIds.add(p.id) // prevent duplicates within same batch
+      }
+    }
+  }
+
+  return NextResponse.json({ ok: true, modules_updated: 5, new_bible_docs: newBibleDocs, new_promises: newPromisesInserted })
 }

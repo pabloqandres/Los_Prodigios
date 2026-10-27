@@ -6,6 +6,21 @@ import { DocumentsList } from '@/components/DocumentsList'
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
+interface NarrativePromise {
+  id: string
+  promise_id: string
+  episode_label: string
+  type: string
+  description: string
+  urgency: 'critical' | 'high' | 'medium' | 'low'
+  related_character: string | null
+  status: 'open' | 'in_progress' | 'closed'
+  resolution: string | null
+  resolved_in_episode: string | null
+  created_at: string
+  updated_at: string
+}
+
 interface ContinuityModuleRow {
   module_key: string
   content: string
@@ -298,10 +313,317 @@ function EditModal({ module, initialContent, onClose, onSave }: EditModalProps) 
 
 // ── Page ───────────────────────────────────────────────────────────────────────
 
+// ── Promise urgency config ─────────────────────────────────────────────────────
+
+const URGENCY_CONFIG = {
+  critical: { label: 'CRÍTICA', color: '#D4256A' },
+  high:     { label: 'ALTA',    color: '#F5A52A' },
+  medium:   { label: 'MEDIA',   color: '#4A8FE8' },
+  low:      { label: 'BAJA',    color: 'rgba(240,235,225,0.3)' },
+}
+
+const URGENCY_ORDER: Array<'critical' | 'high' | 'medium' | 'low'> = ['critical', 'high', 'medium', 'low']
+
+// ── PromiseCard ────────────────────────────────────────────────────────────────
+
+interface PromiseCardProps {
+  promise: NarrativePromise
+  onUpdate: (id: string, patch: { status: string; resolution?: string; resolved_in_episode?: string }) => Promise<void>
+}
+
+function PromiseCard({ promise, onUpdate }: PromiseCardProps) {
+  const [expanded, setExpanded] = useState(false)
+  const [resolution, setResolution] = useState('')
+  const [resolvedEpisode, setResolvedEpisode] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const urgency = URGENCY_CONFIG[promise.urgency] ?? URGENCY_CONFIG.low
+  const isClosed = promise.status === 'closed'
+
+  const handleMarkResolved = async () => {
+    setSaving(true)
+    setError(null)
+    try {
+      await onUpdate(promise.id, {
+        status: 'closed',
+        resolution,
+        resolved_in_episode: resolvedEpisode || undefined,
+      })
+      setExpanded(false)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al guardar')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleMarkInProgress = async () => {
+    setSaving(true)
+    setError(null)
+    try {
+      await onUpdate(promise.id, { status: 'in_progress' })
+      setExpanded(false)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error al guardar')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div style={{
+      background: isClosed ? 'rgba(13,9,32,0.5)' : '#0D0920',
+      border: `1px solid ${isClosed ? 'rgba(255,255,255,0.04)' : `${urgency.color}22`}`,
+      borderLeft: `3px solid ${isClosed ? 'rgba(255,255,255,0.08)' : urgency.color}`,
+      borderRadius: '4px',
+      padding: '0.875rem 1rem',
+      opacity: isClosed ? 0.55 : 1,
+      transition: 'opacity 0.2s',
+    }}>
+      {/* Top row */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.625rem', marginBottom: '0.5rem' }}>
+        {/* Urgency badge */}
+        <span style={{
+          fontSize: '0.5rem',
+          fontWeight: 700,
+          letterSpacing: '0.14em',
+          textTransform: 'uppercase',
+          color: urgency.color,
+          background: `${urgency.color}18`,
+          border: `1px solid ${urgency.color}30`,
+          borderRadius: '2px',
+          padding: '0.2rem 0.45rem',
+          flexShrink: 0,
+          marginTop: '1px',
+        }}>
+          {urgency.label}
+        </span>
+        {/* Type badge */}
+        <span style={{
+          fontSize: '0.5rem',
+          fontWeight: 600,
+          letterSpacing: '0.12em',
+          textTransform: 'uppercase',
+          color: 'rgba(240,235,225,0.35)',
+          background: 'rgba(240,235,225,0.04)',
+          border: '1px solid rgba(240,235,225,0.08)',
+          borderRadius: '2px',
+          padding: '0.2rem 0.45rem',
+          flexShrink: 0,
+          marginTop: '1px',
+        }}>
+          {promise.type}
+        </span>
+        {/* Status badge — only for non-open */}
+        {promise.status !== 'open' && (
+          <span style={{
+            fontSize: '0.5rem',
+            fontWeight: 600,
+            letterSpacing: '0.12em',
+            textTransform: 'uppercase',
+            color: promise.status === 'closed' ? 'rgba(78,205,196,0.6)' : 'rgba(245,165,42,0.7)',
+            background: promise.status === 'closed' ? 'rgba(78,205,196,0.06)' : 'rgba(245,165,42,0.06)',
+            border: `1px solid ${promise.status === 'closed' ? 'rgba(78,205,196,0.15)' : 'rgba(245,165,42,0.15)'}`,
+            borderRadius: '2px',
+            padding: '0.2rem 0.45rem',
+            flexShrink: 0,
+            marginTop: '1px',
+          }}>
+            {promise.status === 'closed' ? 'Resuelta' : 'En progreso'}
+          </span>
+        )}
+        {/* Expand button (if not closed) */}
+        {!isClosed && (
+          <button
+            onClick={() => setExpanded(!expanded)}
+            style={{
+              marginLeft: 'auto',
+              background: 'transparent',
+              border: `1px solid ${urgency.color}28`,
+              borderRadius: '3px',
+              color: urgency.color,
+              fontSize: '0.5rem',
+              fontWeight: 700,
+              letterSpacing: '0.1em',
+              textTransform: 'uppercase',
+              padding: '0.2rem 0.5rem',
+              cursor: 'pointer',
+              flexShrink: 0,
+            }}
+          >
+            {expanded ? 'Cerrar' : 'Gestionar'}
+          </button>
+        )}
+      </div>
+
+      {/* Description */}
+      <p style={{
+        fontSize: '0.8125rem',
+        color: isClosed ? 'rgba(240,235,225,0.28)' : 'rgba(240,235,225,0.75)',
+        lineHeight: 1.55,
+        textDecoration: isClosed ? 'line-through' : 'none',
+        marginBottom: '0.375rem',
+      }}>
+        {promise.description}
+      </p>
+
+      {/* Resolution text (if closed) */}
+      {isClosed && promise.resolution && (
+        <p style={{
+          fontSize: '0.75rem',
+          color: 'rgba(78,205,196,0.5)',
+          lineHeight: 1.5,
+          fontStyle: 'italic',
+          marginBottom: '0.375rem',
+        }}>
+          → {promise.resolution}
+          {promise.resolved_in_episode && (
+            <span style={{ color: 'rgba(240,235,225,0.2)', fontStyle: 'normal' }}>
+              {' '}· {promise.resolved_in_episode}
+            </span>
+          )}
+        </p>
+      )}
+
+      {/* Meta row */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.875rem' }}>
+        {promise.related_character && (
+          <span style={{ fontSize: '0.6875rem', color: 'rgba(240,235,225,0.32)' }}>
+            <span style={{ opacity: 0.5 }}>↳</span> {promise.related_character}
+          </span>
+        )}
+        <span style={{ fontSize: '0.625rem', color: 'rgba(240,235,225,0.2)', fontFamily: 'monospace', letterSpacing: '0.04em' }}>
+          {promise.episode_label}
+        </span>
+      </div>
+
+      {/* Inline form (expanded) */}
+      {expanded && (
+        <div style={{
+          marginTop: '0.875rem',
+          paddingTop: '0.875rem',
+          borderTop: '1px solid rgba(255,255,255,0.05)',
+        }}>
+          <div style={{ marginBottom: '0.625rem' }}>
+            <label style={{
+              display: 'block',
+              fontSize: '0.5625rem',
+              letterSpacing: '0.14em',
+              textTransform: 'uppercase',
+              color: 'rgba(240,235,225,0.35)',
+              fontWeight: 600,
+              marginBottom: '0.375rem',
+            }}>
+              Resolución
+            </label>
+            <textarea
+              value={resolution}
+              onChange={(e) => setResolution(e.target.value)}
+              rows={3}
+              placeholder="Describe cómo se resolvió esta promesa narrativa..."
+              style={{
+                width: '100%',
+                background: '#080614',
+                border: '1px solid rgba(255,255,255,0.07)',
+                borderRadius: '3px',
+                color: '#F0EBE1',
+                fontSize: '0.8125rem',
+                lineHeight: 1.6,
+                padding: '0.625rem 0.75rem',
+                resize: 'vertical',
+                outline: 'none',
+                fontFamily: 'inherit',
+                boxSizing: 'border-box',
+              }}
+            />
+          </div>
+          <div style={{ marginBottom: '0.875rem' }}>
+            <label style={{
+              display: 'block',
+              fontSize: '0.5625rem',
+              letterSpacing: '0.14em',
+              textTransform: 'uppercase',
+              color: 'rgba(240,235,225,0.35)',
+              fontWeight: 600,
+              marginBottom: '0.375rem',
+            }}>
+              Episodio de resolución
+            </label>
+            <input
+              type="text"
+              value={resolvedEpisode}
+              onChange={(e) => setResolvedEpisode(e.target.value)}
+              placeholder="Ej: T01E04 — El Regreso"
+              style={{
+                width: '100%',
+                background: '#080614',
+                border: '1px solid rgba(255,255,255,0.07)',
+                borderRadius: '3px',
+                color: '#F0EBE1',
+                fontSize: '0.8125rem',
+                padding: '0.5rem 0.75rem',
+                outline: 'none',
+                fontFamily: 'inherit',
+                boxSizing: 'border-box',
+              }}
+            />
+          </div>
+          {error && (
+            <p style={{ fontSize: '0.75rem', color: '#F5A52A', marginBottom: '0.5rem' }}>{error}</p>
+          )}
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+            <button
+              onClick={handleMarkResolved}
+              disabled={saving}
+              style={{
+                background: saving ? 'rgba(212,37,106,0.5)' : '#D4256A',
+                border: 'none',
+                borderRadius: '3px',
+                color: '#F0EBE1',
+                fontSize: '0.6875rem',
+                fontWeight: 700,
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase',
+                padding: '0.5rem 1rem',
+                cursor: saving ? 'not-allowed' : 'pointer',
+              }}
+            >
+              {saving ? 'Guardando…' : 'Marcar como resuelta'}
+            </button>
+            <button
+              onClick={handleMarkInProgress}
+              disabled={saving}
+              style={{
+                background: 'transparent',
+                border: '1px solid rgba(245,165,42,0.35)',
+                borderRadius: '3px',
+                color: 'rgba(245,165,42,0.8)',
+                fontSize: '0.6875rem',
+                fontWeight: 700,
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase',
+                padding: '0.5rem 1rem',
+                cursor: saving ? 'not-allowed' : 'pointer',
+              }}
+            >
+              En progreso
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── Page ───────────────────────────────────────────────────────────────────────
+
 export default function ContinuityPage() {
   const [moduleData, setModuleData] = useState<Record<string, ContinuityModuleRow>>({})
   const [loading, setLoading] = useState(true)
   const [activeModal, setActiveModal] = useState<ContinuityModule | null>(null)
+  const [promises, setPromises] = useState<NarrativePromise[]>([])
+  const [promisesLoading, setPromisesLoading] = useState(true)
 
   // Fetch all modules on mount
   const fetchModules = useCallback(async () => {
@@ -319,7 +641,37 @@ export default function ContinuityPage() {
     }
   }, [])
 
+  const fetchPromises = useCallback(async () => {
+    try {
+      const res = await fetch('/api/promises')
+      if (!res.ok) return
+      const data: NarrativePromise[] = await res.json()
+      setPromises(data)
+    } catch {
+      // silently fail
+    } finally {
+      setPromisesLoading(false)
+    }
+  }, [])
+
   useEffect(() => { fetchModules() }, [fetchModules])
+  useEffect(() => { fetchPromises() }, [fetchPromises])
+
+  const handlePromiseUpdate = async (
+    id: string,
+    patch: { status: string; resolution?: string; resolved_in_episode?: string }
+  ) => {
+    const res = await fetch('/api/promises', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, ...patch }),
+    })
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ error: 'Error desconocido' }))
+      throw new Error(err.error ?? 'Error al actualizar')
+    }
+    await fetchPromises()
+  }
 
   const handleSave = async (module_key: string, content: string) => {
     const res = await fetch('/api/continuity', {
@@ -638,6 +990,132 @@ export default function ContinuityPage() {
             )
           })}
         </div>
+
+        {/* ── PROMESAS NARRATIVAS ───────────────────────────────────────── */}
+        <div style={{
+          fontSize: '0.625rem',
+          letterSpacing: '0.18em',
+          textTransform: 'uppercase',
+          color: 'rgba(240,235,225,0.30)',
+          fontWeight: 600,
+          marginBottom: '1rem',
+        }}>
+          Promesas narrativas
+        </div>
+
+        {/* Stats bar */}
+        {!promisesLoading && (() => {
+          const totalOpen = promises.filter(p => p.status !== 'closed').length
+          const criticalOpen = promises.filter(p => p.status !== 'closed' && p.urgency === 'critical').length
+          return (
+            <div style={{
+              display: 'flex',
+              gap: '1.25rem',
+              alignItems: 'center',
+              padding: '0.75rem 1.125rem',
+              background: '#0D0920',
+              border: '1px solid rgba(212,37,106,0.08)',
+              borderRadius: '4px',
+              marginBottom: '1.25rem',
+              flexWrap: 'wrap',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.3rem' }}>
+                <span style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '1.25rem', color: '#F0EBE1', letterSpacing: '0.04em' }}>
+                  {promises.length}
+                </span>
+                <span style={{ fontSize: '0.5625rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(240,235,225,0.3)', fontWeight: 600 }}>
+                  Total
+                </span>
+              </div>
+              <div style={{ width: '1px', height: '20px', background: 'rgba(255,255,255,0.06)' }} />
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.3rem' }}>
+                <span style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '1.25rem', color: '#4A8FE8', letterSpacing: '0.04em' }}>
+                  {totalOpen}
+                </span>
+                <span style={{ fontSize: '0.5625rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(240,235,225,0.3)', fontWeight: 600 }}>
+                  Abiertas
+                </span>
+              </div>
+              <div style={{ width: '1px', height: '20px', background: 'rgba(255,255,255,0.06)' }} />
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.3rem' }}>
+                <span style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '1.25rem', color: '#D4256A', letterSpacing: '0.04em' }}>
+                  {criticalOpen}
+                </span>
+                <span style={{ fontSize: '0.5625rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(240,235,225,0.3)', fontWeight: 600 }}>
+                  Críticas abiertas
+                </span>
+              </div>
+            </div>
+          )
+        })()}
+
+        {/* Promises grouped by urgency */}
+        {promisesLoading ? (
+          <div style={{ color: 'rgba(240,235,225,0.2)', fontSize: '0.8125rem', padding: '1rem 0', marginBottom: '2.5rem' }}>
+            Cargando promesas…
+          </div>
+        ) : promises.length === 0 ? (
+          <div style={{
+            padding: '2rem',
+            background: '#0D0920',
+            border: '1px solid rgba(255,255,255,0.05)',
+            borderRadius: '4px',
+            textAlign: 'center',
+            color: 'rgba(240,235,225,0.2)',
+            fontSize: '0.8125rem',
+            marginBottom: '2.5rem',
+          }}>
+            No hay promesas narrativas registradas todavía.
+          </div>
+        ) : (
+          <div style={{ marginBottom: '2.5rem' }}>
+            {URGENCY_ORDER.map((urgencyKey) => {
+              const group = promises.filter(p => p.urgency === urgencyKey)
+              if (group.length === 0) return null
+              const cfg = URGENCY_CONFIG[urgencyKey]
+              return (
+                <div key={urgencyKey} style={{ marginBottom: '1.5rem' }}>
+                  {/* Group header */}
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.625rem',
+                    marginBottom: '0.625rem',
+                  }}>
+                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: cfg.color, flexShrink: 0 }} />
+                    <span style={{
+                      fontSize: '0.5625rem',
+                      fontWeight: 700,
+                      letterSpacing: '0.16em',
+                      textTransform: 'uppercase',
+                      color: cfg.color,
+                    }}>
+                      {cfg.label}
+                    </span>
+                    <span style={{
+                      fontSize: '0.5625rem',
+                      color: 'rgba(240,235,225,0.2)',
+                      letterSpacing: '0.1em',
+                    }}>
+                      {group.length}
+                    </span>
+                    <div style={{ flex: 1, height: '1px', background: `${cfg.color}18` }} />
+                  </div>
+                  {/* Cards */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    {group.map((promise) => (
+                      <PromiseCard
+                        key={promise.id}
+                        promise={promise}
+                        onUpdate={handlePromiseUpdate}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
 
         {/* CTA */}
         <div style={{
