@@ -106,10 +106,22 @@ export async function POST(
 
   if (selectedDocs.length > LOAD_ALL_THRESHOLD) {
     const terms = extractKeyTerms(scriptSample)
-    const scored = selectedDocs
+
+    // Always-include: conocimiento + produccion docs (craft/base knowledge)
+    const alwaysInclude = selectedDocs.filter(doc => {
+      const cats = Array.isArray(doc.categories) ? doc.categories : []
+      return cats.includes('conocimiento') || cats.includes('produccion')
+    })
+
+    // Remaining docs go through relevance scoring
+    const alwaysIds = new Set(alwaysInclude.map(d => d.title))
+    const remaining = selectedDocs.filter(d => !alwaysIds.has(d.title))
+    const scored = remaining
       .map(doc => ({ doc, score: scoreDoc(doc, terms) }))
       .sort((a, b) => b.score - a.score)
-    selectedDocs = scored.slice(0, MAX_SELECTED).map(s => s.doc)
+
+    const slotsLeft = Math.max(0, MAX_SELECTED - alwaysInclude.length)
+    selectedDocs = [...alwaysInclude, ...scored.slice(0, slotsLeft).map(s => s.doc)]
   }
 
   // Tiered excerpt budget: more chars for top docs
