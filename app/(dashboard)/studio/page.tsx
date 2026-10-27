@@ -757,6 +757,7 @@ export default function StudioPage() {
           <ContextSelector
             value={selectedContext}
             onChange={(ctx) => {
+              if (messages.length > 0 && !confirm('¿Cambiar de contexto? Se borrará la conversación actual.')) return
               setSelectedContext(ctx)
               setMessages([])
             }}
@@ -1061,6 +1062,7 @@ export default function StudioPage() {
               <button
                 key={key}
                 onClick={() => {
+                  if (messages.length > 0 && !confirm('¿Cambiar de contexto? Se borrará la conversación actual.')) return
                   setSelectedContext(key)
                   setMessages([])
                 }}

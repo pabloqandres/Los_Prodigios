@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { DocumentsList } from '@/components/DocumentsList'
@@ -102,7 +102,7 @@ function formatSize(bytes?: string) {
   return `${(b / (1024 * 1024)).toFixed(1)} MB`
 }
 
-export default function AssetsPage() {
+function AssetsContent() {
   const searchParams = useSearchParams()
   const [categories, setCategories] = useState<DriveCategory[]>([])
   const [loading, setLoading] = useState(true)
@@ -113,6 +113,7 @@ export default function AssetsPage() {
   const [lightbox, setLightbox] = useState<DriveFile | null>(null)
   const [canonSlots, setCanonSlots]     = useState<any[]>([])
   const [canonLoading, setCanonLoading] = useState(false)
+  const [canonError, setCanonError]     = useState(false)
   const [activeTab, setActiveTab]       = useState<'drive' | 'canon'>('drive')
   const [highlightEntity, setHighlightEntity] = useState<string | null>(null)
   const highlightRef = useRef<HTMLDivElement | null>(null)
@@ -141,7 +142,7 @@ export default function AssetsPage() {
     fetch('/api/assets/approved')
       .then(r => r.json())
       .then(d => { if (Array.isArray(d)) setCanonSlots(d) })
-      .catch(() => {})
+      .catch(() => { setCanonError(true) })
       .finally(() => setCanonLoading(false))
   }, [])
 
@@ -414,9 +415,14 @@ export default function AssetsPage() {
 
         {activeTab === 'canon' && (
           <div>
+            {canonError && (
+              <div style={{ padding: '1rem 1.25rem', background: 'rgba(212,37,106,0.06)', border: '1px solid rgba(212,37,106,0.2)', borderRadius: '4px', marginBottom: '1.5rem', fontSize: '0.875rem', color: '#D4256A' }}>
+                No se pudo cargar los assets aprobados. Verifica la conexión.
+              </div>
+            )}
             {canonLoading ? (
               <div style={{ textAlign: 'center', padding: '4rem', color: 'rgba(240,235,225,0.3)', fontSize: '0.875rem' }}>Cargando canon...</div>
-            ) : canonSlots.length === 0 ? (
+            ) : canonError ? null : canonSlots.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '4rem', color: 'rgba(240,235,225,0.2)', fontSize: '0.875rem' }}>
                 No hay assets aprobados aún. Ve a <strong style={{ color: '#F5A52A' }}>Aprobación</strong> para subir y aprobar imágenes.
               </div>
@@ -527,4 +533,13 @@ export default function AssetsPage() {
       )}
     </div>
   )
+}
+
+export default function AssetsPage() {
+  return (
+    <Suspense>
+      <AssetsContent />
+    </Suspense>
+  )
+}
 }

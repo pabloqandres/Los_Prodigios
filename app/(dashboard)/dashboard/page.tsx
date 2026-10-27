@@ -86,11 +86,11 @@ const QUICK_ACTIONS: QuickAction[] = [
   },
 ]
 
-const STATS = [
-  { label: 'Temporadas',        value: '5',       bg: '#F5A52A',  text: '#08060F' },
-  { label: 'Episodios',         value: '50',      bg: '#4ECDC4',  text: '#08060F' },
-  { label: 'Minutos aprox.',    value: '600',      bg: '#9B6FD4',  text: '#F0EBE1' },
-  { label: 'Ep. por temporada', value: '10',      bg: '#4A8FE8',  text: '#08060F' },
+const STAT_META = [
+  { label: 'Temporadas',        bg: '#F5A52A',  text: '#08060F' },
+  { label: 'Episodios',         bg: '#4ECDC4',  text: '#08060F' },
+  { label: 'Minutos aprox.',    bg: '#9B6FD4',  text: '#F0EBE1' },
+  { label: 'Ep. por temporada', bg: '#4A8FE8',  text: '#08060F' },
 ]
 
 function useCurrentTime() {
@@ -314,46 +314,55 @@ export default function DashboardPage() {
       <div style={{ padding: '2.5rem 2.5rem 3rem', maxWidth: '1100px' }}>
 
         {/* Solid color stat cards — GET HYPED style */}
-        <div
-          className="grid grid-cols-2 md:grid-cols-4"
-          style={{ gap: '0.75rem', marginBottom: '2.5rem' }}
-        >
-          {STATS.map((stat, i) => (
+        {(() => {
+          const seasonCount = episodes.length > 0 ? new Set(episodes.map(e => e.season)).size : '…'
+          const episodeCount = stats?.total_episodes ?? '…'
+          const minutesCount = stats ? `${(stats.total_episodes ?? 0) * 12}` : '…'
+          const epPerSeason = '10'
+          const dynamicValues = [String(seasonCount), String(episodeCount), minutesCount, epPerSeason]
+          return (
             <div
-              key={stat.label}
-              className="card-enter"
-              style={{
-                background: stat.bg,
-                borderRadius: '4px',
-                padding: '1.5rem 1.25rem',
-                animationDelay: `${i * 0.07}s`,
-                animationFillMode: 'both',
-                transform: [0, 2].includes(i) ? 'rotate(-0.4deg)' : 'rotate(0.3deg)',
-              }}
+              className="grid grid-cols-2 md:grid-cols-4"
+              style={{ gap: '0.75rem', marginBottom: '2.5rem' }}
             >
-              <div style={{
-                fontFamily: 'Bebas Neue, Impact, sans-serif',
-                fontSize: '3.5rem',
-                letterSpacing: '0.02em',
-                color: stat.text,
-                lineHeight: 1,
-                marginBottom: '0.25rem',
-              }}>
-                {stat.value}
-              </div>
-              <div style={{
-                fontSize: '0.625rem',
-                letterSpacing: '0.16em',
-                textTransform: 'uppercase',
-                color: stat.text,
-                opacity: 0.6,
-                fontWeight: 700,
-              }}>
-                {stat.label}
-              </div>
+              {STAT_META.map((stat, i) => (
+                <div
+                  key={stat.label}
+                  className="card-enter"
+                  style={{
+                    background: stat.bg,
+                    borderRadius: '4px',
+                    padding: '1.5rem 1.25rem',
+                    animationDelay: `${i * 0.07}s`,
+                    animationFillMode: 'both',
+                    transform: [0, 2].includes(i) ? 'rotate(-0.4deg)' : 'rotate(0.3deg)',
+                  }}
+                >
+                  <div style={{
+                    fontFamily: 'Bebas Neue, Impact, sans-serif',
+                    fontSize: '3.5rem',
+                    letterSpacing: '0.02em',
+                    color: stat.text,
+                    lineHeight: 1,
+                    marginBottom: '0.25rem',
+                  }}>
+                    {dynamicValues[i]}
+                  </div>
+                  <div style={{
+                    fontSize: '0.625rem',
+                    letterSpacing: '0.16em',
+                    textTransform: 'uppercase',
+                    color: stat.text,
+                    opacity: 0.6,
+                    fontWeight: 700,
+                  }}>
+                    {stat.label}
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+          )
+        })()}
 
         {/* Quick actions */}
         <div style={{ marginBottom: '2.5rem' }}>

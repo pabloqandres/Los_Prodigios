@@ -22,7 +22,6 @@ export default function MotorPage() {
 
   useEffect(() => {
     setLoading(true)
-    setEpisodes([])
     fetch(`/api/motor?season=${season}`)
       .then(r => r.json())
       .then((data: Array<SeasonEpisode & { overall_score: number | null; scores_snapshot: SeasonEpisode['scores_snapshot'] | null }>) => {

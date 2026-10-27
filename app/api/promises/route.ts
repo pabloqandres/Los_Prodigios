@@ -14,6 +14,11 @@ const URGENCY_ORDER: Record<string, number> = {
 
 export async function GET(request: NextRequest) {
   try {
+    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET })
+    if (!token?.email) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const supabase = createServerClient()
 
     const { data, error } = await supabase
