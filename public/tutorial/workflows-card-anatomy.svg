@@ -1,0 +1,109 @@
+<svg viewBox="0 0 960 440" width="960" height="440" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="accentLine" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#9B6FD4"/>
+      <stop offset="60%" stop-color="#4ECDC4"/>
+      <stop offset="100%" stop-color="#08060F" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="960" height="440" fill="#08060F"/>
+  <rect x="0" y="0" width="960" height="3" fill="url(#accentLine)"/>
+
+  <!-- Sidebar -->
+  <rect x="0" y="0" width="56" height="440" fill="#06040F"/>
+  <rect x="56" y="0" width="1" height="440" fill="rgba(255,255,255,0.07)"/>
+  <rect x="16" y="292" width="24" height="24" rx="6" fill="#F5A52A"/>
+
+  <!-- Top bar -->
+  <rect x="57" y="0" width="903" height="44" fill="#06040F"/>
+  <rect x="57" y="44" width="903" height="1" fill="rgba(255,255,255,0.07)"/>
+  <text x="80" y="26" font-family="system-ui, sans-serif" font-weight="700" font-size="18" fill="#F0EBE1" letter-spacing="2">WORKFLOWS</text>
+  <text x="80" y="38" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.35)">Anatomía de un workflow</text>
+
+  <rect x="57" y="45" width="903" height="395" fill="#08060F"/>
+
+  <!-- Label top left -->
+  <text x="80" y="76" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.3)">Cada card de workflow tiene estos componentes:</text>
+
+  <!-- THE CARD — large/central -->
+  <rect x="300" y="92" width="360" height="240" rx="12" fill="#120D28" stroke="rgba(245,165,42,0.25)" stroke-width="1.5"/>
+  <!-- Top color stripe -->
+  <rect x="300" y="92" width="360" height="5" rx="3" fill="#F5A52A"/>
+
+  <!-- Phase badge -->
+  <rect x="316" y="110" width="74" height="18" rx="9" fill="rgba(245,165,42,0.12)" stroke="rgba(245,165,42,0.3)" stroke-width="1"/>
+  <text x="353" y="122" font-family="monospace" font-size="8" fill="#F5A52A" text-anchor="middle">🏗️ Desarrollo</text>
+
+  <!-- Title -->
+  <text x="316" y="150" font-family="system-ui, sans-serif" font-size="16" fill="#F0EBE1" font-weight="700">Diseño de Personaje</text>
+  <text x="316" y="167" font-family="system-ui, sans-serif" font-size="16" fill="#F0EBE1" font-weight="700">Protagonista</text>
+
+  <!-- Description -->
+  <text x="316" y="192" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.55)">Crea el perfil visual, psicológico</text>
+  <text x="316" y="208" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.55)">y narrativo de un protagonista</text>
+  <text x="316" y="224" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.4)">desde los principios del estudio.</text>
+
+  <!-- Usar Workflow button -->
+  <rect x="316" y="242" width="160" height="30" rx="8" fill="#F5A52A"/>
+  <text x="396" y="261" font-family="system-ui, sans-serif" font-size="12" fill="#08060F" text-anchor="middle" font-weight="700">⚡ Usar Workflow</text>
+
+  <!-- CALLOUT ARROWS & LABELS -->
+
+  <!-- Arrow 1: Top color stripe → "Fase de producción" -->
+  <line x1="300" y1="94" x2="210" y2="94" stroke="rgba(245,165,42,0.5)" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <circle cx="300" cy="94" r="3" fill="#F5A52A"/>
+  <rect x="80" y="82" width="128" height="24" rx="6" fill="rgba(245,165,42,0.1)" stroke="rgba(245,165,42,0.3)" stroke-width="1"/>
+  <text x="144" y="97" font-family="system-ui, sans-serif" font-size="10" fill="#F5A52A" text-anchor="middle" font-weight="600">Fase de producción</text>
+
+  <!-- Arrow 2: Phase badge → "Categoría" -->
+  <line x1="353" y1="128" x2="353" y2="158" stroke="rgba(245,165,42,0.3)" stroke-width="1" stroke-dasharray="3,3"/>
+  <line x1="316" y1="119" x2="210" y2="140" stroke="rgba(245,165,42,0.4)" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <circle cx="316" cy="119" r="3" fill="#F5A52A"/>
+  <rect x="80" y="128" width="128" height="24" rx="6" fill="rgba(245,165,42,0.1)" stroke="rgba(245,165,42,0.3)" stroke-width="1"/>
+  <text x="144" y="143" font-family="system-ui, sans-serif" font-size="10" fill="#F5A52A" text-anchor="middle" font-weight="600">Categoría</text>
+
+  <!-- Arrow 3: Title → "Nombre del workflow" -->
+  <line x1="316" y1="158" x2="210" y2="178" stroke="rgba(78,205,196,0.5)" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <circle cx="316" cy="158" r="3" fill="#4ECDC4"/>
+  <rect x="70" y="166" width="138" height="24" rx="6" fill="rgba(78,205,196,0.1)" stroke="rgba(78,205,196,0.3)" stroke-width="1"/>
+  <text x="139" y="181" font-family="system-ui, sans-serif" font-size="10" fill="#4ECDC4" text-anchor="middle" font-weight="600">Nombre del workflow</text>
+
+  <!-- Arrow 4: Description → "Cuándo usarlo" -->
+  <line x1="316" y1="208" x2="210" y2="225" stroke="rgba(155,111,212,0.5)" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <circle cx="316" cy="208" r="3" fill="#9B6FD4"/>
+  <rect x="80" y="213" width="128" height="24" rx="6" fill="rgba(155,111,212,0.1)" stroke="rgba(155,111,212,0.3)" stroke-width="1"/>
+  <text x="144" y="228" font-family="system-ui, sans-serif" font-size="10" fill="#9B6FD4" text-anchor="middle" font-weight="600">Cuándo usarlo</text>
+
+  <!-- Arrow 5: Button → "Ejecutar con contexto" -->
+  <line x1="476" y1="257" x2="690" y2="265" stroke="rgba(245,165,42,0.5)" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <circle cx="476" cy="257" r="3" fill="#F5A52A"/>
+  <rect x="694" y="253" width="148" height="24" rx="6" fill="rgba(245,165,42,0.1)" stroke="rgba(245,165,42,0.3)" stroke-width="1"/>
+  <text x="768" y="268" font-family="system-ui, sans-serif" font-size="10" fill="#F5A52A" text-anchor="middle" font-weight="600">Ejecutar con contexto</text>
+
+  <!-- Label right for phase stripe at top -->
+  <line x1="660" y1="94" x2="696" y2="94" stroke="rgba(136,216,176,0.4)" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <circle cx="660" cy="94" r="3" fill="#88D8B0"/>
+  <rect x="700" y="82" width="152" height="24" rx="6" fill="rgba(136,216,176,0.1)" stroke="rgba(136,216,176,0.3)" stroke-width="1"/>
+  <text x="776" y="97" font-family="system-ui, sans-serif" font-size="10" fill="#88D8B0" text-anchor="middle" font-weight="600">Color por categoría</text>
+
+  <!-- Helper text below card -->
+  <text x="480" y="360" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.3)" text-anchor="middle">Hay 88 workflows distribuidos en 10 fases de producción</text>
+  <text x="480" y="378" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.2)" text-anchor="middle">Cada uno incluye el conocimiento del estudio como contexto</text>
+
+  <!-- Small legend of phase colors -->
+  <rect x="200" y="398" width="8" height="8" rx="2" fill="#F5A52A"/>
+  <text x="214" y="407" font-family="system-ui, sans-serif" font-size="9" fill="rgba(240,235,225,0.3)">Concepto</text>
+  <rect x="276" y="398" width="8" height="8" rx="2" fill="#9B6FD4"/>
+  <text x="290" y="407" font-family="system-ui, sans-serif" font-size="9" fill="rgba(240,235,225,0.3)">Desarrollo</text>
+  <rect x="356" y="398" width="8" height="8" rx="2" fill="#4ECDC4"/>
+  <text x="370" y="407" font-family="system-ui, sans-serif" font-size="9" fill="rgba(240,235,225,0.3)">Pre-Prod.</text>
+  <rect x="430" y="398" width="8" height="8" rx="2" fill="#D4256A"/>
+  <text x="444" y="407" font-family="system-ui, sans-serif" font-size="9" fill="rgba(240,235,225,0.3)">Producción</text>
+  <rect x="516" y="398" width="8" height="8" rx="2" fill="#88D8B0"/>
+  <text x="530" y="407" font-family="system-ui, sans-serif" font-size="9" fill="rgba(240,235,225,0.3)">Post-Prod.</text>
+  <rect x="600" y="398" width="8" height="8" rx="2" fill="#F0EBE1" opacity="0.3"/>
+  <text x="614" y="407" font-family="system-ui, sans-serif" font-size="9" fill="rgba(240,235,225,0.3)">Revisión</text>
+  <rect x="662" y="398" width="8" height="8" rx="2" fill="#F5A52A" opacity="0.6"/>
+  <text x="676" y="407" font-family="system-ui, sans-serif" font-size="9" fill="rgba(240,235,225,0.3)">y más...</text>
+</svg>

@@ -33,6 +33,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     dialogue: '¡Ey! Soy Bit — la mascota oficial del estudio.\n\nBienvenido a NUPPA, el sistema operativo de Los Prodigios.\n\nAcá se escribe la serie, se validan los personajes, se genera arte, se controla la continuidad y mucho más.\n\nTe muestro cómo funciona todo, paso a paso. ¿Listo?',
     condition: 'none',
     buttonLabel: '¡Vamos!',
+    image: '/tutorial/intro.svg',
   },
 
   // ── DASHBOARD ────────────────────────────────────────────────────────────────
@@ -82,6 +83,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     dialogue: 'La Vista general es lo primero que debes completar antes de escribir.\n\nTiene 5 campos clave:\n• Logline — una oración con el conflicto central del episodio\n• Tema central — la pregunta emocional\n• Cold Open — lo que pasa antes de los créditos\n• Tag / Gancho final — el cierre o anzuelo post-créditos\n• Sinopsis — el resumen narrativo completo\n\nEstos datos se inyectan automáticamente en el contexto de la IA cuando trabajas en este episodio.',
     condition: 'none',
     buttonLabel: 'Siguiente →',
+    image: '/tutorial/episodes-overview.svg',
   },
 
   {
@@ -92,6 +94,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     dialogue: 'El modo Guión es el editor en formato estándar de animación.\n\nSi ya tienes un guión escrito fuera de NUPPA:\n1. Haz clic en la pestaña "Guión" arriba\n2. Selecciona todo el texto del editor y bórralo\n3. Pega tu guión directamente\n4. Se guarda automáticamente cada 1.5 segundos — no hay botón de guardar\n\nSi vas a escribir desde cero, escribe directo ahí.\n\nVerás un badge con el código de versión: T1E01-G01. Cuando terminas una versión, "Nueva versión" sube el contador. "Aprobar FINAL" lo congela definitivamente.\n\nEl botón "↓ PDF" descarga el guión con la identidad visual de Los Prodigios.',
     condition: 'none',
     buttonLabel: 'Siguiente →',
+    image: '/tutorial/episodes-script.svg',
   },
 
   {
@@ -102,6 +105,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     dialogue: 'El modo Estructura organiza el episodio en 3 actos con escenas.\n\nPuedes:\n• Agregar escenas manualmente con el "+" de cada acto\n• Definir título, descripción, locación, mood y duración de cada escena\n• Escribir el guión específico de cada escena por separado\n• O usar la IA: "Generar estructura con AI" propone escenas completas desde el logline\n\nCuando la IA genera escenas, aparece un banner con el botón "Importar a estructura" que las distribuye entre los 3 actos automáticamente.',
     condition: 'none',
     buttonLabel: 'Siguiente →',
+    image: '/tutorial/episodes-structure.svg',
   },
 
   {
@@ -112,6 +116,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     dialogue: 'A la derecha del episodio tienes el panel de IA con 6 workflows.\n\nEl flujo estándar cuando tienes un guión listo es este — en orden:\n\n1️⃣ "Revisar continuidad" — la IA lee tu guión completo y lo compara contra toda la Biblia. Te dice si hay algo que contradice el canon o genera inconsistencias. Debes resolverlas antes de continuar.\n\n2️⃣ "Mejorar diálogos" — ajusta las voces de los personajes según sus fichas canónicas. Si Mateo habla como Kael, acá te lo marca.\n\n3️⃣ "Breakdown de producción" — extrae una lista ordenada de todos los personajes, locaciones y props que aparecen, escena por escena. Sirve para planificar la producción visual.\n\n4️⃣ "Log de continuidad" — detecta los cambios permanentes que este episodio introduce al universo. Ese es el último paso.',
     condition: 'none',
     buttonLabel: 'Siguiente →',
+    image: '/tutorial/episodes-ai.svg',
   },
 
   {
@@ -122,6 +127,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     dialogue: 'El "Log de continuidad" es el paso más importante al terminar un episodio.\n\nCómo funciona:\n1. Haz clic en "Log de continuidad" en el panel derecho\n2. La IA analiza el guión completo y lista todos los cambios permanentes que introduce — una cicatriz de Mateo, un personaje que muere, una locación que cambia\n3. Cuando termina, aparece un banner naranja: "X cambios detectados"\n4. Léelos uno por uno\n5. Si son correctos, presiona "✓ Aprobar y guardar log"\n\nEsos cambios se guardan automáticamente en el Sistema de Continuidad — en el Canon Log, los estados de personajes, locaciones y props.\n\nAsí NUPPA siempre sabe exactamente en qué momento de la historia está todo, antes de producir el siguiente episodio.',
     condition: 'none',
     buttonLabel: 'Siguiente →',
+    image: '/tutorial/episodes-continuity-log.svg',
   },
 
   // ── CONTINUIDAD ──────────────────────────────────────────────────────────────
@@ -186,6 +192,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     dialogue: 'Para agregar un nuevo elemento a la Biblia hay dos formas:\n\n1. Subir un archivo .docx o .md que ya tengas preparado\n2. Crear desde template — para personajes, locaciones y props hay plantillas con todas las secciones prerellenadas\n\nY lo más importante: cuando subes un doc, puedes vincularle entidades canónicas. Eso conecta el documento de texto con las imágenes aprobadas en Arte. Una sola fuente de verdad para lo escrito y lo visual.',
     condition: 'none',
     buttonLabel: 'Siguiente →',
+    image: '/tutorial/bible-template.svg',
   },
 
   // ── ASISTENTE ────────────────────────────────────────────────────────────────
@@ -209,6 +216,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     dialogue: 'El Asistente sabe para qué motor vas a generar.\n\nCuando pides un prompt de imagen o video, cambia al modo Arte y especifica la plataforma:\n\n🧠 ChatGPT / Claude — prompt largo con contexto canónico completo\n🎬 Artlist / Kling — máx. 1.800 caracteres, listo para pegar\n✈️ Runway — máx. 1.000 caracteres, inglés\n🖼 Midjourney / Sora — máx. 2.000 caracteres con tags\n\nEl Asistente ajusta longitud, idioma y estructura automáticamente según lo que elijas.',
     condition: 'none',
     buttonLabel: 'Siguiente →',
+    image: '/tutorial/studio-prompt-target.svg',
   },
 
   {
@@ -219,6 +227,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     dialogue: 'Esto es lo más importante: antes de generar cualquier prompt visual, el sistema verifica el canon completo.\n\nCuando generas un prompt, ves una pantalla de verificación — una red de nodos con todos los documentos de la Biblia. Los documentos relevantes se iluminan en tiempo real.\n\nA la derecha aparecen los datos canónicos exactos: colores, materiales, diseños. La IA recibe esos datos inyectados — no los inventa.\n\nNunca más un video o imagen con detalles incorrectos.',
     condition: 'none',
     buttonLabel: 'Siguiente →',
+    image: '/tutorial/studio-canon.svg',
   },
 
   // ── ARTWORK FLOW ─────────────────────────────────────────────────────────────
@@ -242,6 +251,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     dialogue: '¿Ves ese prompt?\n\nNo inventó nada — lo armó leyendo el documento canónico del personaje directamente desde la Biblia.\n\nSi en la Biblia dice que Mateo tiene pelo oscuro y collar de cerámica, el prompt lo dice también. Siempre consistente.',
     condition: 'none',
     buttonLabel: 'Siguiente →',
+    image: '/tutorial/artwork-result.svg',
   },
 
   // ── VIDEO FLOW ───────────────────────────────────────────────────────────────
@@ -255,6 +265,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     condition: 'none',
     buttonLabel: 'Siguiente →',
     navLabel: 'Ir al Video Flow →',
+    image: '/tutorial/video-flow-intro.svg',
   },
 
   {
@@ -265,6 +276,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     dialogue: 'Lo más importante del Output: selecciona la plataforma ANTES de generar.\n\nKling AI — máx. 500 caracteres, keywords compactas separadas por comas\nRunway Gen-4 — máx. 300 caracteres, ultra-compacto\nSora — máx. 800 caracteres, prosa narrativa con arco temporal\nArtlist — máx. 2.000 caracteres, el más completo\n\nCada plataforma tiene su propio vocabulario. El sistema genera solo el prompt que necesitas — no los cuatro a la vez.',
     condition: 'none',
     buttonLabel: 'Siguiente →',
+    image: '/tutorial/video-flow-platform.svg',
   },
 
   {
@@ -275,6 +287,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     dialogue: 'Una cosa crítica si tu escena tiene objetos con forma definida — pelotas, vasos, trofeos, lo que sea.\n\nEl sistema aplica automáticamente reglas anti-morphing:\n• Describe el objeto con geometría estricta: "perfectly spherical ball, rigid shape, no deformation"\n• Ancla el objeto a una acción concreta y breve\n• Agrega al negative prompt: "object morphing, shape distortion, melting, fluid geometry"\n\nSi no aplicas esto, los modelos de video deforman los objetos durante el clip. Es el error más común al generar video con IA.',
     condition: 'none',
     buttonLabel: 'Siguiente →',
+    image: '/tutorial/video-flow-antimorphing.svg',
   },
 
   // ── BIBLIA VISUAL (APPROVAL) ─────────────────────────────────────────────────
@@ -299,6 +312,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     dialogue: 'Al abrir una categoría ves el grid de entidades — cada personaje, locación o prop como una card con su foto canónica más reciente y su barra de progreso individual.\n\nEl porcentaje indica cuántas de sus vistas están aprobadas. Cuando llega al 100%, aparece el badge de completado ✓.\n\nHaz clic en cualquier entidad para abrir su Ficha Técnica.',
     condition: 'none',
     buttonLabel: 'Siguiente →',
+    image: '/tutorial/approval-accordion.svg',
   },
 
   {
@@ -309,6 +323,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     dialogue: 'Dentro de la Ficha Técnica tienes dos columnas:\n\n• Izquierda — retrato del personaje + datos canónicos leídos directamente desde su doc en la Biblia. Si cambia el doc, cambian los datos. Sin campos manuales.\n\n• Derecha — todos sus slots organizados por tipo de vista: Vista general, Expresiones, Outfit casual, Outfit deportivo, Accesorios, Acciones.\n\nCada slot muestra su thumbnail, estado actual y los sellos de aprobación.',
     condition: 'none',
     buttonLabel: 'Siguiente →',
+    image: '/tutorial/approval-entity-sheet.svg',
   },
 
   {
@@ -319,6 +334,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     dialogue: 'Para subir una imagen a un slot:\n\n1. Abre la ficha del personaje\n2. Encuentra el slot — por ejemplo "Outfit casual · Variante 1 · Frente"\n3. Arrastra la imagen al área punteada, o haz clic para elegirla\n4. La imagen sube automáticamente al sistema\n5. El slot pasa a "En Revisión" y espera los votos de aprobación\n\nSi la imagen ya está aprobada y quieres cambiarla, usa el ✕ del thumbnail — vuelve a Pendiente y sale de Arte hasta que se vuelva a aprobar.',
     condition: 'none',
     buttonLabel: 'Siguiente →',
+    image: '/tutorial/approval-upload.svg',
   },
 
   {
@@ -329,6 +345,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     dialogue: 'El sistema de doble aprobación usa sellos visuales — como un documento oficial.\n\nCada slot tiene dos sellos, uno por revisor:\n• Círculo punteado — pendiente de voto\n• Sello sólido con ✓ — aprobado (del color del revisor)\n• Sello con ✕ — rechazado, con nota obligatoria\n\nCuando ambos sellos están activos, el slot pasa a Aprobado y la imagen aparece automáticamente en Arte — en la galería de esa entidad, lista para consultar.\n\nSi rechazas, debes escribir una nota — queda registrada como feedback.',
     condition: 'none',
     buttonLabel: 'Entendido →',
+    image: '/tutorial/approval-seals.svg',
   },
 
   // ── ARTE / ASSETS ─────────────────────────────────────────────────────────────
@@ -381,6 +398,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     dialogue: 'En la barra superior tienes los filtros por fase.\n\nLas 10 fases de producción son:\n💡 Concepto — primeras ideas de la serie\n🏗️ Desarrollo — personajes, guiones, worldbuilding\n📐 Pre-Producción — diseños, storyboards, guía de estilo\n🎬 Producción — animación, audio, score\n✂️ Post-Producción — edición, color, mezcla\n🔍 Revisión — evaluación y aprobación\n🚀 Lanzamiento — estrategia y release\n🌎 Expansión — franquicia, merchandise, spin-offs\n🔄 Iteración — rediseñar, corregir, pivotar\n⚙️ Sistema — calibración de NUPPA\n\nHaz clic en cualquier fase para filtrar. El buscador también funciona por nombre o descripción.',
     condition: 'none',
     buttonLabel: 'Siguiente →',
+    image: '/tutorial/workflows-phases.svg',
   },
 
   {
@@ -391,6 +409,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     dialogue: 'Cada card es un workflow.\n\nLo que ves en ella:\n• La franja de color arriba — identifica la fase de producción\n• El icono y nombre de la fase — para orientarte rápido\n• El título del workflow — qué proceso es exactamente\n• La descripción — qué problema resuelve y cuándo usarlo\n\nEl buscador de arriba te ayuda a encontrar el que necesitas sin tener que revisar todos.',
     condition: 'none',
     buttonLabel: 'Siguiente →',
+    image: '/tutorial/workflows-card-anatomy.svg',
   },
 
   {
@@ -412,6 +431,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     dialogue: 'En el modal ves el prompt completo que se va a ejecutar.\n\nTiene 3 capas:\n\n📚 Knowledge — archivos de referencia que la IA debe leer primero\n🗂 Contexto del sistema — archivos vivos del estudio: estilo visual, estado de personajes y locaciones, Biblia\n📋 El workflow completo — objetivo, pasos, entregables y criterios\n\nCuando pegas esto en el Asistente, ejecuta el proceso con toda la información correcta. Sin buscar nada.',
     condition: 'none',
     buttonLabel: 'Siguiente →',
+    image: '/tutorial/workflows-prompt-anatomy.svg',
   },
 
   {
@@ -422,6 +442,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     dialogue: 'Para usar el workflow, presiona "Copiar para el asistente".\n\nLuego ve al Asistente, pega el prompt y ejecuta.\n\nTruco útil: si el workflow necesita un brief tuyo — por ejemplo "Diseñar un antagonista nuevo" — agrega tus notas al final del prompt antes de pegar. La IA tiene el proceso completo y tus instrucciones al mismo tiempo.',
     condition: 'none',
     buttonLabel: '¡Listo!',
+    image: '/tutorial/workflows-copy.svg',
   },
 
   // ── AGENTES ──────────────────────────────────────────────────────────────────
@@ -434,6 +455,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     dialogue: 'Dentro de Workflows hay un segundo tab: el Equipo.\n\nSon los agentes especializados de NUPPA — cada uno con un rol preciso, expertise definido y reglas estrictas sobre qué hace y qué NUNCA hace.\n\nHaz clic en el tab para explorarlos.',
     condition: 'none',
     buttonLabel: 'Siguiente →',
+    image: '/tutorial/agents-tab.svg',
   },
 
   {
@@ -444,6 +466,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     dialogue: 'Cada card muestra el departamento, el rol del agente y con quién trabaja.\n\n"Ver perfil" abre la ficha completa: misión, especialización, colaboraciones, y lo que NUNCA hace — los límites son tan importantes como las capacidades.\n\n"Activar →" te lleva al Asistente con ese agente ya activo.',
     condition: 'none',
     buttonLabel: 'Siguiente →',
+    image: '/tutorial/agents-card.svg',
   },
 
   {
@@ -454,6 +477,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     dialogue: 'La combinación más poderosa de NUPPA:\n\nAbre cualquier workflow → en el modal verás chips de los agentes que pueden ejecutarlo → selecciona uno → el prompt incluye el perfil completo del agente arriba del workflow.\n\nLe pegas eso al Asistente y tienes el workflow ejecutado por el especialista correcto — no por el asistente genérico.',
     condition: 'none',
     buttonLabel: '¡Entendido!',
+    image: '/tutorial/agents-activate.svg',
   },
 
   // ── CIERRE ───────────────────────────────────────────────────────────────────
@@ -465,6 +489,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     dialogue: 'Ya conoces todo NUPPA.\n\nEl sidebar es tu mapa — desde acá navegas a cualquier sección en cualquier momento.\n\nCada sección tiene su contexto especializado. Nunca más salgas de NUPPA para buscar información de Los Prodigios.',
     condition: 'none',
     buttonLabel: 'Siguiente →',
+    image: '/tutorial/sidebar.svg',
   },
 
   {
@@ -475,6 +500,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     dialogue: '¡Eso es todo! Ya sabes moverte por NUPPA completo.\n\nSi me necesitas de nuevo, estoy en el sidebar — "Tutorial". Desde ahí puedes elegir repasar cualquier sección específica sin volver a ver todo.\n\nAhora voy a ver qué está haciendo Tito... seguro algo con datos que nadie más entiende.\n\nBienvenido al equipo.',
     condition: 'none',
     buttonLabel: '¡Entendido!',
+    image: '/tutorial/done.svg',
   },
 ]
 

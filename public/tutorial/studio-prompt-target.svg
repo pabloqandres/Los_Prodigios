@@ -1,0 +1,104 @@
+<svg viewBox="0 0 960 440" width="960" height="440" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="accentLine" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#9B6FD4"/>
+      <stop offset="60%" stop-color="#4ECDC4"/>
+      <stop offset="100%" stop-color="#08060F" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="960" height="440" fill="#08060F"/>
+  <rect x="0" y="0" width="960" height="3" fill="url(#accentLine)"/>
+
+  <!-- Sidebar -->
+  <rect x="0" y="0" width="56" height="440" fill="#06040F"/>
+  <rect x="56" y="0" width="1" height="440" fill="rgba(255,255,255,0.07)"/>
+  <rect x="16" y="28" width="24" height="6" rx="3" fill="rgba(245,165,42,0.6)"/>
+  <rect x="16" y="148" width="24" height="24" rx="6" fill="#F5A52A"/>
+  <circle cx="28" cy="160" r="6" fill="#08060F"/>
+  <circle cx="28" cy="160" r="3" fill="#F5A52A"/>
+
+  <!-- Top bar -->
+  <rect x="57" y="0" width="903" height="44" fill="#06040F"/>
+  <rect x="57" y="44" width="903" height="1" fill="rgba(255,255,255,0.07)"/>
+  <text x="80" y="26" font-family="system-ui, sans-serif" font-weight="700" font-size="18" fill="#F0EBE1" letter-spacing="2">ASISTENTE</text>
+  <text x="80" y="38" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.35)">Motor de generación inteligente</text>
+
+  <!-- Mode tabs -->
+  <rect x="57" y="44" width="903" height="36" fill="#06040F"/>
+  <text x="90" y="67" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.4)">Escritura</text>
+  <rect x="160" y="50" width="36" height="24" rx="4" fill="rgba(245,165,42,0.15)" stroke="rgba(245,165,42,0.4)" stroke-width="1"/>
+  <text x="178" y="66" font-family="system-ui, sans-serif" font-size="12" fill="#F5A52A" text-anchor="middle" font-weight="600">Arte</text>
+  <rect x="160" y="78" width="36" height="2" rx="1" fill="#F5A52A"/>
+  <text x="216" y="67" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.4)">Marketing</text>
+  <text x="290" y="67" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.4)">Producción</text>
+  <rect x="57" y="80" width="903" height="1" fill="rgba(255,255,255,0.07)"/>
+
+  <!-- Main content area -->
+  <!-- Context area left -->
+  <rect x="57" y="81" width="340" height="359" fill="#08060F"/>
+  <text x="80" y="110" font-family="system-ui, sans-serif" font-size="11" fill="rgba(240,235,225,0.35)" font-weight="600" letter-spacing="1">CONTEXTO ACTIVO</text>
+  <rect x="80" y="120" width="290" height="32" rx="6" fill="#120D28" stroke="rgba(78,205,196,0.2)" stroke-width="1"/>
+  <text x="100" y="140" font-family="system-ui, sans-serif" font-size="11" fill="rgba(240,235,225,0.6)">📺  T1E01 · El Primer Toque</text>
+  <rect x="80" y="158" width="290" height="32" rx="6" fill="#120D28" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+  <text x="100" y="178" font-family="system-ui, sans-serif" font-size="11" fill="rgba(240,235,225,0.6)">👤  Mateo González</text>
+  <rect x="80" y="196" width="290" height="32" rx="6" fill="#120D28" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+  <text x="100" y="216" font-family="system-ui, sans-serif" font-size="11" fill="rgba(240,235,225,0.6)">🎨  Estilo visual master</text>
+
+  <text x="80" y="256" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.25)">Describe lo que necesitas generar...</text>
+
+  <!-- Text input box -->
+  <rect x="80" y="266" width="290" height="80" rx="6" fill="#120D28" stroke="rgba(245,165,42,0.2)" stroke-width="1"/>
+  <text x="96" y="286" font-family="system-ui, sans-serif" font-size="11" fill="rgba(240,235,225,0.5)">Concept art del uniforme Hawks</text>
+  <text x="96" y="302" font-family="system-ui, sans-serif" font-size="11" fill="rgba(240,235,225,0.5)">visto desde atrás, pose estática</text>
+  <rect x="348" y="330" width="2" height="16" rx="1" fill="#F5A52A" opacity="0.8"/>
+
+  <!-- Divider -->
+  <rect x="397" y="81" width="1" height="359" fill="rgba(255,255,255,0.07)"/>
+
+  <!-- Right side: Platform selector -->
+  <rect x="398" y="81" width="562" height="359" fill="#08060F"/>
+
+  <text x="420" y="110" font-family="system-ui, sans-serif" font-size="11" fill="rgba(240,235,225,0.35)" font-weight="600" letter-spacing="1">DESTINO DEL PROMPT</text>
+  <text x="420" y="128" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.5)">¿Para qué plataforma generas?</text>
+
+  <!-- Platform options -->
+  <!-- Option 1: ChatGPT/Claude -->
+  <rect x="420" y="138" width="500" height="52" rx="8" fill="#120D28" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+  <text x="444" y="162" font-family="system-ui, sans-serif" font-size="16">🧠</text>
+  <text x="470" y="158" font-family="system-ui, sans-serif" font-size="13" fill="#F0EBE1" font-weight="600">ChatGPT / Claude</text>
+  <text x="470" y="174" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.35)">Texto e instrucciones largas</text>
+  <rect x="820" y="150" width="88" height="16" rx="8" fill="rgba(255,255,255,0.06)"/>
+  <text x="864" y="161" font-family="monospace" font-size="9" fill="rgba(240,235,225,0.35)" text-anchor="middle">sin límite</text>
+
+  <!-- Option 2: Artlist/Kling — SELECTED -->
+  <rect x="420" y="198" width="500" height="52" rx="8" fill="rgba(245,165,42,0.08)" stroke="rgba(245,165,42,0.4)" stroke-width="1.5"/>
+  <text x="444" y="222" font-family="system-ui, sans-serif" font-size="16">🎬</text>
+  <text x="470" y="218" font-family="system-ui, sans-serif" font-size="13" fill="#F5A52A" font-weight="700">Artlist / Kling</text>
+  <text x="470" y="234" font-family="system-ui, sans-serif" font-size="10" fill="rgba(245,165,42,0.6)">Generación de imágenes y video</text>
+  <rect x="820" y="210" width="88" height="16" rx="8" fill="rgba(245,165,42,0.15)" stroke="rgba(245,165,42,0.3)" stroke-width="1"/>
+  <text x="864" y="221" font-family="monospace" font-size="9" fill="#F5A52A" text-anchor="middle">máx. 2.000 ch</text>
+  <!-- Selected checkmark -->
+  <circle cx="910" cy="224" r="8" fill="#F5A52A"/>
+  <text x="910" y="228" font-family="system-ui, sans-serif" font-size="10" fill="#08060F" text-anchor="middle" font-weight="700">✓</text>
+
+  <!-- Option 3: Runway -->
+  <rect x="420" y="258" width="500" height="52" rx="8" fill="#120D28" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+  <text x="444" y="282" font-family="system-ui, sans-serif" font-size="16">✈️</text>
+  <text x="470" y="278" font-family="system-ui, sans-serif" font-size="13" fill="#F0EBE1" font-weight="600">Runway</text>
+  <text x="470" y="294" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.35)">Video generativo avanzado</text>
+  <rect x="820" y="270" width="88" height="16" rx="8" fill="rgba(255,255,255,0.06)"/>
+  <text x="864" y="281" font-family="monospace" font-size="9" fill="rgba(240,235,225,0.35)" text-anchor="middle">máx. 300 ch</text>
+
+  <!-- Option 4: Midjourney -->
+  <rect x="420" y="318" width="500" height="52" rx="8" fill="#120D28" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+  <text x="444" y="342" font-family="system-ui, sans-serif" font-size="16">🖼</text>
+  <text x="470" y="338" font-family="system-ui, sans-serif" font-size="13" fill="#F0EBE1" font-weight="600">Midjourney / Sora</text>
+  <text x="470" y="354" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.35)">Imagen cinematográfica y storyboard</text>
+  <rect x="820" y="330" width="88" height="16" rx="8" fill="rgba(255,255,255,0.06)"/>
+  <text x="864" y="341" font-family="monospace" font-size="9" fill="rgba(240,235,225,0.35)" text-anchor="middle">máx. 500 ch</text>
+
+  <!-- Generate button -->
+  <rect x="420" y="386" width="500" height="40" rx="8" fill="#F5A52A"/>
+  <text x="670" y="411" font-family="system-ui, sans-serif" font-size="13" fill="#08060F" text-anchor="middle" font-weight="700">Generar prompt para Artlist ✦</text>
+</svg>

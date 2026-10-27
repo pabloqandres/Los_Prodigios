@@ -1,0 +1,80 @@
+<svg viewBox="0 0 960 440" width="960" height="440" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="accentLine" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#9B6FD4"/>
+      <stop offset="60%" stop-color="#4ECDC4"/>
+      <stop offset="100%" stop-color="#08060F" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="cardGlow" cx="50%" cy="0%" r="70%">
+      <stop offset="0%" stop-color="#9B6FD4" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#9B6FD4" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="960" height="440" fill="#08060F"/>
+  <rect x="0" y="0" width="960" height="3" fill="url(#accentLine)"/>
+
+  <!-- Sidebar -->
+  <rect x="0" y="0" width="56" height="440" fill="#06040F"/>
+  <rect x="56" y="0" width="1" height="440" fill="rgba(255,255,255,0.07)"/>
+  <rect x="16" y="292" width="24" height="24" rx="6" fill="#F5A52A"/>
+
+  <!-- Top bar -->
+  <rect x="57" y="0" width="903" height="44" fill="#06040F"/>
+  <rect x="57" y="44" width="903" height="1" fill="rgba(255,255,255,0.07)"/>
+  <text x="72" y="26" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.4)">← Equipo</text>
+  <text x="130" y="26" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.3)">/</text>
+  <text x="142" y="26" font-family="system-ui, sans-serif" font-size="12" fill="#F0EBE1" font-weight="600">Supervisor de Continuidad</text>
+
+  <!-- Main content: centered large card -->
+  <rect x="57" y="45" width="903" height="395" fill="#08060F"/>
+
+  <!-- The expanded agent card -->
+  <rect x="200" y="62" width="560" height="364" rx="16" fill="url(#cardGlow)"/>
+  <rect x="200" y="62" width="560" height="364" rx="16" fill="#120D28" stroke="rgba(155,111,212,0.3)" stroke-width="1.5"/>
+  <!-- Top stripe -->
+  <rect x="200" y="62" width="560" height="6" rx="4" fill="#9B6FD4"/>
+
+  <!-- Department badge -->
+  <rect x="216" y="82" width="96" height="20" rx="10" fill="rgba(155,111,212,0.2)" stroke="rgba(155,111,212,0.4)" stroke-width="1"/>
+  <text x="264" y="95" font-family="monospace" font-size="9" fill="#9B6FD4" text-anchor="middle" font-weight="700">CONTINUIDAD</text>
+
+  <!-- Large avatar -->
+  <circle cx="480" cy="148" r="44" fill="rgba(155,111,212,0.1)" stroke="rgba(155,111,212,0.25)" stroke-width="1.5"/>
+  <text x="480" y="156" font-family="system-ui, sans-serif" font-size="36" fill="#9B6FD4" text-anchor="middle">🔗</text>
+
+  <!-- Title -->
+  <text x="480" y="210" font-family="system-ui, sans-serif" font-size="20" fill="#F0EBE1" text-anchor="middle" font-weight="700">Supervisor de Continuidad</text>
+
+  <!-- Description -->
+  <text x="480" y="234" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.6)" text-anchor="middle">Detecta y registra todos los cambios permanentes</text>
+  <text x="480" y="250" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.6)" text-anchor="middle">del universo narrativo en cada episodio producido.</text>
+
+  <!-- Divider -->
+  <rect x="216" y="266" width="528" height="1" fill="rgba(255,255,255,0.07)"/>
+
+  <!-- Colabora con -->
+  <text x="216" y="286" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.35)" font-weight="600" letter-spacing="1">COLABORA CON:</text>
+  <rect x="216" y="294" width="78" height="18" rx="9" fill="rgba(78,205,196,0.1)" stroke="rgba(78,205,196,0.25)" stroke-width="1"/>
+  <text x="255" y="306" font-family="system-ui, sans-serif" font-size="9" fill="#4ECDC4" text-anchor="middle">Director de Arte</text>
+  <rect x="304" y="294" width="90" height="18" rx="9" fill="rgba(245,165,42,0.1)" stroke="rgba(245,165,42,0.25)" stroke-width="1"/>
+  <text x="349" y="306" font-family="system-ui, sans-serif" font-size="9" fill="#F5A52A" text-anchor="middle">Coord. Producción</text>
+  <rect x="404" y="294" width="80" height="18" rx="9" fill="rgba(136,216,176,0.1)" stroke="rgba(136,216,176,0.25)" stroke-width="1"/>
+  <text x="444" y="306" font-family="system-ui, sans-serif" font-size="9" fill="#88D8B0" text-anchor="middle">Escritor de Guión</text>
+
+  <!-- NUNCA hace -->
+  <rect x="216" y="322" width="528" height="28" rx="6" fill="rgba(212,37,106,0.06)" stroke="rgba(212,37,106,0.2)" stroke-width="1"/>
+  <text x="228" y="332" font-family="system-ui, sans-serif" font-size="9" fill="rgba(212,37,106,0.7)" font-weight="700">NUNCA hace:</text>
+  <text x="300" y="332" font-family="system-ui, sans-serif" font-size="9" fill="rgba(240,235,225,0.5)">Inventa canon nuevo · Modifica el guión · Aprueba arte sin criterios previos</text>
+  <text x="228" y="344" font-family="system-ui, sans-serif" font-size="9" fill="rgba(240,235,225,0.35)">Toma decisiones creativas sin consultar los archivos de referencia</text>
+
+  <!-- Divider -->
+  <rect x="216" y="360" width="528" height="1" fill="rgba(255,255,255,0.07)"/>
+
+  <!-- Action buttons -->
+  <rect x="216" y="372" width="236" height="36" rx="8" fill="rgba(155,111,212,0.08)" stroke="rgba(155,111,212,0.3)" stroke-width="1"/>
+  <text x="334" y="394" font-family="system-ui, sans-serif" font-size="12" fill="#9B6FD4" text-anchor="middle" font-weight="600">Ver perfil completo</text>
+
+  <rect x="468" y="372" width="276" height="36" rx="8" fill="#F5A52A"/>
+  <text x="606" y="394" font-family="system-ui, sans-serif" font-size="12" fill="#08060F" text-anchor="middle" font-weight="700">Activar en workflow →</text>
+</svg>

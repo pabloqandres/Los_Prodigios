@@ -1,0 +1,79 @@
+<svg viewBox="0 0 960 440" width="960" height="440" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="accentLine" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#9B6FD4"/>
+      <stop offset="60%" stop-color="#4ECDC4"/>
+      <stop offset="100%" stop-color="#08060F" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="960" height="440" fill="#08060F"/>
+  <rect x="0" y="0" width="960" height="3" fill="url(#accentLine)"/>
+
+  <!-- Sidebar -->
+  <rect x="0" y="0" width="56" height="440" fill="#06040F"/>
+  <rect x="56" y="0" width="1" height="440" fill="rgba(255,255,255,0.07)"/>
+  <rect x="16" y="28" width="24" height="6" rx="3" fill="rgba(245,165,42,0.6)"/>
+  <rect x="16" y="220" width="24" height="24" rx="6" fill="#F5A52A"/>
+
+  <!-- Top bar -->
+  <rect x="57" y="0" width="903" height="44" fill="#06040F"/>
+  <rect x="57" y="44" width="903" height="1" fill="rgba(255,255,255,0.07)"/>
+  <text x="80" y="26" font-family="system-ui, sans-serif" font-weight="700" font-size="18" fill="#F0EBE1" letter-spacing="2">VIDEO FLOW</text>
+
+  <!-- Canvas background -->
+  <rect x="57" y="45" width="903" height="395" fill="#04030A"/>
+
+  <!-- Dimmed nodes background -->
+  <rect x="80" y="188" width="120" height="80" rx="8" fill="#120D28" stroke="rgba(212,37,106,0.15)" stroke-width="1" opacity="0.35"/>
+  <rect x="218" y="188" width="130" height="80" rx="8" fill="#120D28" stroke="rgba(78,205,196,0.15)" stroke-width="1" opacity="0.35"/>
+  <rect x="366" y="188" width="120" height="80" rx="8" fill="#120D28" stroke="rgba(245,165,42,0.15)" stroke-width="1" opacity="0.35"/>
+  <rect x="504" y="188" width="110" height="80" rx="8" fill="#120D28" stroke="rgba(155,111,212,0.1)" stroke-width="1" stroke-dasharray="4,3" opacity="0.35"/>
+  <line x1="630" y1="228" x2="660" y2="228" stroke="rgba(245,165,42,0.3)" stroke-width="1.5"/>
+  <polygon points="658,224 665,228 658,232" fill="rgba(245,165,42,0.5)"/>
+
+  <!-- Main OUTPUT node — with anti-morphing section -->
+  <rect x="664" y="68" width="270" height="358" rx="12" fill="#120D28" stroke="#4ECDC4" stroke-width="2"/>
+  <rect x="664" y="68" width="270" height="32" rx="12" fill="rgba(78,205,196,0.12)"/>
+  <rect x="664" y="88" width="270" height="12" fill="rgba(78,205,196,0.12)"/>
+  <text x="799" y="90" font-family="system-ui, sans-serif" font-size="10" fill="#4ECDC4" text-anchor="middle" font-weight="600" letter-spacing="1">OUTPUT · Runway Gen-4</text>
+
+  <!-- Anti-morphing badge -->
+  <rect x="680" y="110" width="238" height="28" rx="14" fill="rgba(136,216,176,0.12)" stroke="rgba(136,216,176,0.4)" stroke-width="1"/>
+  <circle cx="698" cy="124" r="5" fill="#88D8B0"/>
+  <text x="707" y="128" font-family="system-ui, sans-serif" font-size="11" fill="#88D8B0" font-weight="700">Anti-morphing aplicado ✓</text>
+
+  <!-- Warning banner -->
+  <rect x="680" y="146" width="238" height="36" rx="6" fill="rgba(245,165,42,0.08)" stroke="rgba(245,165,42,0.3)" stroke-width="1"/>
+  <polygon points="697,152 703,163 691,163" fill="none" stroke="#F5A52A" stroke-width="1.5" stroke-linejoin="round"/>
+  <text x="697" y="161" font-family="monospace" font-size="7" fill="#F5A52A" text-anchor="middle">!</text>
+  <text x="710" y="158" font-family="system-ui, sans-serif" font-size="9.5" fill="#F5A52A" font-weight="600">Objetos con forma definida</text>
+  <text x="710" y="172" font-family="system-ui, sans-serif" font-size="9" fill="rgba(245,165,42,0.7)">Reglas aplicadas automáticamente</text>
+
+  <!-- Toggle row -->
+  <rect x="680" y="192" width="238" height="32" rx="6" fill="rgba(255,255,255,0.03)"/>
+  <text x="695" y="211" font-family="system-ui, sans-serif" font-size="11" fill="#F0EBE1">Anti-morphing</text>
+  <!-- Toggle on -->
+  <rect x="876" y="200" width="36" height="16" rx="8" fill="#88D8B0"/>
+  <circle cx="904" cy="208" r="6" fill="#06040F"/>
+
+  <!-- Divider -->
+  <line x1="680" y1="234" x2="918" y2="234" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+
+  <!-- Positive prompt -->
+  <text x="686" y="252" font-family="system-ui, sans-serif" font-size="9" fill="rgba(136,216,176,0.7)" font-weight="600" letter-spacing="1">PROMPT POSITIVO</text>
+  <rect x="680" y="258" width="238" height="70" rx="6" fill="rgba(136,216,176,0.05)" stroke="rgba(136,216,176,0.2)" stroke-width="1"/>
+  <text x="692" y="274" font-family="monospace" font-size="8.5" fill="rgba(240,235,225,0.7)">perfectly spherical ball,</text>
+  <text x="692" y="287" font-family="monospace" font-size="8.5" fill="rgba(240,235,225,0.7)">rigid geometry, consistent shape,</text>
+  <text x="692" y="300" font-family="monospace" font-size="8.5" fill="#88D8B0">no deformation throughout shot,</text>
+  <text x="692" y="313" font-family="monospace" font-size="8.5" fill="rgba(240,235,225,0.7)">solid object integrity maintained</text>
+  <text x="692" y="323" font-family="monospace" font-size="8" fill="rgba(240,235,225,0.3)">...</text>
+
+  <!-- Negative prompt -->
+  <text x="686" y="344" font-family="system-ui, sans-serif" font-size="9" fill="rgba(212,37,106,0.7)" font-weight="600" letter-spacing="1">NEGATIVE PROMPT</text>
+  <rect x="680" y="350" width="238" height="60" rx="6" fill="rgba(212,37,106,0.05)" stroke="rgba(212,37,106,0.2)" stroke-width="1"/>
+  <text x="692" y="366" font-family="monospace" font-size="8.5" fill="rgba(240,235,225,0.6)">object morphing, shape distortion,</text>
+  <text x="692" y="379" font-family="monospace" font-size="8.5" fill="#D4256A">melting, fluid geometry,</text>
+  <text x="692" y="392" font-family="monospace" font-size="8.5" fill="rgba(240,235,225,0.6)">elastic ball, deforming sphere,</text>
+  <text x="692" y="402" font-family="monospace" font-size="8" fill="rgba(240,235,225,0.3)">inconsistent object form...</text>
+</svg>

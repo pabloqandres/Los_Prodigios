@@ -1,0 +1,80 @@
+<svg viewBox="0 0 960 440" width="960" height="440" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="accentLine" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#9B6FD4"/>
+      <stop offset="60%" stop-color="#4ECDC4"/>
+      <stop offset="100%" stop-color="#08060F" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="960" height="440" fill="#08060F"/>
+  <rect x="0" y="0" width="960" height="3" fill="url(#accentLine)"/>
+
+  <!-- Sidebar -->
+  <rect x="0" y="0" width="56" height="440" fill="#06040F"/>
+  <rect x="56" y="0" width="1" height="440" fill="rgba(255,255,255,0.07)"/>
+  <rect x="16" y="76" width="24" height="24" rx="6" fill="#F5A52A"/>
+  <rect x="21" y="82" width="6" height="12" rx="2" fill="#08060F"/>
+  <rect x="30" y="86" width="6" height="8" rx="2" fill="#08060F"/>
+  <rect x="16" y="28" width="24" height="6" rx="3" fill="rgba(245,165,42,0.6)"/>
+
+  <!-- Top bar -->
+  <rect x="57" y="0" width="903" height="44" fill="#06040F"/>
+  <rect x="57" y="44" width="903" height="1" fill="rgba(255,255,255,0.07)"/>
+  <text x="72" y="26" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.4)">← Episodios</text>
+  <text x="140" y="26" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.3)">/</text>
+  <text x="150" y="26" font-family="system-ui, sans-serif" font-size="12" fill="#F0EBE1" font-weight="600">T1E01 · El Primer Toque</text>
+
+  <!-- Status badges -->
+  <rect x="580" y="13" width="80" height="18" rx="9" fill="rgba(245,165,42,0.15)" stroke="rgba(245,165,42,0.4)" stroke-width="1"/>
+  <text x="620" y="25" font-family="monospace" font-size="9" fill="#F5A52A" text-anchor="middle">EN PROGRESO</text>
+  <rect x="668" y="13" width="64" height="18" rx="9" fill="rgba(78,205,196,0.15)" stroke="rgba(78,205,196,0.3)" stroke-width="1"/>
+  <text x="700" y="25" font-family="monospace" font-size="9" fill="#4ECDC4" text-anchor="middle">T1 · E01</text>
+  <rect x="800" y="12" width="70" height="20" rx="6" fill="rgba(155,111,212,0.2)" stroke="rgba(155,111,212,0.4)" stroke-width="1"/>
+  <text x="835" y="25" font-family="monospace" font-size="10" fill="#9B6FD4" text-anchor="middle">Guardar</text>
+  <rect x="878" y="12" width="68" height="20" rx="6" fill="#9B6FD4"/>
+  <text x="912" y="25" font-family="monospace" font-size="10" fill="#08060F" text-anchor="middle">Publicar</text>
+
+  <!-- Tabs -->
+  <rect x="57" y="44" width="903" height="36" fill="#06040F"/>
+  <text x="90" y="67" font-family="system-ui, sans-serif" font-size="13" fill="#F5A52A" font-weight="600">Vista General</text>
+  <rect x="90" y="78" width="88" height="2" rx="1" fill="#F5A52A"/>
+  <text x="200" y="67" font-family="system-ui, sans-serif" font-size="13" fill="rgba(240,235,225,0.45)">Guión</text>
+  <text x="256" y="67" font-family="system-ui, sans-serif" font-size="13" fill="rgba(240,235,225,0.45)">Estructura</text>
+  <text x="340" y="67" font-family="system-ui, sans-serif" font-size="13" fill="rgba(240,235,225,0.45)">Breakdown</text>
+  <rect x="57" y="80" width="903" height="1" fill="rgba(255,255,255,0.07)"/>
+
+  <!-- Form fields -->
+  <!-- Field 1: Logline (focused, gold left border) -->
+  <rect x="80" y="96" width="820" height="58" rx="8" fill="#120D28" stroke="rgba(245,165,42,0.2)" stroke-width="1"/>
+  <rect x="80" y="96" width="3" height="58" rx="1" fill="#F5A52A"/>
+  <text x="96" y="113" font-family="system-ui, sans-serif" font-size="10" fill="rgba(245,165,42,0.8)" font-weight="600" letter-spacing="1">LOGLINE</text>
+  <text x="96" y="130" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.7)">Mateo llega a Los Hawks y debe demostrar su valía en su primer entrenamiento con el equipo.</text>
+  <text x="96" y="146" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.35)">El choque entre su talento natural y las reglas del grupo define la dinámica del episodio.</text>
+
+  <!-- Field 2: Tema central -->
+  <rect x="80" y="164" width="820" height="52" rx="8" fill="#120D28" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+  <rect x="80" y="164" width="3" height="52" rx="1" fill="rgba(155,111,212,0.5)"/>
+  <text x="96" y="181" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.4)" font-weight="600" letter-spacing="1">TEMA CENTRAL</text>
+  <text x="96" y="200" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.6)">Pertenencia vs. individualidad — ¿se puede brillar sin pertenecer?</text>
+
+  <!-- Field 3: Cold Open -->
+  <rect x="80" y="226" width="820" height="52" rx="8" fill="#120D28" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+  <rect x="80" y="226" width="3" height="52" rx="1" fill="rgba(78,205,196,0.4)"/>
+  <text x="96" y="243" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.4)" font-weight="600" letter-spacing="1">COLD OPEN</text>
+  <text x="96" y="262" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.6)">Mateo juega solo en una cancha vacía al amanecer. Hace un gol imposible. Nadie lo ve.</text>
+
+  <!-- Field 4: Tag / Gancho final -->
+  <rect x="80" y="288" width="820" height="52" rx="8" fill="#120D28" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+  <rect x="80" y="288" width="3" height="52" rx="1" fill="rgba(212,37,106,0.4)"/>
+  <text x="96" y="305" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.4)" font-weight="600" letter-spacing="1">TAG / GANCHO FINAL</text>
+  <text x="96" y="324" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.6)">Kael encuentra el video del gol imposible de Mateo. Primer plano en sus ojos: algo cambia.</text>
+
+  <!-- Field 5: Sinopsis -->
+  <rect x="80" y="350" width="820" height="76" rx="8" fill="#120D28" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+  <rect x="80" y="350" width="3" height="76" rx="1" fill="rgba(136,216,176,0.4)"/>
+  <text x="96" y="367" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.4)" font-weight="600" letter-spacing="1">SINOPSIS</text>
+  <text x="96" y="385" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.6)">Primer día de Mateo González con Los Hawks. El entrenador Reyes lo prueba con el equipo titular</text>
+  <text x="96" y="402" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.6)">desde el primer minuto. Los jugadores lo reciben con escepticismo, especialmente Kael, el capitán.</text>
+  <text x="96" y="419" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.35)">El ejercicio de rondos revela la tensión entre el talento individual y el juego colectivo...</text>
+</svg>

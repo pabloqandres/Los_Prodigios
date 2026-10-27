@@ -1,0 +1,71 @@
+<svg viewBox="0 0 960 440" width="960" height="440" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="accentLine" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#9B6FD4"/>
+      <stop offset="60%" stop-color="#4ECDC4"/>
+      <stop offset="100%" stop-color="#08060F" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="960" height="440" fill="#08060F"/>
+  <rect x="0" y="0" width="960" height="3" fill="url(#accentLine)"/>
+
+  <!-- Sidebar -->
+  <rect x="0" y="0" width="56" height="440" fill="#06040F"/>
+  <rect x="56" y="0" width="1" height="440" fill="rgba(255,255,255,0.07)"/>
+  <rect x="16" y="292" width="24" height="24" rx="6" fill="#F5A52A"/>
+
+  <!-- Background (workflows page, dimmed) -->
+  <rect x="57" y="0" width="903" height="440" fill="#08060F"/>
+  <text x="80" y="30" font-family="system-ui, sans-serif" font-weight="700" font-size="14" fill="rgba(240,235,225,0.1)" letter-spacing="2">WORKFLOWS</text>
+  <!-- Dimmed workflow cards in background -->
+  <rect x="80" y="50" width="200" height="100" rx="8" fill="rgba(18,13,40,0.4)" opacity="0.3"/>
+  <rect x="296" y="50" width="200" height="100" rx="8" fill="rgba(18,13,40,0.4)" opacity="0.3"/>
+  <rect x="512" y="50" width="200" height="100" rx="8" fill="rgba(18,13,40,0.4)" opacity="0.3"/>
+
+  <!-- Modal overlay -->
+  <rect x="0" y="0" width="960" height="440" fill="rgba(8,6,15,0.72)"/>
+
+  <!-- Modal panel -->
+  <rect x="200" y="22" width="560" height="280" rx="12" fill="#120D28" stroke="rgba(245,165,42,0.35)" stroke-width="1.5"/>
+
+  <!-- Modal header -->
+  <rect x="200" y="22" width="560" height="48" rx="12" fill="#1A1336"/>
+  <rect x="200" y="58" width="560" height="12" fill="#1A1336"/>
+  <rect x="216" y="32" width="74" height="18" rx="9" fill="rgba(245,165,42,0.12)" stroke="rgba(245,165,42,0.3)" stroke-width="1"/>
+  <text x="253" y="44" font-family="monospace" font-size="8" fill="#F5A52A" text-anchor="middle">🏗️ Desarrollo</text>
+  <text x="310" y="50" font-family="system-ui, sans-serif" font-size="14" fill="#F0EBE1" font-weight="700">Diseñar Personaje Protagonista</text>
+  <circle cx="738" cy="46" r="10" fill="rgba(255,255,255,0.05)"/>
+  <text x="738" y="50" font-family="system-ui, sans-serif" font-size="11" fill="rgba(240,235,225,0.3)" text-anchor="middle">✕</text>
+
+  <!-- Prompt preview (condensed) -->
+  <rect x="216" y="78" width="528" height="150" rx="6" fill="#0A0818"/>
+  <text x="228" y="97" font-family="system-ui, sans-serif" font-size="8" fill="#4A9EFF" font-weight="700" letter-spacing="1">📚 KNOWLEDGE</text>
+  <text x="228" y="112" font-family="monospace" font-size="9" fill="rgba(240,235,225,0.4)">/Knowledge/Characters/protagonistas.md · visual.md</text>
+  <rect x="228" y="120" width="516" height="1" fill="rgba(255,255,255,0.06)"/>
+  <text x="228" y="135" font-family="system-ui, sans-serif" font-size="8" fill="#4ECDC4" font-weight="700" letter-spacing="1">🗂 CONTEXTO DEL SISTEMA</text>
+  <text x="228" y="150" font-family="monospace" font-size="9" fill="rgba(240,235,225,0.4)">Bible/bible_principal.md · Memory/Style/master_style.md</text>
+  <rect x="228" y="158" width="516" height="1" fill="rgba(255,255,255,0.06)"/>
+  <text x="228" y="172" font-family="system-ui, sans-serif" font-size="8" fill="#F5A52A" font-weight="700" letter-spacing="1">📋 EL WORKFLOW COMPLETO</text>
+  <text x="228" y="187" font-family="system-ui, sans-serif" font-size="9" fill="rgba(240,235,225,0.5)">Objetivo: Crear perfil visual y narrativo del protagonista · 11 pasos</text>
+  <text x="228" y="201" font-family="system-ui, sans-serif" font-size="9" fill="rgba(240,235,225,0.35)">Paso 1 · Definir arquetipo y función narrativa...</text>
+  <text x="228" y="215" font-family="monospace" font-size="8" fill="rgba(245,165,42,0.2)">... contenido completo del workflow</text>
+
+  <!-- COPY BUTTON — clicked state -->
+  <rect x="216" y="236" width="528" height="44" rx="8" fill="#4ECDC4"/>
+  <text x="480" y="262" font-family="system-ui, sans-serif" font-size="14" fill="#06040F" text-anchor="middle" font-weight="700">✓ Copiado!</text>
+
+  <!-- Tooltip / helper text -->
+  <rect x="310" y="290" width="240" height="30" rx="8" fill="rgba(78,205,196,0.15)" stroke="rgba(78,205,196,0.4)" stroke-width="1"/>
+  <text x="430" y="309" font-family="system-ui, sans-serif" font-size="11" fill="#4ECDC4" text-anchor="middle" font-weight="600">Pega esto en el Asistente →</text>
+  <!-- Arrow pointing to assistant -->
+  <path d="M556 305 L580 305 L575 299 M580 305 L575 311" stroke="#4ECDC4" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Ghosted Asistente view below -->
+  <rect x="200" y="330" width="560" height="96" rx="10" fill="#06040F" stroke="rgba(78,205,196,0.15)" stroke-width="1" opacity="0.8"/>
+  <text x="216" y="350" font-family="system-ui, sans-serif" font-size="10" fill="rgba(78,205,196,0.5)" font-weight="600">ASISTENTE · Escritura</text>
+  <rect x="216" y="360" width="528" height="56" rx="6" fill="rgba(245,165,42,0.04)" stroke="rgba(245,165,42,0.1)" stroke-width="1"/>
+  <text x="228" y="377" font-family="monospace" font-size="9" fill="rgba(78,205,196,0.4)">---KNOWLEDGE: protagonistas.md · visual.md</text>
+  <text x="228" y="392" font-family="monospace" font-size="9" fill="rgba(78,205,196,0.4)">---SISTEMA: bible_principal.md · master_style.md</text>
+  <text x="228" y="407" font-family="monospace" font-size="9" fill="rgba(245,165,42,0.4)">---WORKFLOW: Diseñar Personaje Protagonista...</text>
+</svg>

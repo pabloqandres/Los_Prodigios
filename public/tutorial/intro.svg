@@ -1,0 +1,76 @@
+<svg viewBox="0 0 960 440" width="960" height="440" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#08060F"/>
+      <stop offset="100%" stop-color="#120D28"/>
+    </linearGradient>
+    <linearGradient id="goldGlow" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#F5A52A" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#F5A52A" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="960" height="440" fill="url(#bgGrad)"/>
+
+  <!-- Top bar with dots -->
+  <rect x="0" y="0" width="960" height="28" fill="#06040F"/>
+  <circle cx="16" cy="14" r="4" fill="#D4256A" opacity="0.8"/>
+  <circle cx="28" cy="14" r="4" fill="#F5A52A" opacity="0.8"/>
+  <circle cx="40" cy="14" r="4" fill="#88D8B0" opacity="0.8"/>
+  <text x="480" y="18" font-family="system-ui, sans-serif" font-size="11" fill="rgba(240,235,225,0.3)" text-anchor="middle">NUPPA · Sistema Operativo</text>
+
+  <!-- Subtle grid pattern -->
+  <line x1="0" y1="120" x2="960" y2="120" stroke="rgba(245,165,42,0.04)" stroke-width="1"/>
+  <line x1="0" y1="200" x2="960" y2="200" stroke="rgba(245,165,42,0.04)" stroke-width="1"/>
+  <line x1="0" y1="280" x2="960" y2="280" stroke="rgba(245,165,42,0.04)" stroke-width="1"/>
+  <line x1="0" y1="360" x2="960" y2="360" stroke="rgba(245,165,42,0.04)" stroke-width="1"/>
+  <line x1="240" y1="28" x2="240" y2="440" stroke="rgba(245,165,42,0.04)" stroke-width="1"/>
+  <line x1="480" y1="28" x2="480" y2="440" stroke="rgba(245,165,42,0.04)" stroke-width="1"/>
+  <line x1="720" y1="28" x2="720" y2="440" stroke="rgba(245,165,42,0.04)" stroke-width="1"/>
+
+  <!-- Glow behind logo -->
+  <ellipse cx="480" cy="200" rx="200" ry="100" fill="rgba(245,165,42,0.06)"/>
+
+  <!-- Robot mascot (Bit) - pixel art style -->
+  <rect x="440" y="68" width="80" height="80" rx="12" fill="#F5A52A"/>
+  <!-- Face area -->
+  <rect x="448" y="80" width="64" height="52" rx="6" fill="#120D28"/>
+  <!-- Eyes -->
+  <circle cx="467" cy="100" r="8" fill="#4ECDC4"/>
+  <circle cx="494" cy="100" r="8" fill="#4ECDC4"/>
+  <!-- Eye shine -->
+  <circle cx="470" cy="97" r="2" fill="#F0EBE1"/>
+  <circle cx="497" cy="97" r="2" fill="#F0EBE1"/>
+  <!-- Smile -->
+  <path d="M463 115 Q480 125 497 115" stroke="#F5A52A" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <!-- Antenna -->
+  <rect x="476" y="60" width="4" height="10" rx="2" fill="#F5A52A"/>
+  <circle cx="478" cy="58" r="4" fill="#4ECDC4"/>
+  <!-- Ears -->
+  <rect x="434" y="84" width="8" height="16" rx="4" fill="#F5A52A"/>
+  <rect x="518" y="84" width="8" height="16" rx="4" fill="#F5A52A"/>
+
+  <!-- NUPPA logo text -->
+  <text x="480" y="192" font-family="system-ui, -apple-system, sans-serif" font-weight="900" font-size="64" fill="#F5A52A" text-anchor="middle" letter-spacing="8">NUPPA</text>
+
+  <!-- Subtitle -->
+  <text x="480" y="216" font-family="system-ui, sans-serif" font-size="14" fill="rgba(240,235,225,0.5)" text-anchor="middle" letter-spacing="2">Sistema Operativo de Los Prodigios</text>
+
+  <!-- Divider line -->
+  <rect x="380" y="232" width="200" height="1" fill="rgba(245,165,42,0.3)"/>
+
+  <!-- Welcome text -->
+  <text x="480" y="268" font-family="system-ui, sans-serif" font-weight="700" font-size="22" fill="#F0EBE1" text-anchor="middle">¡Bienvenido al equipo!</text>
+  <text x="480" y="292" font-family="system-ui, sans-serif" font-size="13" fill="rgba(240,235,225,0.5)" text-anchor="middle">Este tutorial te guiará por todas las secciones del estudio.</text>
+
+  <!-- Start button -->
+  <rect x="400" y="318" width="160" height="40" rx="20" fill="#F5A52A"/>
+  <text x="480" y="343" font-family="system-ui, sans-serif" font-weight="700" font-size="14" fill="#08060F" text-anchor="middle">Comenzar tour ✦</text>
+
+  <!-- Bottom dots indicator -->
+  <circle cx="464" cy="408" r="3" fill="rgba(245,165,42,0.9)"/>
+  <circle cx="476" cy="408" r="3" fill="rgba(245,165,42,0.3)"/>
+  <circle cx="488" cy="408" r="3" fill="rgba(245,165,42,0.3)"/>
+  <circle cx="500" cy="408" r="3" fill="rgba(245,165,42,0.3)"/>
+</svg>

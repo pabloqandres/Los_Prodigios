@@ -1,0 +1,110 @@
+<svg viewBox="0 0 960 440" width="960" height="440" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="accentLine" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#9B6FD4"/>
+      <stop offset="60%" stop-color="#4ECDC4"/>
+      <stop offset="100%" stop-color="#08060F" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="spinnerGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4ECDC4"/>
+      <stop offset="100%" stop-color="#4ECDC4" stop-opacity="0.1"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="960" height="440" fill="#08060F"/>
+  <rect x="0" y="0" width="960" height="3" fill="url(#accentLine)"/>
+
+  <!-- Sidebar -->
+  <rect x="0" y="0" width="56" height="440" fill="#06040F"/>
+  <rect x="56" y="0" width="1" height="440" fill="rgba(255,255,255,0.07)"/>
+  <rect x="16" y="76" width="24" height="24" rx="6" fill="#F5A52A"/>
+  <rect x="21" y="82" width="6" height="12" rx="2" fill="#08060F"/>
+  <rect x="30" y="86" width="6" height="8" rx="2" fill="#08060F"/>
+
+  <!-- Top bar -->
+  <rect x="57" y="0" width="903" height="44" fill="#06040F"/>
+  <rect x="57" y="44" width="903" height="1" fill="rgba(255,255,255,0.07)"/>
+  <text x="72" y="26" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.4)">← Episodios</text>
+  <text x="150" y="26" font-family="system-ui, sans-serif" font-size="12" fill="#F0EBE1" font-weight="600">T1E01 · El Primer Toque</text>
+
+  <!-- Tabs -->
+  <rect x="57" y="44" width="903" height="36" fill="#06040F"/>
+  <text x="90" y="67" font-family="system-ui, sans-serif" font-size="13" fill="rgba(240,235,225,0.45)">Vista General</text>
+  <text x="200" y="67" font-family="system-ui, sans-serif" font-size="13" fill="rgba(240,235,225,0.45)">Guión</text>
+  <text x="256" y="67" font-family="system-ui, sans-serif" font-size="13" fill="rgba(240,235,225,0.45)">Estructura</text>
+  <text x="350" y="67" font-family="system-ui, sans-serif" font-size="13" fill="rgba(240,235,225,0.45)">Breakdown</text>
+  <text x="450" y="67" font-family="system-ui, sans-serif" font-size="13" fill="#F5A52A" font-weight="600">Motor NUPPA</text>
+  <rect x="450" y="78" width="96" height="2" rx="1" fill="#F5A52A"/>
+  <rect x="57" y="80" width="903" height="1" fill="rgba(255,255,255,0.07)"/>
+
+  <!-- Left area (dimmed episode content) -->
+  <rect x="57" y="81" width="620" height="359" fill="#08060F"/>
+  <text x="100" y="120" font-family="system-ui, sans-serif" font-size="13" fill="rgba(240,235,225,0.2)">Guión del episodio...</text>
+  <!-- Dimmed script lines -->
+  <rect x="93" y="130" width="400" height="8" rx="2" fill="rgba(240,235,225,0.05)"/>
+  <rect x="93" y="146" width="340" height="8" rx="2" fill="rgba(240,235,225,0.04)"/>
+  <rect x="93" y="162" width="380" height="8" rx="2" fill="rgba(240,235,225,0.04)"/>
+  <rect x="93" y="178" width="300" height="8" rx="2" fill="rgba(240,235,225,0.03)"/>
+  <rect x="150" y="202" width="120" height="8" rx="2" fill="rgba(240,235,225,0.05)"/>
+  <rect x="120" y="218" width="280" height="8" rx="2" fill="rgba(240,235,225,0.04)"/>
+  <rect x="120" y="234" width="260" height="8" rx="2" fill="rgba(240,235,225,0.04)"/>
+
+  <!-- Divider -->
+  <rect x="677" y="81" width="1" height="359" fill="rgba(255,255,255,0.1)"/>
+
+  <!-- AI Panel (right) -->
+  <rect x="678" y="81" width="282" height="359" fill="#06040F"/>
+
+  <!-- Panel header -->
+  <rect x="678" y="81" width="282" height="48" fill="#06040F"/>
+  <rect x="678" y="129" width="282" height="1" fill="rgba(255,255,255,0.07)"/>
+  <!-- Star icon -->
+  <text x="698" y="112" font-family="system-ui, sans-serif" font-size="16" fill="#F5A52A">✦</text>
+  <text x="718" y="112" font-family="system-ui, sans-serif" font-size="13" fill="#F0EBE1" font-weight="700">Asistente del Episodio</text>
+  <text x="698" y="126" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.35)">Motor de producción inteligente</text>
+
+  <!-- Workflow buttons -->
+
+  <!-- Button 1: Revisar continuidad (teal) — ACTIVE/RUNNING -->
+  <rect x="690" y="140" width="258" height="68" rx="8" fill="rgba(78,205,196,0.08)" stroke="rgba(78,205,196,0.35)" stroke-width="1"/>
+  <rect x="690" y="140" width="3" height="68" rx="2" fill="#4ECDC4"/>
+  <!-- Spinner animation indicator -->
+  <circle cx="707" cy="163" r="8" fill="none" stroke="rgba(78,205,196,0.2)" stroke-width="2"/>
+  <path d="M707 155 A8 8 0 0 1 715 163" stroke="#4ECDC4" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <text x="722" y="160" font-family="system-ui, sans-serif" font-size="12" fill="#4ECDC4" font-weight="600">Revisar continuidad</text>
+  <text x="722" y="175" font-family="system-ui, sans-serif" font-size="10" fill="rgba(78,205,196,0.6)">Analizando cambios del episodio...</text>
+  <rect x="722" y="183" width="100" height="4" rx="2" fill="rgba(78,205,196,0.15)"/>
+  <rect x="722" y="183" width="64" height="4" rx="2" fill="#4ECDC4"/>
+
+  <!-- Button 2: Mejorar diálogos (purple) -->
+  <rect x="690" y="218" width="258" height="60" rx="8" fill="#120D28" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+  <rect x="690" y="218" width="3" height="60" rx="2" fill="#9B6FD4"/>
+  <!-- Icon -->
+  <rect x="703" y="230" width="12" height="12" rx="3" fill="rgba(155,111,212,0.3)"/>
+  <rect x="705" y="233" width="8" height="2" rx="1" fill="#9B6FD4"/>
+  <rect x="705" y="237" width="6" height="2" rx="1" fill="#9B6FD4"/>
+  <text x="722" y="242" font-family="system-ui, sans-serif" font-size="12" fill="#F0EBE1" font-weight="600">Mejorar diálogos</text>
+  <text x="722" y="258" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.4)">Analiza ritmo, voz y subtext de las escenas</text>
+  <text x="722" y="272" font-family="system-ui, sans-serif" font-size="9" fill="rgba(155,111,212,0.7)">↳ Escritura</text>
+
+  <!-- Button 3: Breakdown de producción (blue) -->
+  <rect x="690" y="288" width="258" height="60" rx="8" fill="#120D28" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+  <rect x="690" y="288" width="3" height="60" rx="2" fill="#4ECDC4" opacity="0.5"/>
+  <rect x="703" y="300" width="12" height="12" rx="3" fill="rgba(78,205,196,0.2)"/>
+  <rect x="705" y="303" width="8" height="1.5" rx="1" fill="#4ECDC4" opacity="0.6"/>
+  <rect x="705" y="307" width="8" height="1.5" rx="1" fill="#4ECDC4" opacity="0.6"/>
+  <rect x="705" y="311" width="5" height="1.5" rx="1" fill="#4ECDC4" opacity="0.6"/>
+  <text x="722" y="312" font-family="system-ui, sans-serif" font-size="12" fill="#F0EBE1" font-weight="600">Breakdown de producción</text>
+  <text x="722" y="328" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.4)">Extrae personajes, locaciones y props</text>
+  <text x="722" y="342" font-family="system-ui, sans-serif" font-size="9" fill="rgba(78,205,196,0.6)">↳ Producción</text>
+
+  <!-- Button 4: Log de continuidad (gold) -->
+  <rect x="690" y="358" width="258" height="60" rx="8" fill="#120D28" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+  <rect x="690" y="358" width="3" height="60" rx="2" fill="#F5A52A"/>
+  <rect x="703" y="370" width="12" height="12" rx="3" fill="rgba(245,165,42,0.2)"/>
+  <rect x="706" y="374" width="6" height="4" rx="1" fill="#F5A52A" opacity="0.7"/>
+  <rect x="706" y="380" width="6" height="2" rx="1" fill="#F5A52A" opacity="0.4"/>
+  <text x="722" y="382" font-family="system-ui, sans-serif" font-size="12" fill="#F0EBE1" font-weight="600">Log de continuidad</text>
+  <text x="722" y="398" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.4)">Genera el registro de cambios del canon</text>
+  <text x="722" y="412" font-family="system-ui, sans-serif" font-size="9" fill="rgba(245,165,42,0.6)">↳ Continuidad</text>
+</svg>

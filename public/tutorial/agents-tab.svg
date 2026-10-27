@@ -1,0 +1,86 @@
+<svg viewBox="0 0 960 440" width="960" height="440" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="accentLine" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#9B6FD4"/>
+      <stop offset="60%" stop-color="#4ECDC4"/>
+      <stop offset="100%" stop-color="#08060F" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="960" height="440" fill="#08060F"/>
+  <rect x="0" y="0" width="960" height="3" fill="url(#accentLine)"/>
+
+  <!-- Sidebar -->
+  <rect x="0" y="0" width="56" height="440" fill="#06040F"/>
+  <rect x="56" y="0" width="1" height="440" fill="rgba(255,255,255,0.07)"/>
+  <rect x="16" y="292" width="24" height="24" rx="6" fill="#F5A52A"/>
+
+  <!-- Top bar -->
+  <rect x="57" y="0" width="903" height="44" fill="#06040F"/>
+  <rect x="57" y="44" width="903" height="1" fill="rgba(255,255,255,0.07)"/>
+  <text x="80" y="26" font-family="system-ui, sans-serif" font-weight="700" font-size="18" fill="#F0EBE1" letter-spacing="2">WORKFLOWS</text>
+  <text x="80" y="38" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.35)">Equipo del estudio</text>
+
+  <!-- Tabs: Workflows / Equipo -->
+  <rect x="57" y="44" width="903" height="36" fill="#06040F"/>
+  <rect x="90" y="50" width="88" height="24" rx="6" fill="rgba(255,255,255,0.05)"/>
+  <text x="134" y="66" font-family="system-ui, sans-serif" font-size="13" fill="rgba(240,235,225,0.45)" text-anchor="middle">Workflows</text>
+  <rect x="190" y="50" width="72" height="24" rx="6" fill="rgba(245,165,42,0.15)" stroke="rgba(245,165,42,0.4)" stroke-width="1"/>
+  <text x="226" y="66" font-family="system-ui, sans-serif" font-size="13" fill="#F5A52A" text-anchor="middle" font-weight="600">Equipo</text>
+  <rect x="190" y="78" width="72" height="2" rx="1" fill="#F5A52A"/>
+  <rect x="57" y="80" width="903" height="1" fill="rgba(255,255,255,0.07)"/>
+
+  <!-- Section title -->
+  <text x="80" y="110" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.35)" font-weight="600" letter-spacing="1">AGENTES DEL ESTUDIO</text>
+  <text x="80" y="128" font-family="system-ui, sans-serif" font-size="11" fill="rgba(240,235,225,0.25)">Roles especializados que ejecutan workflows con expertise específico</text>
+
+  <!-- Agent cards grid: 3 columns -->
+
+  <!-- Card 1: Supervisor de Continuidad (purple) -->
+  <rect x="80" y="142" width="264" height="180" rx="12" fill="#120D28" stroke="rgba(155,111,212,0.25)" stroke-width="1"/>
+  <rect x="80" y="142" width="264" height="5" rx="3" fill="#9B6FD4"/>
+  <!-- Avatar placeholder -->
+  <circle cx="156" cy="190" r="28" fill="rgba(155,111,212,0.15)" stroke="rgba(155,111,212,0.3)" stroke-width="1.5"/>
+  <text x="156" y="196" font-family="system-ui, sans-serif" font-size="20" fill="#9B6FD4" text-anchor="middle">🔗</text>
+  <!-- Department badge -->
+  <rect x="96" y="228" width="88" height="16" rx="8" fill="rgba(155,111,212,0.15)" stroke="rgba(155,111,212,0.3)" stroke-width="1"/>
+  <text x="140" y="239" font-family="monospace" font-size="7" fill="#9B6FD4" text-anchor="middle">CONTINUIDAD</text>
+  <text x="212" y="232" font-family="monospace" font-size="8" fill="rgba(155,111,212,0.5)">T1E01→</text>
+  <text x="156" y="258" font-family="system-ui, sans-serif" font-size="12" fill="#F0EBE1" text-anchor="middle" font-weight="600">Supervisor de</text>
+  <text x="156" y="273" font-family="system-ui, sans-serif" font-size="12" fill="#F0EBE1" text-anchor="middle" font-weight="600">Continuidad</text>
+  <text x="156" y="292" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.4)" text-anchor="middle">Registra cambios del canon</text>
+  <!-- Activate button -->
+  <rect x="96" y="305" width="152" height="24" rx="6" fill="rgba(155,111,212,0.15)" stroke="rgba(155,111,212,0.25)" stroke-width="1"/>
+  <text x="172" y="320" font-family="system-ui, sans-serif" font-size="10" fill="#9B6FD4" text-anchor="middle" font-weight="600">Ver perfil →</text>
+
+  <!-- Card 2: Director de Arte (teal) -->
+  <rect x="360" y="142" width="264" height="180" rx="12" fill="#120D28" stroke="rgba(78,205,196,0.25)" stroke-width="1"/>
+  <rect x="360" y="142" width="264" height="5" rx="3" fill="#4ECDC4"/>
+  <circle cx="492" cy="190" r="28" fill="rgba(78,205,196,0.12)" stroke="rgba(78,205,196,0.3)" stroke-width="1.5"/>
+  <text x="492" y="196" font-family="system-ui, sans-serif" font-size="20" fill="#4ECDC4" text-anchor="middle">🎨</text>
+  <rect x="376" y="228" width="80" height="16" rx="8" fill="rgba(78,205,196,0.12)" stroke="rgba(78,205,196,0.3)" stroke-width="1"/>
+  <text x="416" y="239" font-family="monospace" font-size="7" fill="#4ECDC4" text-anchor="middle">ARTE VISUAL</text>
+  <text x="492" y="258" font-family="system-ui, sans-serif" font-size="12" fill="#F0EBE1" text-anchor="middle" font-weight="600">Director de Arte</text>
+  <text x="492" y="292" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.4)" text-anchor="middle">Consistencia visual del universo</text>
+  <rect x="376" y="305" width="152" height="24" rx="6" fill="rgba(78,205,196,0.12)" stroke="rgba(78,205,196,0.25)" stroke-width="1"/>
+  <text x="452" y="320" font-family="system-ui, sans-serif" font-size="10" fill="#4ECDC4" text-anchor="middle" font-weight="600">Ver perfil →</text>
+
+  <!-- Card 3: Coordinador de Producción (gold) -->
+  <rect x="640" y="142" width="264" height="180" rx="12" fill="#120D28" stroke="rgba(245,165,42,0.25)" stroke-width="1"/>
+  <rect x="640" y="142" width="264" height="5" rx="3" fill="#F5A52A"/>
+  <circle cx="772" cy="190" r="28" fill="rgba(245,165,42,0.1)" stroke="rgba(245,165,42,0.25)" stroke-width="1.5"/>
+  <text x="772" y="196" font-family="system-ui, sans-serif" font-size="20" fill="#F5A52A" text-anchor="middle">📋</text>
+  <rect x="656" y="228" width="100" height="16" rx="8" fill="rgba(245,165,42,0.1)" stroke="rgba(245,165,42,0.25)" stroke-width="1"/>
+  <text x="706" y="239" font-family="monospace" font-size="7" fill="#F5A52A" text-anchor="middle">PRODUCCIÓN</text>
+  <text x="772" y="258" font-family="system-ui, sans-serif" font-size="12" fill="#F0EBE1" text-anchor="middle" font-weight="600">Coordinador de</text>
+  <text x="772" y="273" font-family="system-ui, sans-serif" font-size="12" fill="#F0EBE1" text-anchor="middle" font-weight="600">Producción</text>
+  <text x="772" y="292" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.4)" text-anchor="middle">Gestiona el flujo de trabajo</text>
+  <rect x="656" y="305" width="152" height="24" rx="6" fill="rgba(245,165,42,0.1)" stroke="rgba(245,165,42,0.25)" stroke-width="1"/>
+  <text x="732" y="320" font-family="system-ui, sans-serif" font-size="10" fill="#F5A52A" text-anchor="middle" font-weight="600">Ver perfil →</text>
+
+  <!-- Bottom hint row -->
+  <text x="80" y="368" font-family="system-ui, sans-serif" font-size="11" fill="rgba(240,235,225,0.25)">Cada agente trae su expertise al Asistente cuando ejecutas un workflow con su contexto</text>
+
+  <!-- More agents indicator -->
+  <text x="80" y="396" font-family="system-ui, sans-serif" font-size="11" fill="rgba(240,235,225,0.2)">+ 5 agentes más: Escritor de Diálogo, Compositor Musical, Editor de Video...</text>
+</svg>

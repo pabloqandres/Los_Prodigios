@@ -1,0 +1,91 @@
+<svg viewBox="0 0 960 440" width="960" height="440" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="accentLine" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#9B6FD4"/>
+      <stop offset="60%" stop-color="#4ECDC4"/>
+      <stop offset="100%" stop-color="#08060F" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="960" height="440" fill="#08060F"/>
+  <rect x="0" y="0" width="960" height="3" fill="url(#accentLine)"/>
+
+  <!-- Sidebar -->
+  <rect x="0" y="0" width="56" height="440" fill="#06040F"/>
+  <rect x="56" y="0" width="1" height="440" fill="rgba(255,255,255,0.07)"/>
+  <rect x="16" y="256" width="24" height="24" rx="6" fill="#F5A52A"/>
+
+  <!-- Top bar -->
+  <rect x="57" y="0" width="903" height="44" fill="#06040F"/>
+  <rect x="57" y="44" width="903" height="1" fill="rgba(255,255,255,0.07)"/>
+  <text x="72" y="26" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.4)">← Mateo González</text>
+  <text x="175" y="26" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.3)">/</text>
+  <text x="185" y="26" font-family="system-ui, sans-serif" font-size="12" fill="#F0EBE1" font-weight="600">Outfit casual · Variante 1</text>
+
+  <!-- Context area left -->
+  <rect x="57" y="45" width="260" height="395" fill="#06040F"/>
+  <rect x="317" y="45" width="1" height="395" fill="rgba(255,255,255,0.07)"/>
+
+  <text x="75" y="76" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.35)" font-weight="600" letter-spacing="1">OTRAS VISTAS</text>
+
+  <!-- Small thumbs -->
+  <rect x="75" y="86" width="220" height="60" rx="6" fill="#120D28" stroke="rgba(136,216,176,0.3)" stroke-width="1"/>
+  <rect x="85" y="93" width="44" height="46" rx="4" fill="#0D1A1A"/>
+  <ellipse cx="107" cy="108" rx="10" ry="10" fill="rgba(240,235,225,0.1)"/>
+  <text x="140" y="108" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.7)" font-weight="600">Vista general</text>
+  <text x="140" y="122" font-family="system-ui, sans-serif" font-size="9" fill="rgba(136,216,176,0.6)">Aprobada ✓✓</text>
+
+  <rect x="75" y="155" width="220" height="60" rx="6" fill="#120D28" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+  <rect x="85" y="162" width="44" height="46" rx="4" fill="#0D1A1A"/>
+  <text x="140" y="177" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.5)">Expresiones</text>
+  <text x="140" y="191" font-family="system-ui, sans-serif" font-size="9" fill="rgba(240,235,225,0.25)">Sin imagen</text>
+
+  <rect x="75" y="224" width="220" height="60" rx="6" fill="#120D28" stroke="rgba(245,165,42,0.2)" stroke-width="1"/>
+  <rect x="85" y="231" width="44" height="46" rx="4" fill="#0D1A1A"/>
+  <ellipse cx="107" cy="246" rx="8" ry="8" fill="rgba(240,235,225,0.08)"/>
+  <text x="140" y="246" font-family="system-ui, sans-serif" font-size="10" fill="#F5A52A" font-weight="600">Outfit casual ←</text>
+  <text x="140" y="260" font-family="system-ui, sans-serif" font-size="9" fill="rgba(245,165,42,0.6)">En revisión</text>
+
+  <!-- Main area: Upload interface -->
+  <rect x="318" y="45" width="642" height="395" fill="#08060F"/>
+
+  <!-- Slot header -->
+  <text x="338" y="76" font-family="system-ui, sans-serif" font-size="14" fill="#F0EBE1" font-weight="700">Outfit casual · Variante 1 · Frente</text>
+  <rect x="338" y="84" width="110" height="16" rx="8" fill="rgba(78,205,196,0.12)" stroke="rgba(78,205,196,0.3)" stroke-width="1"/>
+  <text x="393" y="95" font-family="monospace" font-size="8" fill="#4ECDC4" text-anchor="middle">Frente · full body</text>
+
+  <!-- Upload zone — main focus -->
+  <rect x="338" y="108" width="440" height="220" rx="12" fill="rgba(245,165,42,0.03)" stroke="rgba(245,165,42,0.3)" stroke-width="1.5" stroke-dasharray="8,5"/>
+  <!-- Cloud up icon -->
+  <circle cx="558" cy="186" r="36" fill="rgba(245,165,42,0.08)"/>
+  <rect x="542" y="180" width="32" height="20" rx="4" fill="rgba(245,165,42,0.12)"/>
+  <path d="M551 190 L558 181 L565 190" stroke="#F5A52A" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="558" y1="181" x2="558" y2="197" stroke="#F5A52A" stroke-width="2.5" stroke-linecap="round"/>
+  <text x="558" y="232" font-family="system-ui, sans-serif" font-size="14" fill="rgba(240,235,225,0.7)" text-anchor="middle" font-weight="600">Arrastra aquí</text>
+  <text x="558" y="250" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.4)" text-anchor="middle">o haz clic para seleccionar</text>
+  <text x="558" y="270" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.25)" text-anchor="middle">PNG, JPG, WEBP · máx. 10MB</text>
+  <text x="558" y="290" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.2)" text-anchor="middle">Recomendado: 1024 × 1024px</text>
+  <text x="558" y="310" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.15)" text-anchor="middle">o referencia generada con IA</text>
+
+  <!-- Or divider -->
+  <text x="800" y="220" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.2)" text-anchor="middle">o</text>
+  <rect x="800" y="108" width="140" height="220" rx="8" fill="rgba(155,111,212,0.04)" stroke="rgba(155,111,212,0.15)" stroke-width="1" stroke-dasharray="4,3"/>
+  <text x="800" y="185" font-family="system-ui, sans-serif" font-size="10" fill="rgba(155,111,212,0.4)" text-anchor="middle">Generar con</text>
+  <text x="800" y="200" font-family="system-ui, sans-serif" font-size="10" fill="rgba(155,111,212,0.4)" text-anchor="middle">Artlist AI ✦</text>
+  <rect x="765" y="210" width="70" height="22" rx="6" fill="rgba(155,111,212,0.15)" stroke="rgba(155,111,212,0.25)" stroke-width="1"/>
+  <text x="800" y="224" font-family="system-ui, sans-serif" font-size="10" fill="#9B6FD4" text-anchor="middle">Generar</text>
+
+  <!-- Slot in review state (below) -->
+  <text x="338" y="356" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.3)" font-weight="600" letter-spacing="1">MISMA VISTA · VERSIÓN ANTERIOR</text>
+  <rect x="338" y="366" width="600" height="56" rx="8" fill="#120D28" stroke="rgba(245,165,42,0.15)" stroke-width="1"/>
+  <!-- Thumbnail -->
+  <rect x="348" y="374" width="40" height="40" rx="6" fill="#0D1A1A"/>
+  <ellipse cx="368" cy="386" rx="10" ry="10" fill="rgba(240,235,225,0.1)"/>
+  <rect x="355" y="398" width="26" height="12" rx="3" fill="rgba(240,235,225,0.06)"/>
+  <!-- Info -->
+  <text x="400" y="388" font-family="system-ui, sans-serif" font-size="11" fill="#F0EBE1" font-weight="600">outfit_casual_v0_draft.png</text>
+  <text x="400" y="404" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.35)">Subida hace 2 días · 842KB</text>
+  <!-- Review badge -->
+  <rect x="790" y="380" width="100" height="20" rx="10" fill="rgba(245,165,42,0.15)" stroke="rgba(245,165,42,0.4)" stroke-width="1"/>
+  <text x="840" y="393" font-family="monospace" font-size="8" fill="#F5A52A" text-anchor="middle">EN REVISIÓN</text>
+</svg>

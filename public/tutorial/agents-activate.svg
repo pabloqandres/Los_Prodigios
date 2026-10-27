@@ -1,0 +1,92 @@
+<svg viewBox="0 0 960 440" width="960" height="440" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="accentLine" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#9B6FD4"/>
+      <stop offset="60%" stop-color="#4ECDC4"/>
+      <stop offset="100%" stop-color="#08060F" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="960" height="440" fill="#08060F"/>
+  <rect x="0" y="0" width="960" height="3" fill="url(#accentLine)"/>
+
+  <!-- Sidebar -->
+  <rect x="0" y="0" width="56" height="440" fill="#06040F"/>
+  <rect x="56" y="0" width="1" height="440" fill="rgba(255,255,255,0.07)"/>
+  <rect x="16" y="292" width="24" height="24" rx="6" fill="#F5A52A"/>
+
+  <!-- Dimmed background (workflows page) -->
+  <rect x="57" y="0" width="903" height="440" fill="#08060F" opacity="0.5"/>
+  <!-- Modal overlay -->
+  <rect x="0" y="0" width="960" height="440" fill="rgba(8,6,15,0.7)"/>
+
+  <!-- Modal panel -->
+  <rect x="180" y="18" width="600" height="404" rx="12" fill="#120D28" stroke="rgba(245,165,42,0.35)" stroke-width="1.5"/>
+
+  <!-- Modal header -->
+  <rect x="180" y="18" width="600" height="52" rx="12" fill="#1A1336"/>
+  <rect x="180" y="58" width="600" height="12" fill="#1A1336"/>
+  <rect x="196" y="28" width="74" height="18" rx="9" fill="rgba(245,165,42,0.12)" stroke="rgba(245,165,42,0.3)" stroke-width="1"/>
+  <text x="233" y="40" font-family="monospace" font-size="8" fill="#F5A52A" text-anchor="middle">🏗️ Desarrollo</text>
+  <text x="290" y="48" font-family="system-ui, sans-serif" font-size="14" fill="#F0EBE1" font-weight="700">Diseñar Personaje Protagonista</text>
+  <circle cx="758" cy="44" r="10" fill="rgba(255,255,255,0.05)"/>
+  <text x="758" y="48" font-family="system-ui, sans-serif" font-size="11" fill="rgba(240,235,225,0.3)" text-anchor="middle">✕</text>
+
+  <!-- Agent selector section -->
+  <rect x="196" y="78" width="568" height="64" rx="8" fill="#0A0818"/>
+  <text x="208" y="96" font-family="system-ui, sans-serif" font-size="9" fill="rgba(240,235,225,0.35)" font-weight="600" letter-spacing="1">EJECUTAR CON AGENTE:</text>
+
+  <!-- Agent chips -->
+  <!-- Chip 1: Dir. Arte -->
+  <rect x="208" y="103" width="90" height="28" rx="14" fill="#120D28" stroke="rgba(78,205,196,0.25)" stroke-width="1"/>
+  <text x="228" y="120" font-family="system-ui, sans-serif" font-size="11" fill="rgba(240,235,225,0.5)">🎨 Dir. Arte</text>
+
+  <!-- Chip 2: Supervisor Cont. — SELECTED (gold outline) -->
+  <rect x="308" y="103" width="136" height="28" rx="14" fill="rgba(245,165,42,0.12)" stroke="#F5A52A" stroke-width="1.5"/>
+  <circle cx="322" cy="117" r="6" fill="#F5A52A"/>
+  <text x="322" y="121" font-family="system-ui, sans-serif" font-size="7" fill="#08060F" text-anchor="middle" font-weight="700">✓</text>
+  <text x="375" y="121" font-family="system-ui, sans-serif" font-size="11" fill="#F5A52A" font-weight="600">Supervisor Cont.</text>
+
+  <!-- Chip 3: Coord. Producción -->
+  <rect x="454" y="103" width="128" height="28" rx="14" fill="#120D28" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+  <text x="474" y="120" font-family="system-ui, sans-serif" font-size="11" fill="rgba(240,235,225,0.4)">📋 Coord. Prod.</text>
+
+  <!-- Prompt preview with agent header -->
+  <rect x="196" y="150" width="568" height="196" rx="8" fill="#0A0818"/>
+  <!-- Agent header strip -->
+  <rect x="196" y="150" width="568" height="32" rx="8" fill="rgba(155,111,212,0.15)"/>
+  <rect x="196" y="170" width="568" height="12" fill="rgba(155,111,212,0.15)"/>
+  <circle cx="213" cy="166" r="7" fill="rgba(155,111,212,0.4)"/>
+  <text x="213" y="170" font-family="system-ui, sans-serif" font-size="8" fill="#9B6FD4" text-anchor="middle">🔗</text>
+  <text x="227" y="170" font-family="monospace" font-size="10" fill="#9B6FD4" font-weight="700">AGENTE: Supervisor de Continuidad</text>
+  <text x="540" y="170" font-family="monospace" font-size="8" fill="rgba(155,111,212,0.5)">CONTINUIDAD</text>
+
+  <!-- Divider in prompt -->
+  <rect x="208" y="186" width="544" height="1" fill="rgba(255,255,255,0.06)"/>
+
+  <!-- Knowledge section (condensed) -->
+  <text x="208" y="203" font-family="system-ui, sans-serif" font-size="8" fill="#4A9EFF" font-weight="700" letter-spacing="1">📚 KNOWLEDGE</text>
+  <text x="208" y="217" font-family="monospace" font-size="9" fill="rgba(240,235,225,0.4)">/Knowledge/Characters/protagonistas.md · visual.md</text>
+
+  <rect x="208" y="224" width="544" height="1" fill="rgba(255,255,255,0.04)"/>
+
+  <!-- System context (condensed) -->
+  <text x="208" y="239" font-family="system-ui, sans-serif" font-size="8" fill="#4ECDC4" font-weight="700" letter-spacing="1">🗂 CONTEXTO DEL SISTEMA</text>
+  <text x="208" y="253" font-family="monospace" font-size="9" fill="rgba(240,235,225,0.4)">Bible/bible_principal.md · Memory/Continuity/canon_log.md</text>
+
+  <rect x="208" y="260" width="544" height="1" fill="rgba(255,255,255,0.04)"/>
+
+  <!-- Workflow -->
+  <text x="208" y="275" font-family="system-ui, sans-serif" font-size="8" fill="#F5A52A" font-weight="700" letter-spacing="1">📋 EL WORKFLOW COMPLETO</text>
+  <text x="208" y="289" font-family="system-ui, sans-serif" font-size="9" fill="rgba(240,235,225,0.5)">Objetivo: Crear perfil del protagonista · verificar coherencia de canon</text>
+  <text x="208" y="303" font-family="system-ui, sans-serif" font-size="9" fill="rgba(240,235,225,0.35)">Paso 1 · Revisar personajes existentes en canon_log...</text>
+  <text x="208" y="316" font-family="monospace" font-size="8" fill="rgba(155,111,212,0.35)">... con perspectiva del Supervisor de Continuidad</text>
+  <text x="208" y="330" font-family="monospace" font-size="8" fill="rgba(245,165,42,0.2)">... 11 pasos + instrucciones del agente</text>
+
+  <!-- Action buttons at bottom -->
+  <rect x="196" y="356" width="272" height="48" rx="8" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+  <text x="332" y="384" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.5)" text-anchor="middle" font-weight="600">Sin agente</text>
+
+  <rect x="484" y="356" width="280" height="48" rx="8" fill="#F5A52A"/>
+  <text x="624" y="384" font-family="system-ui, sans-serif" font-size="13" fill="#08060F" text-anchor="middle" font-weight="700">Copiar con agente →</text>
+</svg>

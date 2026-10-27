@@ -1,0 +1,133 @@
+<svg viewBox="0 0 960 440" width="960" height="440" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="accentLine" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#9B6FD4"/>
+      <stop offset="60%" stop-color="#4ECDC4"/>
+      <stop offset="100%" stop-color="#08060F" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="960" height="440" fill="#08060F"/>
+  <rect x="0" y="0" width="960" height="3" fill="url(#accentLine)"/>
+
+  <!-- Sidebar -->
+  <rect x="0" y="0" width="56" height="440" fill="#06040F"/>
+  <rect x="56" y="0" width="1" height="440" fill="rgba(255,255,255,0.07)"/>
+  <rect x="16" y="256" width="24" height="24" rx="6" fill="#F5A52A"/>
+
+  <!-- Top bar -->
+  <rect x="57" y="0" width="903" height="44" fill="#06040F"/>
+  <rect x="57" y="44" width="903" height="1" fill="rgba(255,255,255,0.07)"/>
+  <text x="72" y="26" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.4)">← Personajes Principales</text>
+  <text x="220" y="26" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.3)">/</text>
+  <text x="230" y="26" font-family="system-ui, sans-serif" font-size="12" fill="#F0EBE1" font-weight="600">Mateo González</text>
+  <!-- Progress badge -->
+  <rect x="700" y="12" width="80" height="20" rx="10" fill="rgba(245,165,42,0.12)" stroke="rgba(245,165,42,0.3)" stroke-width="1"/>
+  <text x="740" y="25" font-family="monospace" font-size="9" fill="#F5A52A" text-anchor="middle">70% ●●●○○</text>
+  <rect x="790" y="12" width="120" height="20" rx="6" fill="#F5A52A"/>
+  <text x="850" y="25" font-family="system-ui, sans-serif" font-size="10" fill="#08060F" text-anchor="middle" font-weight="700">+ Subir imagen</text>
+
+  <!-- Main content: two-column layout -->
+  <!-- Left column (~35%) -->
+  <rect x="57" y="45" width="310" height="395" fill="#06040F"/>
+  <rect x="367" y="45" width="1" height="395" fill="rgba(255,255,255,0.07)"/>
+
+  <!-- Portrait placeholder -->
+  <rect x="75" y="64" width="160" height="200" rx="10" fill="#0D1A1A" stroke="rgba(245,165,42,0.15)" stroke-width="1"/>
+  <!-- Silhouette figure -->
+  <ellipse cx="155" cy="110" rx="28" ry="28" fill="rgba(240,235,225,0.1)"/>
+  <path d="M110 200 Q110 160 130 155 L145 163 L155 160 L165 163 L180 155 Q200 160 200 200 Z" fill="rgba(240,235,225,0.08)"/>
+  <text x="155" y="238" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.25)" text-anchor="middle">Vista general</text>
+
+  <!-- Entity name -->
+  <text x="75" y="280" font-family="system-ui, sans-serif" font-size="18" fill="#F0EBE1" font-weight="700">Mateo González</text>
+  <rect x="75" y="288" width="80" height="16" rx="8" fill="rgba(245,165,42,0.15)" stroke="rgba(245,165,42,0.3)" stroke-width="1"/>
+  <text x="115" y="299" font-family="monospace" font-size="8" fill="#F5A52A" text-anchor="middle">Protagonista</text>
+
+  <!-- Canon data rows -->
+  <text x="75" y="326" font-family="system-ui, sans-serif" font-size="9" fill="rgba(240,235,225,0.35)" font-weight="600" letter-spacing="1">DATOS DE CANON</text>
+  <rect x="75" y="332" width="272" height="1" fill="rgba(255,255,255,0.06)"/>
+
+  <!-- Row: Color piel -->
+  <text x="75" y="352" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.4)">Color base piel</text>
+  <rect x="210" y="341" width="14" height="14" rx="3" fill="#C68642"/>
+  <text x="230" y="352" font-family="monospace" font-size="10" fill="rgba(240,235,225,0.6)">#C68642</text>
+
+  <text x="75" y="371" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.4)">Color cabello</text>
+  <rect x="210" y="360" width="14" height="14" rx="3" fill="#1A0F05"/>
+  <text x="230" y="371" font-family="monospace" font-size="10" fill="rgba(240,235,225,0.6)">#1A0F05</text>
+
+  <text x="75" y="390" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.4)">Ojos</text>
+  <rect x="210" y="379" width="14" height="14" rx="3" fill="#3B2A1A"/>
+  <text x="230" y="390" font-family="monospace" font-size="10" fill="rgba(240,235,225,0.6)">#3B2A1A — Café oscuro</text>
+
+  <text x="75" y="409" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.4)">Marcas</text>
+  <text x="210" y="409" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.6)">Colgante cerámico</text>
+
+  <!-- Right column (~65%) — grid of slots -->
+  <rect x="368" y="45" width="592" height="395" fill="#08060F"/>
+
+  <text x="388" y="72" font-family="system-ui, sans-serif" font-size="11" fill="rgba(240,235,225,0.35)" font-weight="600" letter-spacing="1">VISTAS Y VARIANTES</text>
+
+  <!-- Slot grid: 3 columns, 2 rows -->
+  <!-- Slot 1: Vista general -->
+  <rect x="388" y="82" width="178" height="148" rx="8" fill="#120D28" stroke="rgba(136,216,176,0.3)" stroke-width="1.5"/>
+  <rect x="398" y="92" width="158" height="96" rx="6" fill="#0D1A1A"/>
+  <ellipse cx="477" cy="130" rx="22" ry="22" fill="rgba(240,235,225,0.1)"/>
+  <path d="M450 185 Q450 162 462 158 L470 162 L477 160 L484 162 L492 158 Q504 162 504 185 Z" fill="rgba(240,235,225,0.08)"/>
+  <text x="477" y="104" font-family="system-ui, sans-serif" font-size="8" fill="rgba(240,235,225,0.2)" text-anchor="middle">imagen</text>
+  <text x="477" y="196" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.6)" text-anchor="middle" font-weight="600">Vista general</text>
+  <text x="477" y="210" font-family="system-ui, sans-serif" font-size="9" fill="rgba(240,235,225,0.3)" text-anchor="middle">Frente · Outfit Hawks</text>
+  <!-- Seals -->
+  <circle cx="456" cy="224" r="9" fill="#F5A52A"/>
+  <text x="456" y="228" font-family="system-ui, sans-serif" font-size="9" fill="#08060F" text-anchor="middle" font-weight="700">✓</text>
+  <circle cx="478" cy="224" r="9" fill="#4ECDC4"/>
+  <text x="478" y="228" font-family="system-ui, sans-serif" font-size="9" fill="#08060F" text-anchor="middle" font-weight="700">✓</text>
+
+  <!-- Slot 2: Expresiones -->
+  <rect x="578" y="82" width="178" height="148" rx="8" fill="#120D28" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+  <rect x="588" y="92" width="158" height="96" rx="6" fill="#0D1A1A"/>
+  <text x="667" y="144" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.15)" text-anchor="middle">sin imagen</text>
+  <text x="667" y="196" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.5)" text-anchor="middle" font-weight="600">Expresiones</text>
+  <text x="667" y="210" font-family="system-ui, sans-serif" font-size="9" fill="rgba(240,235,225,0.25)" text-anchor="middle">Hoja de expresiones</text>
+  <circle cx="646" cy="224" r="9" fill="none" stroke="rgba(240,235,225,0.15)" stroke-width="1.5" stroke-dasharray="3,2"/>
+  <circle cx="668" cy="224" r="9" fill="none" stroke="rgba(240,235,225,0.15)" stroke-width="1.5" stroke-dasharray="3,2"/>
+
+  <!-- Slot 3: Outfit casual -->
+  <rect x="768" y="82" width="178" height="148" rx="8" fill="#120D28" stroke="rgba(245,165,42,0.2)" stroke-width="1"/>
+  <rect x="778" y="92" width="158" height="96" rx="6" fill="#0D1A1A"/>
+  <ellipse cx="857" cy="130" rx="18" ry="18" fill="rgba(240,235,225,0.08)"/>
+  <rect x="843" y="152" width="28" height="30" rx="4" fill="rgba(240,235,225,0.06)"/>
+  <text x="857" y="196" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.5)" text-anchor="middle" font-weight="600">Outfit casual</text>
+  <text x="857" y="210" font-family="system-ui, sans-serif" font-size="9" fill="rgba(240,235,225,0.25)" text-anchor="middle">Ropa diaria</text>
+  <circle cx="836" cy="224" r="9" fill="#F5A52A"/>
+  <text x="836" y="228" font-family="system-ui, sans-serif" font-size="9" fill="#08060F" text-anchor="middle" font-weight="700">✓</text>
+  <circle cx="858" cy="224" r="9" fill="none" stroke="rgba(240,235,225,0.15)" stroke-width="1.5" stroke-dasharray="3,2"/>
+
+  <!-- Slot 4: Outfit deportivo -->
+  <rect x="388" y="244" width="178" height="148" rx="8" fill="#120D28" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+  <rect x="398" y="254" width="158" height="96" rx="6" fill="#0D1A1A"/>
+  <text x="477" y="306" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.15)" text-anchor="middle">sin imagen</text>
+  <text x="477" y="358" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.5)" text-anchor="middle" font-weight="600">Outfit deportivo</text>
+  <text x="477" y="372" font-family="system-ui, sans-serif" font-size="9" fill="rgba(240,235,225,0.25)" text-anchor="middle">Uniforme Hawks</text>
+  <circle cx="456" cy="386" r="9" fill="none" stroke="rgba(240,235,225,0.15)" stroke-width="1.5" stroke-dasharray="3,2"/>
+  <circle cx="478" cy="386" r="9" fill="none" stroke="rgba(240,235,225,0.15)" stroke-width="1.5" stroke-dasharray="3,2"/>
+
+  <!-- Slot 5: Perfil -->
+  <rect x="578" y="244" width="178" height="148" rx="8" fill="#120D28" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+  <rect x="588" y="254" width="158" height="96" rx="6" fill="#0D1A1A"/>
+  <text x="667" y="306" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.15)" text-anchor="middle">sin imagen</text>
+  <text x="667" y="358" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.5)" text-anchor="middle" font-weight="600">Perfil lateral</text>
+  <text x="667" y="372" font-family="system-ui, sans-serif" font-size="9" fill="rgba(240,235,225,0.25)" text-anchor="middle">Vista 90°</text>
+  <circle cx="646" cy="386" r="9" fill="none" stroke="rgba(240,235,225,0.15)" stroke-width="1.5" stroke-dasharray="3,2"/>
+  <circle cx="668" cy="386" r="9" fill="none" stroke="rgba(240,235,225,0.15)" stroke-width="1.5" stroke-dasharray="3,2"/>
+
+  <!-- Slot 6: Espaldas -->
+  <rect x="768" y="244" width="178" height="148" rx="8" fill="#120D28" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+  <rect x="778" y="254" width="158" height="96" rx="6" fill="#0D1A1A"/>
+  <text x="857" y="306" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.15)" text-anchor="middle">sin imagen</text>
+  <text x="857" y="358" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.5)" text-anchor="middle" font-weight="600">Espalda</text>
+  <text x="857" y="372" font-family="system-ui, sans-serif" font-size="9" fill="rgba(240,235,225,0.25)" text-anchor="middle">Vista posterior</text>
+  <circle cx="836" cy="386" r="9" fill="none" stroke="rgba(240,235,225,0.15)" stroke-width="1.5" stroke-dasharray="3,2"/>
+  <circle cx="858" cy="386" r="9" fill="none" stroke="rgba(240,235,225,0.15)" stroke-width="1.5" stroke-dasharray="3,2"/>
+</svg>

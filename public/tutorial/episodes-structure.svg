@@ -1,0 +1,138 @@
+<svg viewBox="0 0 960 440" width="960" height="440" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="accentLine" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#9B6FD4"/>
+      <stop offset="60%" stop-color="#4ECDC4"/>
+      <stop offset="100%" stop-color="#08060F" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="960" height="440" fill="#08060F"/>
+  <rect x="0" y="0" width="960" height="3" fill="url(#accentLine)"/>
+
+  <!-- Sidebar -->
+  <rect x="0" y="0" width="56" height="440" fill="#06040F"/>
+  <rect x="56" y="0" width="1" height="440" fill="rgba(255,255,255,0.07)"/>
+  <rect x="16" y="76" width="24" height="24" rx="6" fill="#F5A52A"/>
+  <rect x="21" y="82" width="6" height="12" rx="2" fill="#08060F"/>
+  <rect x="30" y="86" width="6" height="8" rx="2" fill="#08060F"/>
+
+  <!-- Top bar -->
+  <rect x="57" y="0" width="903" height="44" fill="#06040F"/>
+  <rect x="57" y="44" width="903" height="1" fill="rgba(255,255,255,0.07)"/>
+  <text x="72" y="26" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.4)">← Episodios</text>
+  <text x="140" y="26" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.3)">/</text>
+  <text x="150" y="26" font-family="system-ui, sans-serif" font-size="12" fill="#F0EBE1" font-weight="600">T1E01 · El Primer Toque</text>
+
+  <!-- AI button top right -->
+  <rect x="770" y="12" width="180" height="20" rx="10" fill="rgba(245,165,42,0.15)" stroke="rgba(245,165,42,0.4)" stroke-width="1"/>
+  <text x="860" y="25" font-family="system-ui, sans-serif" font-size="10" fill="#F5A52A" text-anchor="middle">Generar estructura con AI ✦</text>
+
+  <!-- Tabs -->
+  <rect x="57" y="44" width="903" height="36" fill="#06040F"/>
+  <text x="90" y="67" font-family="system-ui, sans-serif" font-size="13" fill="rgba(240,235,225,0.45)">Vista General</text>
+  <text x="200" y="67" font-family="system-ui, sans-serif" font-size="13" fill="rgba(240,235,225,0.45)">Guión</text>
+  <text x="256" y="67" font-family="system-ui, sans-serif" font-size="13" fill="#F5A52A" font-weight="600">Estructura</text>
+  <rect x="256" y="78" width="70" height="2" rx="1" fill="#F5A52A"/>
+  <text x="350" y="67" font-family="system-ui, sans-serif" font-size="13" fill="rgba(240,235,225,0.45)">Breakdown</text>
+  <rect x="57" y="80" width="903" height="1" fill="rgba(255,255,255,0.07)"/>
+
+  <!-- 3 columns: Acto I, II, III -->
+  <!-- ACTO I column -->
+  <rect x="70" y="90" width="270" height="340" rx="8" fill="#0A0818" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+  <rect x="70" y="90" width="270" height="32" rx="8" fill="rgba(155,111,212,0.15)"/>
+  <rect x="70" y="110" width="270" height="12" fill="rgba(155,111,212,0.15)"/>
+  <text x="205" y="111" font-family="system-ui, sans-serif" font-size="11" fill="#9B6FD4" text-anchor="middle" font-weight="700" letter-spacing="2">ACTO I</text>
+  <text x="205" y="127" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.3)" text-anchor="middle">Introducción · minutos 0–3</text>
+
+  <!-- Scene card A1 -->
+  <rect x="82" y="136" width="246" height="72" rx="6" fill="#120D28" stroke="rgba(155,111,212,0.2)" stroke-width="1"/>
+  <rect x="82" y="136" width="4" height="72" rx="2" fill="#9B6FD4"/>
+  <text x="96" y="153" font-family="system-ui, sans-serif" font-size="11" fill="#F0EBE1" font-weight="600">Cold Open: La cancha vacía</text>
+  <rect x="96" y="160" width="60" height="14" rx="7" fill="rgba(78,205,196,0.15)" stroke="rgba(78,205,196,0.3)" stroke-width="1"/>
+  <text x="126" y="170" font-family="monospace" font-size="8" fill="#4ECDC4" text-anchor="middle">EXT · CANCHA</text>
+  <text x="96" y="187" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.45)">Mateo solo al amanecer. El gol imposible.</text>
+  <text x="286" y="200" font-family="monospace" font-size="9" fill="rgba(245,165,42,0.6)" text-anchor="end">1:30</text>
+
+  <!-- Scene card A2 -->
+  <rect x="82" y="218" width="246" height="68" rx="6" fill="#120D28" stroke="rgba(155,111,212,0.2)" stroke-width="1"/>
+  <rect x="82" y="218" width="4" height="68" rx="2" fill="#9B6FD4"/>
+  <text x="96" y="235" font-family="system-ui, sans-serif" font-size="11" fill="#F0EBE1" font-weight="600">Llegada al complejo Hawks</text>
+  <rect x="96" y="242" width="68" height="14" rx="7" fill="rgba(78,205,196,0.15)" stroke="rgba(78,205,196,0.3)" stroke-width="1"/>
+  <text x="130" y="252" font-family="monospace" font-size="8" fill="#4ECDC4" text-anchor="middle">INT · VESTIDOR</text>
+  <text x="96" y="270" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.45)">Primer encuentro con el equipo. Tensión con Kael.</text>
+  <text x="286" y="278" font-family="monospace" font-size="9" fill="rgba(245,165,42,0.6)" text-anchor="end">1:45</text>
+
+  <!-- Scene card A3 -->
+  <rect x="82" y="296" width="246" height="68" rx="6" fill="#120D28" stroke="rgba(155,111,212,0.2)" stroke-width="1"/>
+  <rect x="82" y="296" width="4" height="68" rx="2" fill="#9B6FD4"/>
+  <text x="96" y="313" font-family="system-ui, sans-serif" font-size="11" fill="#F0EBE1" font-weight="600">Presentación de Reyes</text>
+  <rect x="96" y="320" width="60" height="14" rx="7" fill="rgba(245,165,42,0.12)" stroke="rgba(245,165,42,0.3)" stroke-width="1"/>
+  <text x="126" y="330" font-family="monospace" font-size="8" fill="#F5A52A" text-anchor="middle">INT · CANCHA</text>
+  <text x="96" y="348" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.45)">El entrenador establece las reglas del equipo.</text>
+  <text x="286" y="356" font-family="monospace" font-size="9" fill="rgba(245,165,42,0.6)" text-anchor="end">2:00</text>
+
+  <!-- Add button -->
+  <rect x="82" y="374" width="246" height="32" rx="6" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.08)" stroke-width="1" stroke-dasharray="4,3"/>
+  <text x="205" y="393" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.3)" text-anchor="middle">+ añadir escena</text>
+
+  <!-- ACTO II column -->
+  <rect x="354" y="90" width="270" height="340" rx="8" fill="#0A0818" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+  <rect x="354" y="90" width="270" height="32" rx="8" fill="rgba(245,165,42,0.1)"/>
+  <rect x="354" y="110" width="270" height="12" fill="rgba(245,165,42,0.1)"/>
+  <text x="489" y="111" font-family="system-ui, sans-serif" font-size="11" fill="#F5A52A" text-anchor="middle" font-weight="700" letter-spacing="2">ACTO II</text>
+  <text x="489" y="127" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.3)" text-anchor="middle">Conflicto · minutos 3–9</text>
+
+  <rect x="366" y="136" width="246" height="72" rx="6" fill="#120D28" stroke="rgba(245,165,42,0.2)" stroke-width="1"/>
+  <rect x="366" y="136" width="4" height="72" rx="2" fill="#F5A52A"/>
+  <text x="380" y="153" font-family="system-ui, sans-serif" font-size="11" fill="#F0EBE1" font-weight="600">Los rondos — primer choque</text>
+  <rect x="380" y="160" width="60" height="14" rx="7" fill="rgba(78,205,196,0.15)" stroke="rgba(78,205,196,0.3)" stroke-width="1"/>
+  <text x="410" y="170" font-family="monospace" font-size="8" fill="#4ECDC4" text-anchor="middle">EXT · CANCHA</text>
+  <text x="380" y="187" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.45)">Mateo rompe el patrón del equipo. Kael lo confronta.</text>
+  <text x="570" y="200" font-family="monospace" font-size="9" fill="rgba(245,165,42,0.6)" text-anchor="end">3:00</text>
+
+  <rect x="366" y="218" width="246" height="68" rx="6" fill="#120D28" stroke="rgba(245,165,42,0.2)" stroke-width="1"/>
+  <rect x="366" y="218" width="4" height="68" rx="2" fill="#F5A52A"/>
+  <text x="380" y="235" font-family="system-ui, sans-serif" font-size="11" fill="#F0EBE1" font-weight="600">La táctica de Reyes</text>
+  <rect x="380" y="242" width="60" height="14" rx="7" fill="rgba(245,165,42,0.12)" stroke="rgba(245,165,42,0.3)" stroke-width="1"/>
+  <text x="410" y="252" font-family="monospace" font-size="8" fill="#F5A52A" text-anchor="middle">INT · PIZARRÓN</text>
+  <text x="380" y="270" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.45)">Reyes explica su sistema. Mateo no encaja fácil.</text>
+  <text x="570" y="278" font-family="monospace" font-size="9" fill="rgba(245,165,42,0.6)" text-anchor="end">2:30</text>
+
+  <rect x="366" y="296" width="246" height="68" rx="6" fill="#120D28" stroke="rgba(245,165,42,0.2)" stroke-width="1"/>
+  <rect x="366" y="296" width="4" height="68" rx="2" fill="#F5A52A"/>
+  <text x="380" y="313" font-family="system-ui, sans-serif" font-size="11" fill="#F0EBE1" font-weight="600">El partido de prueba</text>
+  <rect x="380" y="320" width="60" height="14" rx="7" fill="rgba(78,205,196,0.15)" stroke="rgba(78,205,196,0.3)" stroke-width="1"/>
+  <text x="410" y="330" font-family="monospace" font-size="8" fill="#4ECDC4" text-anchor="middle">EXT · CANCHA</text>
+  <text x="380" y="348" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.45)">Mateo y Kael compiten por la misma posición.</text>
+  <text x="570" y="356" font-family="monospace" font-size="9" fill="rgba(245,165,42,0.6)" text-anchor="end">3:00</text>
+
+  <rect x="366" y="374" width="246" height="32" rx="6" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.08)" stroke-width="1" stroke-dasharray="4,3"/>
+  <text x="489" y="393" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.3)" text-anchor="middle">+ añadir escena</text>
+
+  <!-- ACTO III column -->
+  <rect x="638" y="90" width="270" height="340" rx="8" fill="#0A0818" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+  <rect x="638" y="90" width="270" height="32" rx="8" fill="rgba(78,205,196,0.08)"/>
+  <rect x="638" y="110" width="270" height="12" fill="rgba(78,205,196,0.08)"/>
+  <text x="773" y="111" font-family="system-ui, sans-serif" font-size="11" fill="#4ECDC4" text-anchor="middle" font-weight="700" letter-spacing="2">ACTO III</text>
+  <text x="773" y="127" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.3)" text-anchor="middle">Resolución · minutos 9–12</text>
+
+  <rect x="650" y="136" width="246" height="72" rx="6" fill="#120D28" stroke="rgba(78,205,196,0.2)" stroke-width="1"/>
+  <rect x="650" y="136" width="4" height="72" rx="2" fill="#4ECDC4"/>
+  <text x="664" y="153" font-family="system-ui, sans-serif" font-size="11" fill="#F0EBE1" font-weight="600">El gol que nadie esperaba</text>
+  <rect x="664" y="160" width="60" height="14" rx="7" fill="rgba(78,205,196,0.15)" stroke="rgba(78,205,196,0.3)" stroke-width="1"/>
+  <text x="694" y="170" font-family="monospace" font-size="8" fill="#4ECDC4" text-anchor="middle">EXT · CANCHA</text>
+  <text x="664" y="187" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.45)">Mateo hace el gol imposible. El equipo lo ve.</text>
+  <text x="854" y="200" font-family="monospace" font-size="9" fill="rgba(245,165,42,0.6)" text-anchor="end">2:00</text>
+
+  <rect x="650" y="218" width="246" height="68" rx="6" fill="#120D28" stroke="rgba(78,205,196,0.2)" stroke-width="1"/>
+  <rect x="650" y="218" width="4" height="68" rx="2" fill="#4ECDC4"/>
+  <text x="664" y="235" font-family="system-ui, sans-serif" font-size="11" fill="#F0EBE1" font-weight="600">Tag: El video de Kael</text>
+  <rect x="664" y="242" width="60" height="14" rx="7" fill="rgba(155,111,212,0.15)" stroke="rgba(155,111,212,0.3)" stroke-width="1"/>
+  <text x="694" y="252" font-family="monospace" font-size="8" fill="#9B6FD4" text-anchor="middle">INT · VESTIDOR</text>
+  <text x="664" y="270" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.45)">Kael descubre el video. Algo cambia en su mirada.</text>
+  <text x="854" y="278" font-family="monospace" font-size="9" fill="rgba(245,165,42,0.6)" text-anchor="end">1:00</text>
+
+  <rect x="650" y="296" width="246" height="32" rx="6" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.08)" stroke-width="1" stroke-dasharray="4,3"/>
+  <text x="773" y="316" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.3)" text-anchor="middle">+ añadir escena</text>
+</svg>

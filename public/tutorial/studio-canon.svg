@@ -1,0 +1,162 @@
+<svg viewBox="0 0 960 440" width="960" height="440" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="accentLine" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#9B6FD4"/>
+      <stop offset="60%" stop-color="#4ECDC4"/>
+      <stop offset="100%" stop-color="#08060F" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="nodeGlow1" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#F5A52A" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#F5A52A" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="nodeGlow2" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#4ECDC4" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#4ECDC4" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="960" height="440" fill="#08060F"/>
+  <rect x="0" y="0" width="960" height="3" fill="url(#accentLine)"/>
+
+  <!-- Sidebar -->
+  <rect x="0" y="0" width="56" height="440" fill="#06040F"/>
+  <rect x="56" y="0" width="1" height="440" fill="rgba(255,255,255,0.07)"/>
+  <rect x="16" y="28" width="24" height="6" rx="3" fill="rgba(245,165,42,0.6)"/>
+  <rect x="16" y="148" width="24" height="24" rx="6" fill="#F5A52A"/>
+
+  <!-- Top bar -->
+  <rect x="57" y="0" width="903" height="44" fill="#06040F"/>
+  <rect x="57" y="44" width="903" height="1" fill="rgba(255,255,255,0.07)"/>
+  <text x="80" y="26" font-family="system-ui, sans-serif" font-weight="700" font-size="18" fill="#F0EBE1" letter-spacing="2">ASISTENTE</text>
+
+  <!-- Mode tabs -->
+  <rect x="57" y="44" width="903" height="36" fill="#06040F"/>
+  <text x="90" y="67" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.4)">Escritura</text>
+  <rect x="160" y="50" width="36" height="24" rx="4" fill="rgba(245,165,42,0.15)" stroke="rgba(245,165,42,0.4)" stroke-width="1"/>
+  <text x="178" y="66" font-family="system-ui, sans-serif" font-size="12" fill="#F5A52A" text-anchor="middle" font-weight="600">Arte</text>
+  <rect x="160" y="78" width="36" height="2" rx="1" fill="#F5A52A"/>
+  <text x="216" y="67" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.4)">Marketing</text>
+  <rect x="57" y="80" width="903" height="1" fill="rgba(255,255,255,0.07)"/>
+
+  <!-- Status badge -->
+  <rect x="730" y="90" width="170" height="28" rx="14" fill="rgba(78,205,196,0.12)" stroke="rgba(78,205,196,0.4)" stroke-width="1"/>
+  <circle cx="748" cy="104" r="5" fill="#4ECDC4"/>
+  <text x="757" y="108" font-family="system-ui, sans-serif" font-size="11" fill="#4ECDC4" font-weight="700">CANON CONFIRMADO ✓</text>
+
+  <!-- Network visualization canvas -->
+  <rect x="57" y="81" width="540" height="359" fill="#06040F"/>
+
+  <text x="80" y="108" font-family="system-ui, sans-serif" font-size="11" fill="rgba(240,235,225,0.3)" font-weight="600" letter-spacing="1">VERIFICACIÓN DE CANON</text>
+
+  <!-- Connection lines -->
+  <line x1="200" y1="200" x2="310" y2="155" stroke="rgba(245,165,42,0.3)" stroke-width="1"/>
+  <line x1="200" y1="200" x2="310" y2="250" stroke="rgba(245,165,42,0.25)" stroke-width="1"/>
+  <line x1="200" y1="200" x2="140" y2="280" stroke="rgba(78,205,196,0.2)" stroke-width="1"/>
+  <line x1="310" y1="155" x2="420" y2="130" stroke="rgba(245,165,42,0.15)" stroke-width="1"/>
+  <line x1="310" y1="155" x2="420" y2="195" stroke="rgba(78,205,196,0.2)" stroke-width="1"/>
+  <line x1="310" y1="250" x2="420" y2="270" stroke="rgba(155,111,212,0.2)" stroke-width="1"/>
+  <line x1="310" y1="250" x2="420" y2="320" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <line x1="140" y1="280" x2="90" y2="340" stroke="rgba(78,205,196,0.15)" stroke-width="1"/>
+  <line x1="420" y1="130" x2="510" y2="150" stroke="rgba(245,165,42,0.15)" stroke-width="1"/>
+  <line x1="420" y1="195" x2="510" y2="200" stroke="rgba(78,205,196,0.15)" stroke-width="1"/>
+
+  <!-- Central node: Mateo González — glowing gold -->
+  <circle cx="200" cy="200" r="30" fill="url(#nodeGlow1)"/>
+  <circle cx="200" cy="200" r="22" fill="#120D28" stroke="#F5A52A" stroke-width="2"/>
+  <text x="200" y="196" font-family="system-ui, sans-serif" font-size="8" fill="#F5A52A" text-anchor="middle" font-weight="700">Mateo</text>
+  <text x="200" y="207" font-family="system-ui, sans-serif" font-size="8" fill="#F5A52A" text-anchor="middle">González</text>
+
+  <!-- Node: La Cancha — teal -->
+  <circle cx="310" cy="155" r="20" fill="url(#nodeGlow2)"/>
+  <circle cx="310" cy="155" r="14" fill="#120D28" stroke="#4ECDC4" stroke-width="2"/>
+  <text x="310" y="151" font-family="system-ui, sans-serif" font-size="8" fill="#4ECDC4" text-anchor="middle">La</text>
+  <text x="310" y="162" font-family="system-ui, sans-serif" font-size="8" fill="#4ECDC4" text-anchor="middle">Cancha</text>
+
+  <!-- Node: Los Hawks -->
+  <circle cx="310" cy="250" r="18" fill="#120D28" stroke="rgba(245,165,42,0.6)" stroke-width="1.5"/>
+  <text x="310" y="247" font-family="system-ui, sans-serif" font-size="8" fill="rgba(245,165,42,0.8)" text-anchor="middle">Los</text>
+  <text x="310" y="257" font-family="system-ui, sans-serif" font-size="8" fill="rgba(245,165,42,0.8)" text-anchor="middle">Hawks</text>
+
+  <!-- Node: Kael — glowing gold -->
+  <circle cx="140" cy="280" r="20" fill="url(#nodeGlow1)"/>
+  <circle cx="140" cy="280" r="14" fill="#120D28" stroke="#F5A52A" stroke-width="2"/>
+  <text x="140" y="284" font-family="system-ui, sans-serif" font-size="8" fill="#F5A52A" text-anchor="middle">Kael</text>
+
+  <!-- Node: Uniforme -->
+  <circle cx="420" cy="130" r="14" fill="#120D28" stroke="rgba(155,111,212,0.5)" stroke-width="1.5"/>
+  <text x="420" y="134" font-family="system-ui, sans-serif" font-size="8" fill="rgba(155,111,212,0.8)" text-anchor="middle">Uniforme</text>
+
+  <!-- Node: Reyes -->
+  <circle cx="420" cy="195" r="14" fill="#120D28" stroke="rgba(78,205,196,0.5)" stroke-width="1.5"/>
+  <text x="420" y="199" font-family="system-ui, sans-serif" font-size="8" fill="rgba(78,205,196,0.7)" text-anchor="middle">Reyes</text>
+
+  <!-- Node: T1E01 -->
+  <circle cx="420" cy="270" r="14" fill="#120D28" stroke="rgba(136,216,176,0.5)" stroke-width="1.5"/>
+  <text x="420" y="274" font-family="system-ui, sans-serif" font-size="8" fill="rgba(136,216,176,0.7)" text-anchor="middle">T1E01</text>
+
+  <!-- Node: Colgante -->
+  <circle cx="420" cy="325" r="12" fill="#120D28" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+  <text x="420" y="329" font-family="system-ui, sans-serif" font-size="7" fill="rgba(240,235,225,0.4)" text-anchor="middle">Colgante</text>
+
+  <!-- Node: small ones -->
+  <circle cx="90" cy="340" r="10" fill="#120D28" stroke="rgba(78,205,196,0.3)" stroke-width="1"/>
+  <text x="90" y="344" font-family="system-ui, sans-serif" font-size="6" fill="rgba(78,205,196,0.5)" text-anchor="middle">Vestuario</text>
+
+  <circle cx="510" cy="150" r="10" fill="#120D28" stroke="rgba(245,165,42,0.2)" stroke-width="1"/>
+  <text x="510" y="154" font-family="monospace" font-size="6" fill="rgba(245,165,42,0.4)" text-anchor="middle">#7</text>
+
+  <circle cx="510" cy="200" r="10" fill="#120D28" stroke="rgba(78,205,196,0.2)" stroke-width="1"/>
+  <text x="510" y="204" font-family="system-ui, sans-serif" font-size="6" fill="rgba(78,205,196,0.4)" text-anchor="middle">Hawk</text>
+
+  <!-- Divider -->
+  <rect x="597" y="81" width="1" height="359" fill="rgba(255,255,255,0.07)"/>
+
+  <!-- Right panel: Canon data -->
+  <rect x="598" y="81" width="362" height="359" fill="#06040F"/>
+
+  <text x="618" y="110" font-family="system-ui, sans-serif" font-size="11" fill="rgba(240,235,225,0.35)" font-weight="600" letter-spacing="1">DATOS EXTRAÍDOS</text>
+
+  <rect x="618" y="120" width="320" height="120" rx="8" fill="#120D28" stroke="rgba(245,165,42,0.2)" stroke-width="1"/>
+  <rect x="618" y="120" width="3" height="120" rx="2" fill="#F5A52A"/>
+  <text x="634" y="138" font-family="system-ui, sans-serif" font-size="11" fill="#F0EBE1" font-weight="700">Mateo González</text>
+  <text x="634" y="152" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.4)">Piel:</text>
+  <rect x="680" y="143" width="14" height="14" rx="3" fill="#C68642"/>
+  <text x="700" y="153" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.6)">#C68642 — Medio cálido</text>
+  <text x="634" y="172" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.4)">Cabello:</text>
+  <rect x="680" y="163" width="14" height="14" rx="3" fill="#1A0F05"/>
+  <text x="700" y="173" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.6)">#1A0F05 — Negro rizado</text>
+  <text x="634" y="192" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.4)">Jersey:</text>
+  <rect x="680" y="183" width="14" height="14" rx="3" fill="#1B3A8C"/>
+  <text x="700" y="193" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.6)">#1B3A8C — Hawks Azul</text>
+  <text x="634" y="212" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.4)">Número:</text>
+  <text x="700" y="212" font-family="monospace" font-size="10" fill="#F5A52A" font-weight="700">#7</text>
+  <text x="720" y="212" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.5)"> — Asignado T1E01</text>
+  <text x="634" y="232" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.4)">Marca:</text>
+  <text x="700" y="232" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.6)">Colgante cerámico (cuello)</text>
+
+  <!-- Tags -->
+  <text x="618" y="264" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.3)" font-weight="600" letter-spacing="1">ELEMENTOS CLAVE</text>
+  <rect x="618" y="272" width="66" height="18" rx="9" fill="rgba(245,165,42,0.15)" stroke="rgba(245,165,42,0.3)" stroke-width="1"/>
+  <text x="651" y="284" font-family="monospace" font-size="8" fill="#F5A52A" text-anchor="middle">protagonista</text>
+  <rect x="692" y="272" width="56" height="18" rx="9" fill="rgba(78,205,196,0.15)" stroke="rgba(78,205,196,0.3)" stroke-width="1"/>
+  <text x="720" y="284" font-family="monospace" font-size="8" fill="#4ECDC4" text-anchor="middle">T1E01</text>
+  <rect x="756" y="272" width="60" height="18" rx="9" fill="rgba(155,111,212,0.15)" stroke="rgba(155,111,212,0.3)" stroke-width="1"/>
+  <text x="786" y="284" font-family="monospace" font-size="8" fill="#9B6FD4" text-anchor="middle">debut</text>
+
+  <!-- Color palette row -->
+  <text x="618" y="316" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.3)" font-weight="600" letter-spacing="1">PALETA DEL PERSONAJE</text>
+  <rect x="618" y="324" width="48" height="48" rx="6" fill="#C68642"/>
+  <rect x="672" y="324" width="48" height="48" rx="6" fill="#1A0F05"/>
+  <rect x="726" y="324" width="48" height="48" rx="6" fill="#1B3A8C"/>
+  <rect x="780" y="324" width="48" height="48" rx="6" fill="#F5A52A"/>
+  <rect x="834" y="324" width="48" height="48" rx="6" fill="#E8D5B7"/>
+
+  <text x="642" y="384" font-family="monospace" font-size="7" fill="rgba(240,235,225,0.35)" text-anchor="middle">Piel</text>
+  <text x="696" y="384" font-family="monospace" font-size="7" fill="rgba(240,235,225,0.35)" text-anchor="middle">Cabello</text>
+  <text x="750" y="384" font-family="monospace" font-size="7" fill="rgba(240,235,225,0.35)" text-anchor="middle">Jersey</text>
+  <text x="804" y="384" font-family="monospace" font-size="7" fill="rgba(240,235,225,0.35)" text-anchor="middle">Detalles</text>
+  <text x="858" y="384" font-family="monospace" font-size="7" fill="rgba(240,235,225,0.35)" text-anchor="middle">Piel clara</text>
+
+  <!-- Source label -->
+  <text x="618" y="416" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.2)">Fuente: visual_canon.md · Memory/Characters/mateo/</text>
+</svg>

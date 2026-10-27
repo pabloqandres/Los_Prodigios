@@ -1,0 +1,87 @@
+<svg viewBox="0 0 960 440" width="960" height="440" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="accentLine" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#9B6FD4"/>
+      <stop offset="60%" stop-color="#4ECDC4"/>
+      <stop offset="100%" stop-color="#08060F" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="960" height="440" fill="#08060F"/>
+  <rect x="0" y="0" width="960" height="3" fill="url(#accentLine)"/>
+
+  <!-- Sidebar -->
+  <rect x="0" y="0" width="56" height="440" fill="#06040F"/>
+  <rect x="56" y="0" width="1" height="440" fill="rgba(255,255,255,0.07)"/>
+  <rect x="16" y="28" width="24" height="6" rx="3" fill="rgba(245,165,42,0.6)"/>
+  <rect x="16" y="220" width="24" height="24" rx="6" fill="#F5A52A"/>
+
+  <!-- Top bar -->
+  <rect x="57" y="0" width="903" height="44" fill="#06040F"/>
+  <rect x="57" y="44" width="903" height="1" fill="rgba(255,255,255,0.07)"/>
+  <text x="80" y="26" font-family="system-ui, sans-serif" font-weight="700" font-size="18" fill="#F0EBE1" letter-spacing="2">VIDEO FLOW</text>
+
+  <!-- Canvas background (dimmed) -->
+  <rect x="57" y="45" width="903" height="395" fill="#04030A"/>
+
+  <!-- Dimmed other nodes in background -->
+  <rect x="80" y="170" width="120" height="100" rx="8" fill="#120D28" stroke="rgba(212,37,106,0.2)" stroke-width="1" opacity="0.4"/>
+  <rect x="224" y="170" width="140" height="100" rx="8" fill="#120D28" stroke="rgba(78,205,196,0.2)" stroke-width="1" opacity="0.4"/>
+  <rect x="384" y="170" width="130" height="100" rx="8" fill="#120D28" stroke="rgba(245,165,42,0.2)" stroke-width="1" opacity="0.4"/>
+  <rect x="530" y="170" width="120" height="100" rx="8" fill="#120D28" stroke="rgba(155,111,212,0.15)" stroke-width="1" stroke-dasharray="4,3" opacity="0.4"/>
+
+  <!-- Connection lines -->
+  <line x1="200" y1="220" x2="224" y2="220" stroke="rgba(245,165,42,0.15)" stroke-width="1" opacity="0.4"/>
+  <line x1="364" y1="220" x2="384" y2="220" stroke="rgba(245,165,42,0.15)" stroke-width="1" opacity="0.4"/>
+  <line x1="514" y1="220" x2="530" y2="220" stroke="rgba(245,165,42,0.15)" stroke-width="1" opacity="0.4"/>
+  <line x1="650" y1="220" x2="680" y2="220" stroke="rgba(245,165,42,0.5)" stroke-width="1.5"/>
+  <polygon points="678,216 685,220 678,224" fill="rgba(245,165,42,0.7)"/>
+
+  <!-- OUTPUT node — FOCUSED, large -->
+  <rect x="680" y="80" width="240" height="330" rx="12" fill="#120D28" stroke="#4ECDC4" stroke-width="2"/>
+  <rect x="680" y="80" width="240" height="36" rx="12" fill="rgba(78,205,196,0.12)"/>
+  <rect x="680" y="104" width="240" height="12" fill="rgba(78,205,196,0.12)"/>
+  <text x="800" y="104" font-family="system-ui, sans-serif" font-size="10" fill="#4ECDC4" text-anchor="middle" font-weight="600" letter-spacing="1">OUTPUT</text>
+
+  <!-- Platform selector label -->
+  <text x="700" y="134" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.4)" font-weight="600" letter-spacing="1">PLATAFORMA</text>
+
+  <!-- Platform option 1: Kling AI -->
+  <rect x="696" y="142" width="208" height="40" rx="6" fill="#0A0818" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+  <text x="712" y="157" font-family="system-ui, sans-serif" font-size="11" fill="rgba(240,235,225,0.6)" font-weight="600">Kling AI</text>
+  <text x="712" y="173" font-family="monospace" font-size="9" fill="rgba(240,235,225,0.3)">máx. 500 chars</text>
+
+  <!-- Platform option 2: Runway Gen-4 — SELECTED -->
+  <rect x="696" y="188" width="208" height="40" rx="6" fill="rgba(245,165,42,0.1)" stroke="rgba(245,165,42,0.5)" stroke-width="1.5"/>
+  <text x="712" y="203" font-family="system-ui, sans-serif" font-size="11" fill="#F5A52A" font-weight="700">Runway Gen-4</text>
+  <text x="712" y="219" font-family="monospace" font-size="9" fill="rgba(245,165,42,0.6)">máx. 300 chars</text>
+  <!-- Checkmark -->
+  <circle cx="884" cy="208" r="8" fill="#F5A52A"/>
+  <text x="884" y="212" font-family="system-ui, sans-serif" font-size="9" fill="#08060F" text-anchor="middle" font-weight="700">✓</text>
+
+  <!-- Platform option 3: Sora -->
+  <rect x="696" y="234" width="208" height="40" rx="6" fill="#0A0818" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+  <text x="712" y="249" font-family="system-ui, sans-serif" font-size="11" fill="rgba(240,235,225,0.6)" font-weight="600">Sora</text>
+  <text x="712" y="265" font-family="monospace" font-size="9" fill="rgba(240,235,225,0.3)">máx. 800 chars</text>
+
+  <!-- Platform option 4: Artlist -->
+  <rect x="696" y="280" width="208" height="40" rx="6" fill="#0A0818" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+  <text x="712" y="295" font-family="system-ui, sans-serif" font-size="11" fill="rgba(240,235,225,0.6)" font-weight="600">Artlist</text>
+  <text x="712" y="311" font-family="monospace" font-size="9" fill="rgba(240,235,225,0.3)">máx. 2.000 chars</text>
+
+  <!-- Divider -->
+  <line x1="696" y1="330" x2="904" y2="330" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+
+  <!-- Prompt text area -->
+  <text x="700" y="348" font-family="system-ui, sans-serif" font-size="9" fill="rgba(240,235,225,0.3)" font-weight="600" letter-spacing="1">PROMPT GENERADO</text>
+  <rect x="696" y="355" width="208" height="30" rx="4" fill="rgba(0,0,0,0.3)"/>
+  <text x="706" y="368" font-family="monospace" font-size="8" fill="rgba(240,235,225,0.5)">Teenage boy, dark curly hair,</text>
+  <text x="706" y="379" font-family="monospace" font-size="8" fill="rgba(240,235,225,0.4)">running, blue jersey #7...</text>
+
+  <!-- Char counter -->
+  <text x="900" y="393" font-family="monospace" font-size="8" fill="rgba(245,165,42,0.5)" text-anchor="end">218/300</text>
+
+  <!-- Generate button -->
+  <rect x="696" y="396" width="208" height="34" rx="6" fill="#F5A52A"/>
+  <text x="800" y="417" font-family="system-ui, sans-serif" font-size="12" fill="#08060F" text-anchor="middle" font-weight="700">Generar Prompt ✦</text>
+</svg>

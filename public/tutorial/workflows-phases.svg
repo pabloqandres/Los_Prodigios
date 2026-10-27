@@ -1,0 +1,134 @@
+<svg viewBox="0 0 960 440" width="960" height="440" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="accentLine" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#9B6FD4"/>
+      <stop offset="60%" stop-color="#4ECDC4"/>
+      <stop offset="100%" stop-color="#08060F" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="960" height="440" fill="#08060F"/>
+  <rect x="0" y="0" width="960" height="3" fill="url(#accentLine)"/>
+
+  <!-- Sidebar -->
+  <rect x="0" y="0" width="56" height="440" fill="#06040F"/>
+  <rect x="56" y="0" width="1" height="440" fill="rgba(255,255,255,0.07)"/>
+  <rect x="16" y="28" width="24" height="6" rx="3" fill="rgba(245,165,42,0.6)"/>
+  <rect x="16" y="292" width="24" height="24" rx="6" fill="#F5A52A"/>
+  <text x="28" y="308" font-family="system-ui, sans-serif" font-size="9" fill="#08060F" text-anchor="middle">⚡</text>
+
+  <!-- Top bar -->
+  <rect x="57" y="0" width="903" height="44" fill="#06040F"/>
+  <rect x="57" y="44" width="903" height="1" fill="rgba(255,255,255,0.07)"/>
+  <text x="80" y="26" font-family="system-ui, sans-serif" font-weight="700" font-size="18" fill="#F0EBE1" letter-spacing="2">WORKFLOWS</text>
+  <text x="80" y="38" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.35)">88 procesos de producción</text>
+  <!-- Tabs -->
+  <rect x="780" y="12" width="88" height="20" rx="6" fill="#F5A52A"/>
+  <text x="824" y="25" font-family="system-ui, sans-serif" font-size="10" fill="#08060F" text-anchor="middle" font-weight="700">Workflows</text>
+  <rect x="876" y="12" width="72" height="20" rx="6" fill="rgba(255,255,255,0.06)"/>
+  <text x="912" y="25" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.4)" text-anchor="middle">Equipo</text>
+
+  <!-- Phase filter bar -->
+  <rect x="57" y="44" width="903" height="50" fill="#06040F"/>
+  <rect x="57" y="94" width="903" height="1" fill="rgba(255,255,255,0.07)"/>
+
+  <!-- Phase pills -->
+  <!-- 1: Concepto -->
+  <rect x="70" y="58" width="80" height="24" rx="12" fill="rgba(255,255,255,0.05)"/>
+  <text x="110" y="74" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.4)" text-anchor="middle">💡 Concepto</text>
+
+  <!-- 2: Desarrollo — ACTIVE -->
+  <rect x="158" y="58" width="90" height="24" rx="12" fill="rgba(245,165,42,0.15)" stroke="rgba(245,165,42,0.5)" stroke-width="1"/>
+  <text x="203" y="74" font-family="system-ui, sans-serif" font-size="10" fill="#F5A52A" text-anchor="middle" font-weight="600">🏗️ Desarrollo</text>
+
+  <!-- 3: Pre-Producción -->
+  <rect x="256" y="58" width="102" height="24" rx="12" fill="rgba(255,255,255,0.05)"/>
+  <text x="307" y="74" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.4)" text-anchor="middle">📐 Pre-Prod.</text>
+
+  <!-- 4: Producción -->
+  <rect x="366" y="58" width="88" height="24" rx="12" fill="rgba(255,255,255,0.05)"/>
+  <text x="410" y="74" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.4)" text-anchor="middle">🎬 Producción</text>
+
+  <!-- 5: Post-Producción -->
+  <rect x="462" y="58" width="100" height="24" rx="12" fill="rgba(255,255,255,0.05)"/>
+  <text x="512" y="74" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.4)" text-anchor="middle">✂️ Post-Prod.</text>
+
+  <!-- 6: Revisión -->
+  <rect x="570" y="58" width="76" height="24" rx="12" fill="rgba(255,255,255,0.05)"/>
+  <text x="608" y="74" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.4)" text-anchor="middle">🔍 Revisión</text>
+
+  <!-- 7: Lanzamiento -->
+  <rect x="654" y="58" width="88" height="24" rx="12" fill="rgba(255,255,255,0.05)"/>
+  <text x="698" y="74" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.4)" text-anchor="middle">🚀 Lanzamiento</text>
+
+  <!-- 8: Expansión -->
+  <rect x="750" y="58" width="80" height="24" rx="12" fill="rgba(255,255,255,0.05)"/>
+  <text x="790" y="74" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.4)" text-anchor="middle">🌎 Expansión</text>
+
+  <!-- 9: Iteración -->
+  <rect x="838" y="58" width="74" height="24" rx="12" fill="rgba(255,255,255,0.05)"/>
+  <text x="875" y="74" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.4)" text-anchor="middle">🔄 Iteración</text>
+
+  <!-- Search bar -->
+  <rect x="70" y="104" width="820" height="32" rx="8" fill="#120D28" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+  <text x="92" y="124" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.2)">🔍</text>
+  <text x="110" y="124" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.25)">Buscar en Desarrollo...</text>
+  <rect x="800" y="111" width="80" height="18" rx="6" fill="rgba(245,165,42,0.12)" stroke="rgba(245,165,42,0.25)" stroke-width="1"/>
+  <text x="840" y="123" font-family="monospace" font-size="8" fill="rgba(245,165,42,0.6)" text-anchor="middle">12 resultados</text>
+
+  <!-- Workflow card grid -->
+  <!-- Card 1 -->
+  <rect x="70" y="148" width="272" height="128" rx="10" fill="#120D28" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+  <rect x="70" y="148" width="272" height="4" rx="2" fill="#F5A52A"/>
+  <rect x="84" y="162" width="60" height="16" rx="8" fill="rgba(245,165,42,0.12)" stroke="rgba(245,165,42,0.25)" stroke-width="1"/>
+  <text x="114" y="173" font-family="monospace" font-size="7" fill="#F5A52A" text-anchor="middle">🏗️ Desarrollo</text>
+  <text x="84" y="193" font-family="system-ui, sans-serif" font-size="13" fill="#F0EBE1" font-weight="600">Diseño de Personaje</text>
+  <text x="84" y="208" font-family="system-ui, sans-serif" font-size="11" fill="rgba(240,235,225,0.5)">Crear el perfil visual y narrativo</text>
+  <text x="84" y="222" font-family="system-ui, sans-serif" font-size="11" fill="rgba(240,235,225,0.35)">de un personaje desde cero</text>
+  <rect x="84" y="240" width="130" height="24" rx="6" fill="#F5A52A"/>
+  <text x="149" y="256" font-family="system-ui, sans-serif" font-size="11" fill="#08060F" text-anchor="middle" font-weight="700">⚡ Usar Workflow</text>
+
+  <!-- Card 2 -->
+  <rect x="356" y="148" width="272" height="128" rx="10" fill="#120D28" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+  <rect x="356" y="148" width="272" height="4" rx="2" fill="#9B6FD4"/>
+  <rect x="370" y="162" width="60" height="16" rx="8" fill="rgba(155,111,212,0.12)" stroke="rgba(155,111,212,0.25)" stroke-width="1"/>
+  <text x="400" y="173" font-family="monospace" font-size="7" fill="#9B6FD4" text-anchor="middle">🏗️ Desarrollo</text>
+  <text x="370" y="193" font-family="system-ui, sans-serif" font-size="13" fill="#F0EBE1" font-weight="600">Diseño de Locación</text>
+  <text x="370" y="208" font-family="system-ui, sans-serif" font-size="11" fill="rgba(240,235,225,0.5)">Definir el perfil visual y narrativo</text>
+  <text x="370" y="222" font-family="system-ui, sans-serif" font-size="11" fill="rgba(240,235,225,0.35)">de un espacio del universo</text>
+  <rect x="370" y="240" width="130" height="24" rx="6" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <text x="435" y="256" font-family="system-ui, sans-serif" font-size="11" fill="rgba(240,235,225,0.6)" text-anchor="middle" font-weight="700">⚡ Usar Workflow</text>
+
+  <!-- Card 3 -->
+  <rect x="642" y="148" width="272" height="128" rx="10" fill="#120D28" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+  <rect x="642" y="148" width="272" height="4" rx="2" fill="#4ECDC4"/>
+  <rect x="656" y="162" width="60" height="16" rx="8" fill="rgba(78,205,196,0.12)" stroke="rgba(78,205,196,0.25)" stroke-width="1"/>
+  <text x="686" y="173" font-family="monospace" font-size="7" fill="#4ECDC4" text-anchor="middle">🏗️ Desarrollo</text>
+  <text x="656" y="193" font-family="system-ui, sans-serif" font-size="13" fill="#F0EBE1" font-weight="600">Biblia de Serie</text>
+  <text x="656" y="208" font-family="system-ui, sans-serif" font-size="11" fill="rgba(240,235,225,0.5)">Armar el documento fundacional</text>
+  <text x="656" y="222" font-family="system-ui, sans-serif" font-size="11" fill="rgba(240,235,225,0.35)">de la serie desde los pilares</text>
+  <rect x="656" y="240" width="130" height="24" rx="6" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <text x="721" y="256" font-family="system-ui, sans-serif" font-size="11" fill="rgba(240,235,225,0.6)" text-anchor="middle" font-weight="700">⚡ Usar Workflow</text>
+
+  <!-- Row 2 beginning (partial) -->
+  <rect x="70" y="290" width="272" height="128" rx="10" fill="#120D28" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+  <rect x="70" y="290" width="272" height="4" rx="2" fill="#D4256A"/>
+  <rect x="84" y="304" width="60" height="16" rx="8" fill="rgba(212,37,106,0.12)" stroke="rgba(212,37,106,0.25)" stroke-width="1"/>
+  <text x="114" y="315" font-family="monospace" font-size="7" fill="#D4256A" text-anchor="middle">🏗️ Desarrollo</text>
+  <text x="84" y="335" font-family="system-ui, sans-serif" font-size="13" fill="#F0EBE1" font-weight="600">Diseño de Arco Narrativo</text>
+  <text x="84" y="350" font-family="system-ui, sans-serif" font-size="11" fill="rgba(240,235,225,0.5)">Estructura la evolución del</text>
+  <text x="84" y="364" font-family="system-ui, sans-serif" font-size="11" fill="rgba(240,235,225,0.35)">personaje a lo largo de la serie</text>
+  <rect x="84" y="382" width="130" height="24" rx="6" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <text x="149" y="398" font-family="system-ui, sans-serif" font-size="11" fill="rgba(240,235,225,0.6)" text-anchor="middle" font-weight="700">⚡ Usar Workflow</text>
+
+  <rect x="356" y="290" width="272" height="128" rx="10" fill="#120D28" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+  <rect x="356" y="290" width="272" height="4" rx="2" fill="#88D8B0"/>
+  <rect x="370" y="304" width="60" height="16" rx="8" fill="rgba(136,216,176,0.12)" stroke="rgba(136,216,176,0.25)" stroke-width="1"/>
+  <text x="400" y="315" font-family="monospace" font-size="7" fill="#88D8B0" text-anchor="middle">🏗️ Desarrollo</text>
+  <text x="370" y="335" font-family="system-ui, sans-serif" font-size="13" fill="#F0EBE1" font-weight="600">Worldbuilding Básico</text>
+  <text x="370" y="350" font-family="system-ui, sans-serif" font-size="11" fill="rgba(240,235,225,0.5)">Establecer las reglas del mundo</text>
+  <text x="370" y="364" font-family="system-ui, sans-serif" font-size="11" fill="rgba(240,235,225,0.35)">y sus elementos fundacionales</text>
+
+  <rect x="642" y="290" width="272" height="128" rx="10" fill="#120D28" stroke="rgba(255,255,255,0.06)" stroke-width="1" opacity="0.4"/>
+  <rect x="642" y="290" width="272" height="4" rx="2" fill="rgba(155,111,212,0.5)" opacity="0.4"/>
+</svg>

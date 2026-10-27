@@ -1,0 +1,98 @@
+<svg viewBox="0 0 960 440" width="960" height="440" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="accentLine" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#9B6FD4"/>
+      <stop offset="60%" stop-color="#4ECDC4"/>
+      <stop offset="100%" stop-color="#08060F" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="960" height="440" fill="#08060F"/>
+  <rect x="0" y="0" width="960" height="3" fill="url(#accentLine)"/>
+
+  <!-- Sidebar -->
+  <rect x="0" y="0" width="56" height="440" fill="#06040F"/>
+  <rect x="56" y="0" width="1" height="440" fill="rgba(255,255,255,0.07)"/>
+  <rect x="16" y="76" width="24" height="24" rx="6" fill="#F5A52A"/>
+  <rect x="21" y="82" width="6" height="12" rx="2" fill="#08060F"/>
+  <rect x="30" y="86" width="6" height="8" rx="2" fill="#08060F"/>
+
+  <!-- Top bar -->
+  <rect x="57" y="0" width="903" height="44" fill="#06040F"/>
+  <rect x="57" y="44" width="903" height="1" fill="rgba(255,255,255,0.07)"/>
+  <text x="150" y="26" font-family="system-ui, sans-serif" font-size="12" fill="#F0EBE1" font-weight="600">T1E01 · El Primer Toque</text>
+
+  <!-- Tabs -->
+  <rect x="57" y="44" width="903" height="36" fill="#06040F"/>
+  <text x="90" y="67" font-family="system-ui, sans-serif" font-size="13" fill="rgba(240,235,225,0.45)">Vista General</text>
+  <text x="200" y="67" font-family="system-ui, sans-serif" font-size="13" fill="rgba(240,235,225,0.45)">Guión</text>
+  <text x="256" y="67" font-family="system-ui, sans-serif" font-size="13" fill="rgba(240,235,225,0.45)">Estructura</text>
+  <text x="450" y="67" font-family="system-ui, sans-serif" font-size="13" fill="#F5A52A" font-weight="600">Motor NUPPA</text>
+  <rect x="450" y="78" width="96" height="2" rx="1" fill="#F5A52A"/>
+  <rect x="57" y="80" width="903" height="1" fill="rgba(255,255,255,0.07)"/>
+
+  <!-- Left area (episode background) -->
+  <rect x="57" y="81" width="620" height="359" fill="#08060F"/>
+  <rect x="93" y="100" width="400" height="8" rx="2" fill="rgba(240,235,225,0.04)"/>
+  <rect x="93" y="116" width="340" height="8" rx="2" fill="rgba(240,235,225,0.03)"/>
+  <rect x="93" y="132" width="380" height="8" rx="2" fill="rgba(240,235,225,0.03)"/>
+
+  <!-- Divider -->
+  <rect x="677" y="81" width="1" height="359" fill="rgba(255,255,255,0.1)"/>
+
+  <!-- AI Panel -->
+  <rect x="678" y="81" width="282" height="359" fill="#06040F"/>
+
+  <!-- Panel header with back button -->
+  <rect x="678" y="81" width="282" height="48" fill="#06040F"/>
+  <rect x="678" y="129" width="282" height="1" fill="rgba(255,255,255,0.07)"/>
+  <text x="698" y="100" font-family="system-ui, sans-serif" font-size="10" fill="rgba(245,165,42,0.6)">← Motor NUPPA</text>
+  <text x="698" y="120" font-family="system-ui, sans-serif" font-size="13" fill="#F0EBE1" font-weight="700">Log de continuidad</text>
+
+  <!-- Alert banner -->
+  <rect x="690" y="138" width="258" height="36" rx="6" fill="rgba(245,165,42,0.12)" stroke="rgba(245,165,42,0.4)" stroke-width="1"/>
+  <!-- Warning icon -->
+  <polygon points="707,148 713,159 701,159" fill="none" stroke="#F5A52A" stroke-width="1.5" stroke-linejoin="round"/>
+  <text x="708" y="157" font-family="monospace" font-size="8" fill="#F5A52A" text-anchor="middle">!</text>
+  <text x="720" y="151" font-family="system-ui, sans-serif" font-size="11" fill="#F5A52A" font-weight="700">5 cambios detectados</text>
+  <text x="720" y="165" font-family="system-ui, sans-serif" font-size="9" fill="rgba(245,165,42,0.7)">Requieren registro en el canon</text>
+
+  <!-- Change items list -->
+  <!-- Item 1 -->
+  <rect x="690" y="182" width="258" height="44" rx="6" fill="#120D28" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+  <rect x="702" y="198" width="12" height="12" rx="2" fill="rgba(78,205,196,0.15)" stroke="rgba(78,205,196,0.3)" stroke-width="1"/>
+  <text x="708" y="207" font-family="system-ui, sans-serif" font-size="8" fill="#4ECDC4" text-anchor="middle">✓</text>
+  <text x="720" y="196" font-family="system-ui, sans-serif" font-size="10" fill="#F0EBE1" font-weight="600">👤 Mateo González — Debut</text>
+  <text x="720" y="210" font-family="system-ui, sans-serif" font-size="9" fill="rgba(240,235,225,0.45)">Primera aparición oficial en Los Hawks</text>
+  <rect x="884" y="191" width="54" height="14" rx="7" fill="rgba(155,111,212,0.15)" stroke="rgba(155,111,212,0.3)" stroke-width="1"/>
+  <text x="911" y="201" font-family="monospace" font-size="7" fill="#9B6FD4" text-anchor="middle">PERSONAJE</text>
+
+  <!-- Item 2 -->
+  <rect x="690" y="232" width="258" height="44" rx="6" fill="#120D28" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+  <rect x="702" y="248" width="12" height="12" rx="2" fill="rgba(78,205,196,0.15)" stroke="rgba(78,205,196,0.3)" stroke-width="1"/>
+  <text x="708" y="257" font-family="system-ui, sans-serif" font-size="8" fill="#4ECDC4" text-anchor="middle">✓</text>
+  <text x="720" y="246" font-family="system-ui, sans-serif" font-size="10" fill="#F0EBE1" font-weight="600">📍 Cancha Los Hawks — Establecida</text>
+  <text x="720" y="260" font-family="system-ui, sans-serif" font-size="9" fill="rgba(240,235,225,0.45)">Locación central de la serie confirmada</text>
+  <rect x="884" y="241" width="54" height="14" rx="7" fill="rgba(78,205,196,0.15)" stroke="rgba(78,205,196,0.3)" stroke-width="1"/>
+  <text x="911" y="251" font-family="monospace" font-size="7" fill="#4ECDC4" text-anchor="middle">LOCACIÓN</text>
+
+  <!-- Item 3 -->
+  <rect x="690" y="282" width="258" height="44" rx="6" fill="#120D28" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+  <rect x="702" y="298" width="12" height="12" rx="2" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+  <text x="720" y="296" font-family="system-ui, sans-serif" font-size="10" fill="#F0EBE1" font-weight="600">🤝 Relación Mateo–Kael — Antagonismo</text>
+  <text x="720" y="310" font-family="system-ui, sans-serif" font-size="9" fill="rgba(240,235,225,0.45)">Estado inicial: tensión y rivalidad latente</text>
+  <rect x="884" y="291" width="54" height="14" rx="7" fill="rgba(245,165,42,0.12)" stroke="rgba(245,165,42,0.3)" stroke-width="1"/>
+  <text x="911" y="301" font-family="monospace" font-size="7" fill="#F5A52A" text-anchor="middle">RELACIÓN</text>
+
+  <!-- Item 4 -->
+  <rect x="690" y="332" width="258" height="44" rx="6" fill="#120D28" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+  <rect x="702" y="348" width="12" height="12" rx="2" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+  <text x="720" y="346" font-family="system-ui, sans-serif" font-size="10" fill="#F0EBE1" font-weight="600">⚡ El Gol Imposible — Evento</text>
+  <text x="720" y="360" font-family="system-ui, sans-serif" font-size="9" fill="rgba(240,235,225,0.45)">Primer hito narrativo de la serie</text>
+  <rect x="884" y="341" width="54" height="14" rx="7" fill="rgba(212,37,106,0.15)" stroke="rgba(212,37,106,0.3)" stroke-width="1"/>
+  <text x="911" y="351" font-family="monospace" font-size="7" fill="#D4256A" text-anchor="middle">EVENTO</text>
+
+  <!-- Approve button -->
+  <rect x="690" y="386" width="258" height="42" rx="8" fill="#4ECDC4"/>
+  <text x="819" y="412" font-family="system-ui, sans-serif" font-size="13" fill="#06040F" text-anchor="middle" font-weight="700">✓ Aprobar y guardar log</text>
+</svg>
