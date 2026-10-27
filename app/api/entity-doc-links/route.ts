@@ -42,10 +42,10 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(unique)
   }
 
-  // Links lookup mode
+  // Links lookup mode — include doc metadata for entity-side display
   let query = supabase
     .from('entity_doc_links')
-    .select('*')
+    .select('*, reference_docs(id, title, accent_color, categories)')
     .order('created_at')
 
   if (doc_id)      query = query.eq('doc_id', doc_id)

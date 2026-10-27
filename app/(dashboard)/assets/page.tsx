@@ -116,6 +116,7 @@ function AssetsContent() {
   const [canonError, setCanonError]     = useState(false)
   const [activeTab, setActiveTab]       = useState<'drive' | 'canon'>('drive')
   const [highlightEntity, setHighlightEntity] = useState<string | null>(null)
+  const [entityDocMap, setEntityDocMap] = useState<Record<string, any[]>>({})
   const highlightRef = useRef<HTMLDivElement | null>(null)
 
   // Read deep-link params on mount
@@ -139,9 +140,21 @@ function AssetsContent() {
 
   useEffect(() => {
     setCanonLoading(true)
-    fetch('/api/assets/approved')
-      .then(r => r.json())
-      .then(d => { if (Array.isArray(d)) setCanonSlots(d) })
+    Promise.all([
+      fetch('/api/assets/approved').then(r => r.json()),
+      fetch('/api/entity-doc-links').then(r => r.ok ? r.json() : []),
+    ])
+      .then(([approved, links]) => {
+        if (Array.isArray(approved)) setCanonSlots(approved)
+        if (Array.isArray(links)) {
+          const map: Record<string, any[]> = {}
+          for (const link of links) {
+            if (!map[link.entity_name]) map[link.entity_name] = []
+            map[link.entity_name].push(link)
+          }
+          setEntityDocMap(map)
+        }
+      })
       .catch(() => { setCanonError(true) })
       .finally(() => setCanonLoading(false))
   }, [])
@@ -492,6 +505,30 @@ function AssetsContent() {
                               </div>
                             ))}
                           </div>
+
+                          {/* Documentos vinculados */}
+                          {entityDocMap[entityName] && entityDocMap[entityName].length > 0 && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.625rem', flexWrap: 'wrap' }}>
+                              <span style={{ fontSize: '0.5625rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(240,235,225,0.2)', fontFamily: 'monospace', flexShrink: 0 }}>Biblia</span>
+                              {entityDocMap[entityName].map((link: any) => {
+                                const doc = link.reference_docs
+                                const accent = doc?.accent_color ?? '#F5A52A'
+                                return (
+                                  <a
+                                    key={link.id}
+                                    href="/bible"
+                                    title={doc?.title ?? link.doc_id}
+                                    style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', padding: '0.2rem 0.625rem', background: `${accent}10`, border: `1px solid ${accent}35`, borderRadius: '3px', textDecoration: 'none', cursor: 'pointer' }}
+                                  >
+                                    <div style={{ width: '6px', height: '6px', borderRadius: '1px', background: accent, flexShrink: 0 }} />
+                                    <span style={{ fontSize: '0.6875rem', color: `${accent}CC`, fontFamily: 'IBM Plex Sans, sans-serif', whiteSpace: 'nowrap' }}>
+                                      {doc?.title ?? 'Tomo'}
+                                    </span>
+                                  </a>
+                                )
+                              })}
+                            </div>
+                          )}
                         </div>
                       )
                       })}
