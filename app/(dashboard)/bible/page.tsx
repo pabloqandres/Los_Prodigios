@@ -1430,7 +1430,7 @@ function CanonEditorPanel({
 }
 
 // ── Book spine ─────────────────────────────────────────────────────────────────
-function BookSpine({ doc, selected, onClick }: { doc: RefDoc; selected: boolean; onClick: () => void }) {
+function BookSpine({ doc, selected, onClick, hasEntityLink }: { doc: RefDoc; selected: boolean; onClick: () => void; hasEntityLink?: boolean }) {
   const style = getSpineStyle(doc.accent_color)
   const [hovered, setHovered] = useState(false)
   const [tipPos, setTipPos] = useState({ x: 0, y: 0 })
@@ -1521,9 +1521,20 @@ function BookSpine({ doc, selected, onClick }: { doc: RefDoc; selected: boolean;
         {selected && (
           <div style={{ position: 'absolute', bottom: 8, left: '50%', transform: 'translateX(-50%)', width: '6px', height: '6px', borderRadius: '50%', background: style.stripe }} />
         )}
+        {hasEntityLink && !selected && (
+          <div title="Vinculado a entidad" style={{ position: 'absolute', top: 12, right: 6, width: '5px', height: '5px', borderRadius: '50%', background: '#4ECDC4', opacity: 0.7 }} />
+        )}
       </button>
     </div>
   )
+}
+
+type EntityLink = {
+  id: string
+  entity_name: string
+  entity_label: string
+  entity_category: string
+  link_type: string
 }
 
 // ── Detail panel ──────────────────────────────────────────────────────────────
@@ -1534,6 +1545,7 @@ function DetailPanel({
   onEditCanon,
   onDelete,
   onClose,
+  onEntityLinkChange,
 }: {
   doc: RefDoc
   isAdmin: boolean
@@ -1541,12 +1553,27 @@ function DetailPanel({
   onEditCanon: () => void
   onDelete: () => void
   onClose: () => void
+  onEntityLinkChange?: () => void
 }) {
   const style = getSpineStyle(doc.accent_color)
   const [reading, setReading] = useState(false)
   const [content, setContent] = useState<string | null>(null)
   const [loadingContent, setLoadingContent] = useState(false)
   const [canonBtnHovered, setCanonBtnHovered] = useState(false)
+  const [entityLinks, setEntityLinks] = useState<EntityLink[]>([])
+
+  useEffect(() => {
+    fetch(`/api/entity-doc-links?doc_id=${doc.id}`)
+      .then(r => r.ok ? r.json() : [])
+      .then(setEntityLinks)
+      .catch(() => {})
+  }, [doc.id])
+
+  async function removeEntityLink(id: string) {
+    await fetch(`/api/entity-doc-links?id=${id}`, { method: 'DELETE' })
+    setEntityLinks(prev => prev.filter(l => l.id !== id))
+    onEntityLinkChange?.()
+  }
 
   async function handleRead() {
     if (content) { setReading(true); return }
@@ -1623,6 +1650,34 @@ function DetailPanel({
                 </span>
               )
             })}
+          </div>
+        )}
+
+        {/* Entity links */}
+        {entityLinks.length > 0 && (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.375rem', marginBottom: '1rem', alignItems: 'center' }}>
+            <span style={{ fontSize: '0.6rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(240,235,225,0.2)', fontFamily: 'monospace', marginRight: '0.25rem' }}>Entidades</span>
+            {entityLinks.map(link => (
+              <div key={link.id} style={{ display: 'flex', alignItems: 'center', gap: 0, background: 'rgba(78,205,196,0.08)', border: '1px solid rgba(78,205,196,0.25)', borderRadius: '3px', overflow: 'hidden' }}>
+                <a
+                  href={`/assets?entity=${encodeURIComponent(link.entity_name)}&tab=canon`}
+                  style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', padding: '0.2rem 0.5rem', textDecoration: 'none' }}
+                >
+                  <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#4ECDC4" strokeWidth="2.5"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+                  <span style={{ fontSize: '0.6875rem', color: '#4ECDC4', fontFamily: 'IBM Plex Sans, sans-serif' }}>{link.entity_label}</span>
+                  <span style={{ fontSize: '0.5625rem', color: 'rgba(78,205,196,0.4)', fontFamily: 'IBM Plex Sans, sans-serif' }}>{link.entity_category}</span>
+                </a>
+                {isAdmin && (
+                  <button
+                    onClick={() => removeEntityLink(link.id)}
+                    title="Quitar vínculo"
+                    style={{ background: 'none', border: 'none', borderLeft: '1px solid rgba(78,205,196,0.15)', padding: '0.2rem 0.375rem', cursor: 'pointer', color: 'rgba(78,205,196,0.35)', lineHeight: 1, display: 'flex', alignItems: 'center' }}
+                  >
+                    <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  </button>
+                )}
+              </div>
+            ))}
           </div>
         )}
 
@@ -1718,11 +1773,20 @@ export default function BiblePage() {
   const [canonEditorContent, setCanonEditorContent] = useState('')
   const [canonChangeSummary, setCanonChangeSummary] = useState('')
 
+  const [linkedDocIds, setLinkedDocIds] = useState<Set<string>>(new Set())
+
   const fetchDocs = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await fetch('/api/reference-docs')
-      if (res.ok) setDocs(await res.json())
+      const [docsRes, linksRes] = await Promise.all([
+        fetch('/api/reference-docs'),
+        fetch('/api/entity-doc-links'),
+      ])
+      if (docsRes.ok) setDocs(await docsRes.json())
+      if (linksRes.ok) {
+        const links: { doc_id: string }[] = await linksRes.json()
+        setLinkedDocIds(new Set(links.map(l => l.doc_id)))
+      }
     } finally {
       setLoading(false)
     }
@@ -2391,6 +2455,7 @@ export default function BiblePage() {
                     key={doc.id}
                     doc={doc}
                     selected={selectedId === doc.id}
+                    hasEntityLink={linkedDocIds.has(doc.id)}
                     onClick={() => { handleToggle(doc.id); window.dispatchEvent(new Event('tutorial:bible_opened')) }}
                   />
                 ))
@@ -2440,6 +2505,7 @@ export default function BiblePage() {
                 onEditCanon={() => handleStartCanonEdit(selectedDoc)}
                 onDelete={() => handleDelete(selectedDoc.id)}
                 onClose={() => setSelectedId(null)}
+                onEntityLinkChange={fetchDocs}
               />
             </div>
           )}
