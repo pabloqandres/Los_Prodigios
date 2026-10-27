@@ -57,16 +57,67 @@ export async function POST(
     }
   }
 
-  // 3. Load bible / reference docs
+  // 3. Load bible / reference docs — with relevance filtering above threshold
   const { data: refDocs } = await supabase
     .from('reference_docs')
     .select('title, categories, content')
     .order('created_at', { ascending: true })
 
-  const bibleContext = refDocs && refDocs.length > 0
-    ? refDocs.map(doc => {
+  const LOAD_ALL_THRESHOLD = 25
+  const MAX_SELECTED = 15
+  const scriptSample = episode.script.substring(0, 5000)
+
+  function extractKeyTerms(script: string): Set<string> {
+    const terms = new Set<string>()
+    for (const line of script.split('\n')) {
+      const t = line.trim()
+      // Dialogue speakers: "NOMBRE:" or "NOMBRE (acot):"
+      const speaker = t.match(/^([A-ZÁÉÍÓÚÑÜ][A-ZÁÉÍÓÚÑÜ\s]{1,30})(?:\s*\(.*?\))?:/)
+      if (speaker) terms.add(speaker[1].trim().toLowerCase())
+      // Locations: INT./EXT. lines
+      const loc = t.match(/^(?:INT\.|EXT\.)\s+(.+?)(?:\s*[·—–-]|$)/i)
+      if (loc) {
+        const parts = loc[1].split(/[·—–\/]/)[0].trim().toLowerCase()
+        if (parts.length > 2) terms.add(parts)
+      }
+    }
+    return terms
+  }
+
+  function scoreDoc(doc: { title: string; categories: string[] | null; content: string | null }, terms: Set<string>): number {
+    let score = 0
+    const titleLower = doc.title.toLowerCase()
+    const contentLower = (doc.content ?? '').substring(0, 600).toLowerCase()
+    const cats = Array.isArray(doc.categories) ? doc.categories : []
+
+    // Category boosts — always relevant
+    if (cats.includes('continuidad')) score += 3
+    if (cats.includes('personajes')) score += 2
+
+    // Term matching
+    for (const term of terms) {
+      if (titleLower.includes(term)) score += 5
+      else if (contentLower.includes(term)) score += 2
+    }
+    return score
+  }
+
+  let selectedDocs = refDocs ?? []
+
+  if (selectedDocs.length > LOAD_ALL_THRESHOLD) {
+    const terms = extractKeyTerms(scriptSample)
+    const scored = selectedDocs
+      .map(doc => ({ doc, score: scoreDoc(doc, terms) }))
+      .sort((a, b) => b.score - a.score)
+    selectedDocs = scored.slice(0, MAX_SELECTED).map(s => s.doc)
+  }
+
+  // Tiered excerpt budget: more chars for top docs
+  const bibleContext = selectedDocs.length > 0
+    ? selectedDocs.map((doc, i) => {
         const cats = Array.isArray(doc.categories) ? doc.categories.join(', ') : ''
-        const excerpt = (doc.content ?? '').substring(0, 1200)
+        const budget = i < 3 ? 2000 : i < 8 ? 1000 : 500
+        const excerpt = (doc.content ?? '').substring(0, budget)
         return `### ${doc.title}${cats ? ` [${cats}]` : ''}\n${excerpt}`
       }).join('\n\n')
     : ''
