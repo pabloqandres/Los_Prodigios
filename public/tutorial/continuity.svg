@@ -1,0 +1,131 @@
+<svg viewBox="0 0 960 440" width="960" height="440" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="accentLine" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#9B6FD4"/>
+      <stop offset="60%" stop-color="#4ECDC4"/>
+      <stop offset="100%" stop-color="#08060F" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="960" height="440" fill="#08060F"/>
+  <rect x="0" y="0" width="960" height="3" fill="url(#accentLine)"/>
+
+  <!-- Sidebar -->
+  <rect x="0" y="0" width="56" height="440" fill="#0D0920"/>
+  <rect x="56" y="0" width="1" height="440" fill="rgba(255,255,255,0.07)"/>
+
+  <!-- Header -->
+  <text x="80" y="52" font-family="system-ui, sans-serif" font-weight="700" font-size="26" fill="#F0EBE1" letter-spacing="3">CONTINUIDAD</text>
+  <text x="80" y="70" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.45)">Sistema de continuidad narrativa y visual</text>
+  <rect x="80" y="82" width="860" height="1" fill="rgba(255,255,255,0.07)"/>
+
+  <!-- Status strip -->
+  <rect x="80" y="90" width="860" height="30" rx="6" fill="rgba(78,205,196,0.06)" stroke="rgba(78,205,196,0.15)" stroke-width="1"/>
+  <circle cx="100" cy="105" r="4" fill="#4ECDC4"/>
+  <text x="112" y="109" font-family="monospace" font-size="11" fill="#4ECDC4">Sistema activo</text>
+  <text x="230" y="109" font-family="monospace" font-size="11" fill="rgba(240,235,225,0.3)">·</text>
+  <text x="240" y="109" font-family="monospace" font-size="11" fill="rgba(240,235,225,0.45)">Último update: T1E03</text>
+  <text x="400" y="109" font-family="monospace" font-size="11" fill="rgba(240,235,225,0.3)">·</text>
+  <text x="410" y="109" font-family="monospace" font-size="11" fill="rgba(240,235,225,0.45)">3 issues abiertos</text>
+  <text x="550" y="109" font-family="monospace" font-size="11" fill="rgba(240,235,225,0.3)">·</text>
+  <text x="560" y="109" font-family="monospace" font-size="11" fill="rgba(240,235,225,0.45)">12 entidades en canon</text>
+
+  <!-- Row 1 of cards -->
+  <!-- Canon Log -->
+  <rect x="80" y="134" width="268" height="130" rx="12" fill="#0D0920" stroke="rgba(245,165,42,0.2)" stroke-width="1"/>
+  <rect x="80" y="134" width="268" height="4" rx="2" fill="#F5A52A"/>
+  <!-- Icon -->
+  <rect x="104" y="158" width="36" height="36" rx="8" fill="rgba(245,165,42,0.15)"/>
+  <rect x="114" y="166" width="16" height="2" rx="1" fill="#F5A52A"/>
+  <rect x="114" y="171" width="14" height="2" rx="1" fill="rgba(245,165,42,0.5)"/>
+  <rect x="114" y="176" width="16" height="2" rx="1" fill="rgba(245,165,42,0.5)"/>
+  <rect x="114" y="181" width="10" height="2" rx="1" fill="rgba(245,165,42,0.3)"/>
+  <text x="152" y="170" font-family="system-ui, sans-serif" font-weight="700" font-size="15" fill="#F5A52A">Canon Log</text>
+  <text x="152" y="186" font-family="system-ui, sans-serif" font-size="11" fill="rgba(240,235,225,0.45)">Historial de cambios</text>
+  <rect x="104" y="206" width="224" height="1" fill="rgba(255,255,255,0.05)"/>
+  <text x="104" y="222" font-family="monospace" font-size="11" fill="rgba(240,235,225,0.35)">28 entradas · T1E01–T1E03</text>
+  <text x="104" y="238" font-family="monospace" font-size="11" fill="rgba(240,235,225,0.25)">Fuente de verdad del canon</text>
+  <rect x="104" y="248" width="224" height="6" rx="3" fill="rgba(255,255,255,0.06)"/>
+  <rect x="104" y="248" width="140" height="6" rx="3" fill="rgba(245,165,42,0.5)"/>
+
+  <!-- Timeline -->
+  <rect x="364" y="134" width="268" height="130" rx="12" fill="#0D0920" stroke="rgba(78,205,196,0.2)" stroke-width="1"/>
+  <rect x="364" y="134" width="268" height="4" rx="2" fill="#4ECDC4"/>
+  <!-- Timeline icon -->
+  <rect x="388" y="158" width="36" height="36" rx="8" fill="rgba(78,205,196,0.15)"/>
+  <line x1="396" y1="176" x2="416" y2="176" stroke="#4ECDC4" stroke-width="2"/>
+  <circle cx="400" cy="176" r="3" fill="#4ECDC4"/>
+  <circle cx="408" cy="176" r="3" fill="#4ECDC4"/>
+  <circle cx="416" cy="176" r="3" fill="#4ECDC4"/>
+  <line x1="400" y1="170" x2="400" y2="164" stroke="rgba(78,205,196,0.5)" stroke-width="1"/>
+  <line x1="416" y1="170" x2="416" y2="164" stroke="rgba(78,205,196,0.5)" stroke-width="1"/>
+  <text x="436" y="170" font-family="system-ui, sans-serif" font-weight="700" font-size="15" fill="#4ECDC4">Timeline</text>
+  <text x="436" y="186" font-family="system-ui, sans-serif" font-size="11" fill="rgba(240,235,225,0.45)">Hitos narrativos</text>
+  <rect x="388" y="206" width="224" height="1" fill="rgba(255,255,255,0.05)"/>
+  <text x="388" y="222" font-family="monospace" font-size="11" fill="rgba(240,235,225,0.35)">7 hitos · T1E01–T1E03</text>
+  <text x="388" y="238" font-family="monospace" font-size="11" fill="rgba(240,235,225,0.25)">Línea temporal visual</text>
+  <rect x="388" y="248" width="224" height="6" rx="3" fill="rgba(255,255,255,0.06)"/>
+  <rect x="388" y="248" width="80" height="6" rx="3" fill="rgba(78,205,196,0.5)"/>
+
+  <!-- Issues Abiertos -->
+  <rect x="648" y="134" width="292" height="130" rx="12" fill="#0D0920" stroke="rgba(212,37,106,0.2)" stroke-width="1"/>
+  <rect x="648" y="134" width="292" height="4" rx="2" fill="#D4256A"/>
+  <!-- Warning icon -->
+  <rect x="672" y="158" width="36" height="36" rx="8" fill="rgba(212,37,106,0.15)"/>
+  <path d="M690 164 L698 182 L682 182 Z" fill="none" stroke="#D4256A" stroke-width="2"/>
+  <text x="690" y="178" font-family="monospace" font-size="10" fill="#D4256A" text-anchor="middle">!</text>
+  <text x="720" y="170" font-family="system-ui, sans-serif" font-weight="700" font-size="15" fill="#D4256A">Issues Abiertos</text>
+  <text x="720" y="186" font-family="system-ui, sans-serif" font-size="11" fill="rgba(240,235,225,0.45)">Inconsistencias activas</text>
+  <rect x="672" y="206" width="248" height="1" fill="rgba(255,255,255,0.05)"/>
+  <!-- Issue items -->
+  <circle cx="682" cy="220" r="3" fill="rgba(212,37,106,0.7)"/>
+  <text x="692" y="224" font-family="monospace" font-size="10" fill="rgba(240,235,225,0.5)">Color uniform. Mateo T1E02 vs T1E03</text>
+  <circle cx="682" cy="236" r="3" fill="rgba(245,165,42,0.7)"/>
+  <text x="692" y="240" font-family="monospace" font-size="10" fill="rgba(240,235,225,0.5)">¿Quién es el entrenador rival?</text>
+  <circle cx="682" cy="252" r="3" fill="rgba(245,165,42,0.7)"/>
+  <text x="692" y="256" font-family="monospace" font-size="10" fill="rgba(240,235,225,0.5)">Cancha norte: dimensiones</text>
+
+  <!-- Row 2 -->
+  <!-- Estados: Personajes -->
+  <rect x="80" y="280" width="268" height="130" rx="12" fill="#0D0920" stroke="rgba(74,143,232,0.2)" stroke-width="1"/>
+  <rect x="80" y="280" width="268" height="4" rx="2" fill="#4A8FE8"/>
+  <rect x="104" y="304" width="36" height="36" rx="8" fill="rgba(74,143,232,0.15)"/>
+  <circle cx="122" cy="316" r="5" fill="none" stroke="#4A8FE8" stroke-width="2"/>
+  <rect x="113" y="323" width="18" height="10" rx="5" fill="none" stroke="#4A8FE8" stroke-width="1.5"/>
+  <text x="152" y="316" font-family="system-ui, sans-serif" font-weight="700" font-size="14" fill="#4A8FE8">Estados: Personajes</text>
+  <text x="152" y="332" font-family="system-ui, sans-serif" font-size="11" fill="rgba(240,235,225,0.45)">Snapshot vivo</text>
+  <rect x="104" y="350" width="224" height="1" fill="rgba(255,255,255,0.05)"/>
+  <text x="104" y="366" font-family="monospace" font-size="11" fill="rgba(240,235,225,0.35)">8 personajes activos</text>
+  <text x="104" y="382" font-family="monospace" font-size="11" fill="rgba(240,235,225,0.25)">Estado al cierre de T1E03</text>
+  <rect x="104" y="392" width="224" height="6" rx="3" fill="rgba(255,255,255,0.06)"/>
+  <rect x="104" y="392" width="190" height="6" rx="3" fill="rgba(74,143,232,0.5)"/>
+
+  <!-- Estados: Locaciones -->
+  <rect x="364" y="280" width="268" height="130" rx="12" fill="#0D0920" stroke="rgba(78,205,196,0.15)" stroke-width="1"/>
+  <rect x="364" y="280" width="268" height="4" rx="2" fill="#4ECDC4"/>
+  <rect x="388" y="304" width="36" height="36" rx="8" fill="rgba(78,205,196,0.12)"/>
+  <rect x="398" y="314" width="16" height="12" rx="2" fill="none" stroke="#4ECDC4" stroke-width="1.5"/>
+  <rect x="402" y="310" width="8" height="6" rx="2" fill="#4ECDC4"/>
+  <text x="436" y="316" font-family="system-ui, sans-serif" font-weight="700" font-size="14" fill="#4ECDC4">Estados: Locaciones</text>
+  <text x="436" y="332" font-family="system-ui, sans-serif" font-size="11" fill="rgba(240,235,225,0.45)">Cambios permanentes</text>
+  <rect x="388" y="350" width="224" height="1" fill="rgba(255,255,255,0.05)"/>
+  <text x="388" y="366" font-family="monospace" font-size="11" fill="rgba(240,235,225,0.35)">5 locaciones catalogadas</text>
+  <text x="388" y="382" font-family="monospace" font-size="11" fill="rgba(240,235,225,0.25)">Estado al cierre de T1E03</text>
+  <rect x="388" y="392" width="224" height="6" rx="3" fill="rgba(255,255,255,0.06)"/>
+  <rect x="388" y="392" width="100" height="6" rx="3" fill="rgba(78,205,196,0.5)"/>
+
+  <!-- Estados: Props -->
+  <rect x="648" y="280" width="292" height="130" rx="12" fill="#0D0920" stroke="rgba(155,111,212,0.2)" stroke-width="1"/>
+  <rect x="648" y="280" width="292" height="4" rx="2" fill="#9B6FD4"/>
+  <rect x="672" y="304" width="36" height="36" rx="8" fill="rgba(155,111,212,0.15)"/>
+  <rect x="682" y="312" width="16" height="16" rx="3" fill="none" stroke="#9B6FD4" stroke-width="2"/>
+  <rect x="686" y="316" width="8" height="8" rx="1" fill="rgba(155,111,212,0.4)"/>
+  <text x="720" y="316" font-family="system-ui, sans-serif" font-weight="700" font-size="14" fill="#9B6FD4">Estados: Props</text>
+  <text x="720" y="332" font-family="system-ui, sans-serif" font-size="11" fill="rgba(240,235,225,0.45)">Objetos del mundo</text>
+  <rect x="672" y="350" width="248" height="1" fill="rgba(255,255,255,0.05)"/>
+  <text x="672" y="366" font-family="monospace" font-size="11" fill="rgba(240,235,225,0.35)">12 props registrados</text>
+  <text x="672" y="382" font-family="monospace" font-size="11" fill="rgba(240,235,225,0.25)">Estado al cierre de T1E03</text>
+  <rect x="672" y="392" width="248" height="6" rx="3" fill="rgba(255,255,255,0.06)"/>
+  <rect x="672" y="392" width="60" height="6" rx="3" fill="rgba(155,111,212,0.5)"/>
+</svg>

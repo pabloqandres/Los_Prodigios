@@ -1,0 +1,135 @@
+<svg viewBox="0 0 960 440" width="960" height="440" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="accentLine" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#9B6FD4"/>
+      <stop offset="60%" stop-color="#4ECDC4"/>
+      <stop offset="100%" stop-color="#08060F" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="960" height="440" fill="#08060F"/>
+  <rect x="0" y="0" width="960" height="3" fill="url(#accentLine)"/>
+
+  <!-- Sidebar -->
+  <rect x="0" y="0" width="56" height="440" fill="#0D0920"/>
+  <rect x="56" y="0" width="1" height="440" fill="rgba(255,255,255,0.07)"/>
+
+  <!-- Header -->
+  <text x="80" y="52" font-family="system-ui, sans-serif" font-weight="700" font-size="26" fill="#F0EBE1" letter-spacing="3">MARKETING</text>
+  <text x="80" y="70" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.45)">Asistente de marketing especializado</text>
+  <rect x="80" y="82" width="860" height="1" fill="rgba(255,255,255,0.07)"/>
+
+  <!-- Tab bar -->
+  <rect x="80" y="90" width="860" height="34" fill="rgba(13,9,32,0.6)"/>
+  <rect x="80" y="124" width="860" height="1" fill="rgba(255,255,255,0.07)"/>
+
+  <!-- Tab: Posts de Redes (active) -->
+  <text x="100" y="112" font-family="system-ui, sans-serif" font-size="13" fill="#F5A52A" font-weight="600">Posts de Redes</text>
+  <rect x="100" y="122" width="104" height="2" rx="1" fill="#F5A52A"/>
+
+  <!-- Other tabs -->
+  <text x="222" y="112" font-family="system-ui, sans-serif" font-size="13" fill="rgba(240,235,225,0.4)">Publicidad</text>
+  <text x="316" y="112" font-family="system-ui, sans-serif" font-size="13" fill="rgba(240,235,225,0.4)">Trailers &amp; Promos</text>
+  <text x="456" y="112" font-family="system-ui, sans-serif" font-size="13" fill="rgba(240,235,225,0.4)">Merchandise</text>
+  <text x="558" y="112" font-family="system-ui, sans-serif" font-size="13" fill="rgba(240,235,225,0.4)">Licensing</text>
+
+  <!-- Left: chat area -->
+  <rect x="80" y="125" width="670" height="315" fill="#08060F"/>
+
+  <!-- Platform selector row -->
+  <rect x="96" y="138" width="638" height="28" rx="6" fill="rgba(13,9,32,0.8)"/>
+  <text x="112" y="155" font-family="monospace" font-size="10" fill="rgba(240,235,225,0.3)">Plataforma:</text>
+
+  <!-- IG pill selected -->
+  <rect x="186" y="141" width="80" height="22" rx="11" fill="rgba(212,37,106,0.2)" stroke="rgba(212,37,106,0.4)" stroke-width="1"/>
+  <!-- IG icon rough -->
+  <rect x="196" y="146" width="14" height="14" rx="5" fill="none" stroke="#D4256A" stroke-width="1.5"/>
+  <circle cx="203" cy="153" r="3" fill="none" stroke="#D4256A" stroke-width="1.2"/>
+  <text x="218" y="157" font-family="monospace" font-size="10" fill="#D4256A">Instagram</text>
+
+  <!-- TikTok pill -->
+  <rect x="274" y="141" width="74" height="22" rx="11" fill="rgba(240,235,225,0.05)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <text x="311" y="157" font-family="monospace" font-size="10" fill="rgba(240,235,225,0.35)" text-anchor="middle">TikTok</text>
+
+  <!-- YT pill -->
+  <rect x="356" y="141" width="80" height="22" rx="11" fill="rgba(240,235,225,0.05)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <text x="396" y="157" font-family="monospace" font-size="10" fill="rgba(240,235,225,0.35)" text-anchor="middle">YouTube</text>
+
+  <!-- X pill -->
+  <rect x="444" y="141" width="50" height="22" rx="11" fill="rgba(240,235,225,0.05)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <text x="469" y="157" font-family="monospace" font-size="10" fill="rgba(240,235,225,0.35)" text-anchor="middle">X</text>
+
+  <!-- Chat messages -->
+  <!-- User message -->
+  <rect x="400" y="182" width="320" height="58" rx="10" fill="rgba(245,165,42,0.15)" stroke="rgba(245,165,42,0.2)" stroke-width="1"/>
+  <text x="418" y="202" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.85)">Crea 3 ideas de posts para Instagram</text>
+  <text x="418" y="218" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.85)">del estreno de T1E01, enfocados</text>
+  <text x="418" y="234" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.85)">en el personaje de Mateo.</text>
+  <text x="712" y="250" font-family="monospace" font-size="9" fill="rgba(245,165,42,0.4)" text-anchor="end">tú</text>
+
+  <!-- AI response -->
+  <rect x="96" y="256" width="440" height="160" rx="10" fill="rgba(212,37,106,0.07)" stroke="rgba(212,37,106,0.15)" stroke-width="1"/>
+  <!-- AI label -->
+  <circle cx="114" cy="272" r="10" fill="rgba(212,37,106,0.2)"/>
+  <text x="114" y="277" font-family="monospace" font-size="9" fill="#D4256A" text-anchor="middle">N</text>
+  <text x="132" y="275" font-family="system-ui, sans-serif" font-weight="600" font-size="12" fill="#D4256A">NUPPA</text>
+  <text x="192" y="275" font-family="monospace" font-size="9" fill="rgba(240,235,225,0.3)">Marketing · Instagram</text>
+
+  <text x="114" y="296" font-family="system-ui, sans-serif" font-size="11" fill="rgba(240,235,225,0.8)" font-weight="600">Post 1 — Teaser de personaje</text>
+  <text x="114" y="312" font-family="system-ui, sans-serif" font-size="11" fill="rgba(240,235,225,0.6)">"Algunos entrenan para ganar. Mateo entrena</text>
+  <text x="114" y="326" font-family="system-ui, sans-serif" font-size="11" fill="rgba(240,235,225,0.6)">para callar sus propios demonios. T1E01 ya disponible."</text>
+  <rect x="114" y="334" width="400" height="1" fill="rgba(255,255,255,0.05)"/>
+  <text x="114" y="350" font-family="system-ui, sans-serif" font-size="11" fill="rgba(240,235,225,0.8)" font-weight="600">Post 2 — Behind the frames</text>
+  <text x="114" y="366" font-family="system-ui, sans-serif" font-size="11" fill="rgba(240,235,225,0.6)">Carrusel con frames del episodio + proceso</text>
+  <text x="114" y="382" font-family="system-ui, sans-serif" font-size="11" fill="rgba(240,235,225,0.6)">de diseño del personaje...</text>
+  <!-- Cursor -->
+  <rect x="114" y="396" width="2" height="12" fill="#D4256A" opacity="0.8"/>
+
+  <!-- Input -->
+  <rect x="96" y="422" width="638" height="32" rx="8" fill="#0D0920" stroke="rgba(212,37,106,0.2)" stroke-width="1"/>
+  <text x="116" y="442" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.2)">Escribe tu solicitud de marketing...</text>
+  <rect x="694" y="426" width="36" height="24" rx="6" fill="#D4256A"/>
+  <path d="M702 438 L718 438 M712 432 L718 438 L712 444" fill="none" stroke="#08060F" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- Right sidebar: platform icons panel -->
+  <rect x="750" y="125" width="1" height="315" fill="rgba(255,255,255,0.07)"/>
+  <rect x="751" y="125" width="189" height="315" fill="#0D0920"/>
+
+  <text x="771" y="152" font-family="monospace" font-size="10" fill="rgba(240,235,225,0.3)" letter-spacing="1">PLATAFORMAS</text>
+  <rect x="771" y="158" width="149" height="1" fill="rgba(255,255,255,0.06)"/>
+
+  <!-- Platform cards -->
+  <!-- Instagram -->
+  <rect x="771" y="168" width="149" height="52" rx="8" fill="rgba(212,37,106,0.1)" stroke="rgba(212,37,106,0.25)" stroke-width="1"/>
+  <rect x="781" y="178" width="28" height="28" rx="8" fill="rgba(212,37,106,0.2)"/>
+  <rect x="786" y="183" width="18" height="18" rx="6" fill="none" stroke="#D4256A" stroke-width="1.5"/>
+  <circle cx="795" cy="192" r="4" fill="none" stroke="#D4256A" stroke-width="1.2"/>
+  <circle cx="806" cy="184" r="2" fill="#D4256A"/>
+  <text x="817" y="189" font-family="system-ui, sans-serif" font-weight="600" font-size="12" fill="#D4256A">Instagram</text>
+  <text x="817" y="203" font-family="monospace" font-size="9" fill="rgba(240,235,225,0.3)">Activo · 4 borradores</text>
+
+  <!-- TikTok -->
+  <rect x="771" y="228" width="149" height="52" rx="8" fill="rgba(240,235,225,0.04)" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+  <rect x="781" y="238" width="28" height="28" rx="8" fill="rgba(255,255,255,0.07)"/>
+  <!-- TikTok icon approximation -->
+  <text x="795" y="256" font-family="monospace" font-size="14" fill="rgba(240,235,225,0.4)" text-anchor="middle">♪</text>
+  <text x="817" y="249" font-family="system-ui, sans-serif" font-weight="600" font-size="12" fill="rgba(240,235,225,0.55)">TikTok</text>
+  <text x="817" y="263" font-family="monospace" font-size="9" fill="rgba(240,235,225,0.25)">1 idea</text>
+
+  <!-- YouTube -->
+  <rect x="771" y="288" width="149" height="52" rx="8" fill="rgba(240,235,225,0.04)" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+  <rect x="781" y="298" width="28" height="28" rx="8" fill="rgba(255,255,255,0.07)"/>
+  <rect x="785" y="302" width="20" height="14" rx="3" fill="none" stroke="rgba(240,235,225,0.3)" stroke-width="1.5"/>
+  <path d="M793 307 L799 309 L793 311 Z" fill="rgba(240,235,225,0.4)"/>
+  <text x="817" y="309" font-family="system-ui, sans-serif" font-weight="600" font-size="12" fill="rgba(240,235,225,0.55)">YouTube</text>
+  <text x="817" y="323" font-family="monospace" font-size="9" fill="rgba(240,235,225,0.25)">Trailer pendiente</text>
+
+  <!-- X -->
+  <rect x="771" y="348" width="149" height="52" rx="8" fill="rgba(240,235,225,0.04)" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+  <rect x="781" y="358" width="28" height="28" rx="8" fill="rgba(255,255,255,0.07)"/>
+  <line x1="787" y1="363" x2="801" y2="381" stroke="rgba(240,235,225,0.35)" stroke-width="2"/>
+  <line x1="801" y1="363" x2="787" y2="381" stroke="rgba(240,235,225,0.35)" stroke-width="2"/>
+  <text x="817" y="369" font-family="system-ui, sans-serif" font-weight="600" font-size="12" fill="rgba(240,235,225,0.55)">X / Twitter</text>
+  <text x="817" y="383" font-family="monospace" font-size="9" fill="rgba(240,235,225,0.25)">2 posts generados</text>
+</svg>

@@ -1,0 +1,114 @@
+<svg viewBox="0 0 960 440" width="960" height="440" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="accentLine" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#9B6FD4"/>
+      <stop offset="60%" stop-color="#4ECDC4"/>
+      <stop offset="100%" stop-color="#08060F" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="960" height="440" fill="#08060F"/>
+  <rect x="0" y="0" width="960" height="3" fill="url(#accentLine)"/>
+
+  <!-- Sidebar -->
+  <rect x="0" y="0" width="56" height="440" fill="#0D0920"/>
+  <rect x="56" y="0" width="1" height="440" fill="rgba(255,255,255,0.07)"/>
+
+  <!-- Header -->
+  <text x="80" y="52" font-family="system-ui, sans-serif" font-weight="700" font-size="26" fill="#F0EBE1" letter-spacing="3">BIBLIA</text>
+  <text x="80" y="70" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.45)">Canon de la serie — Los Prodigios</text>
+  <rect x="80" y="82" width="860" height="1" fill="rgba(255,255,255,0.07)"/>
+
+  <!-- Tab pills -->
+  <rect x="80" y="94" width="110" height="28" rx="14" fill="#F5A52A"/>
+  <text x="135" y="113" font-family="system-ui, sans-serif" font-size="12" font-weight="600" fill="#08060F" text-anchor="middle">📚 Canon</text>
+  <rect x="198" y="94" width="90" height="28" rx="14" fill="rgba(240,235,225,0.06)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <text x="243" y="113" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.5)" text-anchor="middle">✍ Taller</text>
+
+  <!-- Search bar -->
+  <rect x="680" y="96" width="220" height="26" rx="13" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <text x="700" y="113" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.25)">Buscar tomo...</text>
+
+  <!-- New tome button -->
+  <rect x="790" y="94" width="110" height="28" rx="6" fill="rgba(155,111,212,0.15)" stroke="rgba(155,111,212,0.3)" stroke-width="1"/>
+  <text x="845" y="113" font-family="system-ui, sans-serif" font-size="12" fill="#9B6FD4" text-anchor="middle">+ Nuevo tomo</text>
+
+  <!-- Book spine cards — 3 columns, 2 rows -->
+  <!-- Book 1: Gold — Personajes -->
+  <rect x="80" y="136" width="140" height="188" rx="10" fill="#0D0920" stroke="rgba(245,165,42,0.15)" stroke-width="1"/>
+  <rect x="80" y="136" width="140" height="6" rx="3" fill="#F5A52A"/>
+  <!-- Book page lines sim -->
+  <rect x="80" y="142" width="6" height="182" rx="0" fill="rgba(245,165,42,0.08)"/>
+  <rect x="86" y="148" width="2" height="170" fill="rgba(245,165,42,0.15)"/>
+  <!-- Icon area -->
+  <rect x="104" y="164" width="48" height="48" rx="8" fill="rgba(245,165,42,0.12)"/>
+  <circle cx="128" cy="182" r="8" fill="none" stroke="#F5A52A" stroke-width="2"/>
+  <rect x="118" y="193" width="20" height="12" rx="6" fill="none" stroke="#F5A52A" stroke-width="1.5"/>
+  <text x="128" y="228" font-family="system-ui, sans-serif" font-weight="700" font-size="13" fill="#F0EBE1" text-anchor="middle">Personajes</text>
+  <text x="128" y="244" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.4)" text-anchor="middle">12 fichas</text>
+  <text x="128" y="258" font-family="monospace" font-size="9" fill="rgba(245,165,42,0.5)" text-anchor="middle">Canon</text>
+  <rect x="96" y="298" width="64" height="18" rx="4" fill="rgba(245,165,42,0.12)" stroke="rgba(245,165,42,0.3)" stroke-width="1"/>
+  <text x="128" y="311" font-family="monospace" font-size="9" fill="#F5A52A" text-anchor="middle">Abrir →</text>
+
+  <!-- Book 2: Teal — Mundo -->
+  <rect x="238" y="136" width="140" height="188" rx="10" fill="#0D0920" stroke="rgba(78,205,196,0.15)" stroke-width="1"/>
+  <rect x="238" y="136" width="140" height="6" rx="3" fill="#4ECDC4"/>
+  <rect x="238" y="142" width="6" height="182" rx="0" fill="rgba(78,205,196,0.08)"/>
+  <rect x="244" y="148" width="2" height="170" fill="rgba(78,205,196,0.15)"/>
+  <rect x="262" y="164" width="48" height="48" rx="8" fill="rgba(78,205,196,0.12)"/>
+  <rect x="274" y="176" width="24" height="16" rx="3" fill="none" stroke="#4ECDC4" stroke-width="2"/>
+  <rect x="278" y="172" width="8" height="6" rx="2" fill="#4ECDC4"/>
+  <text x="286" y="228" font-family="system-ui, sans-serif" font-weight="700" font-size="13" fill="#F0EBE1" text-anchor="middle">Mundo</text>
+  <text x="286" y="244" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.4)" text-anchor="middle">8 locaciones</text>
+  <text x="286" y="258" font-family="monospace" font-size="9" fill="rgba(78,205,196,0.5)" text-anchor="middle">Worldbuilding</text>
+  <rect x="254" y="298" width="64" height="18" rx="4" fill="rgba(78,205,196,0.12)" stroke="rgba(78,205,196,0.3)" stroke-width="1"/>
+  <text x="286" y="311" font-family="monospace" font-size="9" fill="#4ECDC4" text-anchor="middle">Abrir →</text>
+
+  <!-- Book 3: Blue — Narrativa -->
+  <rect x="396" y="136" width="140" height="188" rx="10" fill="#0D0920" stroke="rgba(74,143,232,0.15)" stroke-width="1"/>
+  <rect x="396" y="136" width="140" height="6" rx="3" fill="#4A8FE8"/>
+  <rect x="396" y="142" width="6" height="182" rx="0" fill="rgba(74,143,232,0.08)"/>
+  <rect x="402" y="148" width="2" height="170" fill="rgba(74,143,232,0.15)"/>
+  <rect x="420" y="164" width="48" height="48" rx="8" fill="rgba(74,143,232,0.12)"/>
+  <rect x="432" y="170" width="24" height="20" rx="2" fill="none" stroke="#4A8FE8" stroke-width="2"/>
+  <rect x="436" y="174" width="16" height="2" rx="1" fill="#4A8FE8"/>
+  <rect x="436" y="179" width="14" height="2" rx="1" fill="rgba(74,143,232,0.5)"/>
+  <rect x="436" y="184" width="16" height="2" rx="1" fill="rgba(74,143,232,0.5)"/>
+  <text x="444" y="228" font-family="system-ui, sans-serif" font-weight="700" font-size="13" fill="#F0EBE1" text-anchor="middle">Narrativa</text>
+  <text x="444" y="244" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.4)" text-anchor="middle">5 arcos</text>
+  <text x="444" y="258" font-family="monospace" font-size="9" fill="rgba(74,143,232,0.5)" text-anchor="middle">Story bible</text>
+  <rect x="412" y="298" width="64" height="18" rx="4" fill="rgba(74,143,232,0.12)" stroke="rgba(74,143,232,0.3)" stroke-width="1"/>
+  <text x="444" y="311" font-family="monospace" font-size="9" fill="#4A8FE8" text-anchor="middle">Abrir →</text>
+
+  <!-- Book 4: Purple — Estética -->
+  <rect x="554" y="136" width="140" height="188" rx="10" fill="#0D0920" stroke="rgba(155,111,212,0.15)" stroke-width="1"/>
+  <rect x="554" y="136" width="140" height="6" rx="3" fill="#9B6FD4"/>
+  <rect x="554" y="142" width="6" height="182" rx="0" fill="rgba(155,111,212,0.08)"/>
+  <rect x="560" y="148" width="2" height="170" fill="rgba(155,111,212,0.15)"/>
+  <rect x="578" y="164" width="48" height="48" rx="8" fill="rgba(155,111,212,0.12)"/>
+  <circle cx="602" cy="188" r="10" fill="none" stroke="#9B6FD4" stroke-width="2"/>
+  <circle cx="602" cy="188" r="5" fill="rgba(155,111,212,0.4)"/>
+  <text x="602" y="228" font-family="system-ui, sans-serif" font-weight="700" font-size="13" fill="#F0EBE1" text-anchor="middle">Estética</text>
+  <text x="602" y="244" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.4)" text-anchor="middle">Guía visual</text>
+  <text x="602" y="258" font-family="monospace" font-size="9" fill="rgba(155,111,212,0.5)" text-anchor="middle">Arte &amp; diseño</text>
+  <rect x="570" y="298" width="64" height="18" rx="4" fill="rgba(155,111,212,0.12)" stroke="rgba(155,111,212,0.3)" stroke-width="1"/>
+  <text x="602" y="311" font-family="monospace" font-size="9" fill="#9B6FD4" text-anchor="middle">Abrir →</text>
+
+  <!-- Book 5: Red — Antagonistas -->
+  <rect x="712" y="136" width="140" height="188" rx="10" fill="#0D0920" stroke="rgba(212,37,106,0.15)" stroke-width="1"/>
+  <rect x="712" y="136" width="140" height="6" rx="3" fill="#D4256A"/>
+  <rect x="712" y="142" width="6" height="182" rx="0" fill="rgba(212,37,106,0.08)"/>
+  <rect x="718" y="148" width="2" height="170" fill="rgba(212,37,106,0.15)"/>
+  <rect x="736" y="164" width="48" height="48" rx="8" fill="rgba(212,37,106,0.12)"/>
+  <path d="M760 170 L764 180 L775 180 L766 186 L769 196 L760 190 L751 196 L754 186 L745 180 L756 180 Z" fill="none" stroke="#D4256A" stroke-width="1.5"/>
+  <text x="760" y="228" font-family="system-ui, sans-serif" font-weight="700" font-size="13" fill="#F0EBE1" text-anchor="middle">Antagonistas</text>
+  <text x="760" y="244" font-family="system-ui, sans-serif" font-size="10" fill="rgba(240,235,225,0.4)" text-anchor="middle">4 rivales</text>
+  <text x="760" y="258" font-family="monospace" font-size="9" fill="rgba(212,37,106,0.5)" text-anchor="middle">Conflicto</text>
+  <rect x="728" y="298" width="64" height="18" rx="4" fill="rgba(212,37,106,0.12)" stroke="rgba(212,37,106,0.3)" stroke-width="1"/>
+  <text x="760" y="311" font-family="monospace" font-size="9" fill="#D4256A" text-anchor="middle">Abrir →</text>
+
+  <!-- New tome card (placeholder) -->
+  <rect x="80" y="344" width="812" height="70" rx="10" fill="rgba(13,9,32,0.5)" stroke="rgba(255,255,255,0.05)" stroke-dasharray="6,4" stroke-width="1"/>
+  <text x="496" y="384" font-family="system-ui, sans-serif" font-size="14" fill="rgba(240,235,225,0.2)" text-anchor="middle">+ Nuevo tomo — agregar nuevo volumen al canon</text>
+</svg>

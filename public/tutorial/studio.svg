@@ -1,0 +1,84 @@
+<svg viewBox="0 0 960 440" width="960" height="440" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="accentLine" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#9B6FD4"/>
+      <stop offset="60%" stop-color="#4ECDC4"/>
+      <stop offset="100%" stop-color="#08060F" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="960" height="440" fill="#08060F"/>
+  <rect x="0" y="0" width="960" height="3" fill="url(#accentLine)"/>
+
+  <!-- Sidebar -->
+  <rect x="0" y="0" width="56" height="440" fill="#0D0920"/>
+  <rect x="56" y="0" width="1" height="440" fill="rgba(255,255,255,0.07)"/>
+
+  <!-- Header -->
+  <text x="80" y="52" font-family="system-ui, sans-serif" font-weight="700" font-size="26" fill="#F0EBE1" letter-spacing="3">ASISTENTE</text>
+  <text x="80" y="70" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.45)">IA especializada en producción creativa</text>
+  <rect x="80" y="82" width="860" height="1" fill="rgba(255,255,255,0.07)"/>
+
+  <!-- Mode selector pills -->
+  <rect x="80" y="94" width="96" height="28" rx="14" fill="#9B6FD4"/>
+  <text x="128" y="113" font-family="system-ui, sans-serif" font-size="12" font-weight="600" fill="#08060F" text-anchor="middle">Escritura</text>
+
+  <rect x="184" y="94" width="72" height="28" rx="14" fill="rgba(240,235,225,0.06)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <text x="220" y="113" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.5)" text-anchor="middle">Arte</text>
+
+  <rect x="264" y="94" width="96" height="28" rx="14" fill="rgba(240,235,225,0.06)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <text x="312" y="113" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.5)" text-anchor="middle">Marketing</text>
+
+  <rect x="368" y="94" width="100" height="28" rx="14" fill="rgba(240,235,225,0.06)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <text x="418" y="113" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.5)" text-anchor="middle">Continuidad</text>
+
+  <!-- Context chips -->
+  <rect x="560" y="98" width="70" height="20" rx="10" fill="rgba(155,111,212,0.15)" stroke="rgba(155,111,212,0.3)" stroke-width="1"/>
+  <text x="595" y="112" font-family="monospace" font-size="10" fill="#9B6FD4" text-anchor="middle">T1E01</text>
+  <rect x="638" y="98" width="100" height="20" rx="10" fill="rgba(78,205,196,0.1)" stroke="rgba(78,205,196,0.2)" stroke-width="1"/>
+  <text x="688" y="112" font-family="monospace" font-size="10" fill="#4ECDC4" text-anchor="middle">3 personajes</text>
+  <rect x="746" y="98" width="80" height="20" rx="10" fill="rgba(78,205,196,0.1)" stroke="rgba(78,205,196,0.2)" stroke-width="1"/>
+  <text x="786" y="112" font-family="monospace" font-size="10" fill="#4ECDC4" text-anchor="middle">Biblia cargada</text>
+
+  <!-- Chat area -->
+  <rect x="80" y="132" width="860" height="240" rx="10" fill="#0D0920" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+
+  <!-- User message (right) -->
+  <rect x="540" y="152" width="380" height="64" rx="10" fill="rgba(245,165,42,0.15)" stroke="rgba(245,165,42,0.25)" stroke-width="1"/>
+  <text x="560" y="172" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.85)">Necesito escribir la escena en que Mateo y Diego</text>
+  <text x="560" y="188" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.85)">se enfrentan por primera vez. Tiene que tenerse</text>
+  <text x="560" y="204" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.85)">una tensión implícita, no explícita.</text>
+  <text x="910" y="225" font-family="monospace" font-size="9" fill="rgba(245,165,42,0.4)" text-anchor="end">tú · ahora</text>
+
+  <!-- AI response (left) -->
+  <rect x="100" y="228" width="420" height="128" rx="10" fill="rgba(155,111,212,0.08)" stroke="rgba(155,111,212,0.15)" stroke-width="1"/>
+  <!-- AI avatar -->
+  <circle cx="118" cy="244" r="12" fill="rgba(155,111,212,0.25)"/>
+  <text x="118" y="249" font-family="monospace" font-size="11" fill="#9B6FD4" text-anchor="middle">N</text>
+  <text x="140" y="248" font-family="system-ui, sans-serif" font-weight="600" font-size="12" fill="#9B6FD4">NUPPA</text>
+  <text x="200" y="248" font-family="monospace" font-size="9" fill="rgba(240,235,225,0.3)">Escritura · T1E01</text>
+
+  <text x="118" y="268" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.8)">Perfecto. Según el canon de Mateo (reservado,</text>
+  <text x="118" y="284" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.8)">disciplina compulsiva) y Diego (extrovertido,</text>
+  <text x="118" y="300" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.8)">líder natural), la tensión más efectiva viene del</text>
+  <text x="118" y="316" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.8)">contraste de ritmo: Diego habla, Mateo no responde.</text>
+  <text x="118" y="332" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.6)">Propongo la estructura:</text>
+  <!-- Cursor -->
+  <rect x="118" y="340" width="2" height="12" fill="#9B6FD4" opacity="0.8"/>
+
+  <!-- Input area -->
+  <rect x="80" y="382" width="860" height="52" rx="10" fill="#0D0920" stroke="rgba(155,111,212,0.2)" stroke-width="1"/>
+  <text x="108" y="411" font-family="system-ui, sans-serif" font-size="13" fill="rgba(240,235,225,0.25)">Escribe un mensaje...</text>
+
+  <!-- Send button -->
+  <rect x="888" y="392" width="36" height="32" rx="8" fill="#9B6FD4"/>
+  <path d="M898 408 L914 408 M908 402 L914 408 L908 414" fill="none" stroke="#08060F" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- Workflow shortcut -->
+  <rect x="108" y="392" width="120" height="32" rx="6" fill="rgba(245,165,42,0.08)" stroke="rgba(245,165,42,0.15)" stroke-width="1"/>
+  <text x="168" y="412" font-family="monospace" font-size="10" fill="rgba(245,165,42,0.6)" text-anchor="middle">/ workflows</text>
+
+  <rect x="236" y="392" width="100" height="32" rx="6" fill="rgba(78,205,196,0.06)" stroke="rgba(78,205,196,0.12)" stroke-width="1"/>
+  <text x="286" y="412" font-family="monospace" font-size="10" fill="rgba(78,205,196,0.5)" text-anchor="middle">@ contexto</text>
+</svg>

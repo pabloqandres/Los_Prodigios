@@ -1,0 +1,106 @@
+<svg viewBox="0 0 960 440" width="960" height="440" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background - behind cards -->
+  <rect width="960" height="440" fill="#08060F"/>
+
+  <!-- Workflows cards in background (dimmed) -->
+  <rect x="80" y="96" width="268" height="130" rx="10" fill="rgba(13,9,32,0.4)" stroke="rgba(245,165,42,0.07)" stroke-width="1"/>
+  <rect x="364" y="96" width="268" height="130" rx="10" fill="rgba(13,9,32,0.4)" stroke="rgba(78,205,196,0.07)" stroke-width="1"/>
+  <rect x="648" y="96" width="292" height="130" rx="10" fill="rgba(13,9,32,0.4)" stroke="rgba(74,143,232,0.07)" stroke-width="1"/>
+  <rect x="80" y="242" width="268" height="130" rx="10" fill="rgba(13,9,32,0.4)" stroke="rgba(155,111,212,0.07)" stroke-width="1"/>
+  <rect x="364" y="242" width="268" height="130" rx="10" fill="rgba(13,9,32,0.4)" stroke="rgba(212,37,106,0.07)" stroke-width="1"/>
+  <rect x="648" y="242" width="292" height="130" rx="10" fill="rgba(13,9,32,0.4)" stroke="rgba(78,205,196,0.07)" stroke-width="1"/>
+
+  <!-- Overlay -->
+  <rect width="960" height="440" fill="rgba(0,0,0,0.7)"/>
+
+  <!-- Modal -->
+  <rect x="140" y="22" width="680" height="400" rx="14" fill="#0D0920" stroke="rgba(245,165,42,0.25)" stroke-width="1"/>
+  <rect x="140" y="22" width="680" height="5" rx="2" fill="#F5A52A"/>
+
+  <!-- Modal header -->
+  <rect x="140" y="27" width="680" height="56" fill="rgba(245,165,42,0.06)"/>
+  <rect x="140" y="83" width="680" height="1" fill="rgba(255,255,255,0.07)"/>
+
+  <text x="170" y="50" font-family="system-ui, sans-serif" font-weight="700" font-size="18" fill="#F0EBE1">⚡ Usar Workflow</text>
+  <text x="170" y="70" font-family="system-ui, sans-serif" font-size="13" fill="rgba(245,165,42,0.8)">Diseñar protagonista — Desarrollo · 01</text>
+  <rect x="560" y="35" width="70" height="20" rx="10" fill="rgba(245,165,42,0.1)" stroke="rgba(245,165,42,0.25)" stroke-width="1"/>
+  <text x="595" y="49" font-family="monospace" font-size="10" fill="#F5A52A" text-anchor="middle">7 pasos</text>
+
+  <!-- Close button -->
+  <rect x="790" y="30" width="28" height="28" rx="6" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <line x1="798" y1="38" x2="810" y2="50" stroke="rgba(240,235,225,0.5)" stroke-width="2"/>
+  <line x1="810" y1="38" x2="798" y2="50" stroke="rgba(240,235,225,0.5)" stroke-width="2"/>
+
+  <!-- Section 1: Knowledge -->
+  <text x="170" y="108" font-family="system-ui, sans-serif" font-weight="600" font-size="13" fill="rgba(240,235,225,0.8)">📚 Knowledge</text>
+  <rect x="170" y="115" width="300" height="1" fill="rgba(255,255,255,0.06)"/>
+
+  <!-- File list items -->
+  <rect x="170" y="121" width="300" height="22" rx="4" fill="rgba(255,255,255,0.04)"/>
+  <text x="180" y="136" font-family="monospace" font-size="11" fill="rgba(240,235,225,0.55)">📄 Characters/protagonistas.md</text>
+
+  <rect x="170" y="147" width="300" height="22" rx="4" fill="rgba(255,255,255,0.04)"/>
+  <text x="180" y="162" font-family="monospace" font-size="11" fill="rgba(240,235,225,0.55)">📄 Visual/concept_art_principles.md</text>
+
+  <rect x="170" y="173" width="300" height="22" rx="4" fill="rgba(255,255,255,0.04)"/>
+  <text x="180" y="188" font-family="monospace" font-size="11" fill="rgba(240,235,225,0.55)">📄 Writing/character_arc_design.md</text>
+
+  <!-- Section 2: Contexto -->
+  <text x="170" y="218" font-family="system-ui, sans-serif" font-weight="600" font-size="13" fill="rgba(240,235,225,0.8)">🗂 Contexto del sistema</text>
+  <rect x="170" y="225" width="300" height="1" fill="rgba(255,255,255,0.06)"/>
+
+  <rect x="170" y="231" width="300" height="22" rx="4" fill="rgba(155,111,212,0.06)"/>
+  <text x="180" y="246" font-family="monospace" font-size="11" fill="rgba(240,235,225,0.5)">🎨 Memory/Style/master_style.md</text>
+
+  <rect x="170" y="257" width="300" height="22" rx="4" fill="rgba(155,111,212,0.06)"/>
+  <text x="180" y="272" font-family="monospace" font-size="11" fill="rgba(240,235,225,0.5)">📋 Continuity/states/character_states.md</text>
+
+  <rect x="170" y="283" width="300" height="22" rx="4" fill="rgba(155,111,212,0.06)"/>
+  <text x="180" y="298" font-family="monospace" font-size="11" fill="rgba(240,235,225,0.5)">🌍 Bible/worldbuilding.md</text>
+
+  <!-- Right column: Workflow steps -->
+  <rect x="506" y="83" width="1" height="310" fill="rgba(255,255,255,0.06)"/>
+  <text x="526" y="108" font-family="system-ui, sans-serif" font-weight="600" font-size="13" fill="rgba(240,235,225,0.8)">📋 Workflow completo</text>
+  <rect x="526" y="115" width="274" height="1" fill="rgba(255,255,255,0.06)"/>
+
+  <!-- Steps -->
+  <rect x="526" y="122" width="22" height="22" rx="11" fill="rgba(245,165,42,0.2)" stroke="rgba(245,165,42,0.4)" stroke-width="1"/>
+  <text x="537" y="137" font-family="monospace" font-weight="700" font-size="10" fill="#F5A52A" text-anchor="middle">1</text>
+  <text x="556" y="134" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.75)">Definir rol y función en la historia</text>
+
+  <rect x="526" y="152" width="22" height="22" rx="11" fill="rgba(245,165,42,0.15)" stroke="rgba(245,165,42,0.3)" stroke-width="1"/>
+  <text x="537" y="167" font-family="monospace" font-weight="700" font-size="10" fill="rgba(245,165,42,0.8)" text-anchor="middle">2</text>
+  <text x="556" y="164" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.65)">Construir perfil psicológico</text>
+
+  <rect x="526" y="182" width="22" height="22" rx="11" fill="rgba(245,165,42,0.12)" stroke="rgba(245,165,42,0.25)" stroke-width="1"/>
+  <text x="537" y="197" font-family="monospace" font-weight="700" font-size="10" fill="rgba(245,165,42,0.7)" text-anchor="middle">3</text>
+  <text x="556" y="194" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.6)">Definir arco narrativo y evolución</text>
+
+  <rect x="526" y="212" width="22" height="22" rx="11" fill="rgba(245,165,42,0.1)" stroke="rgba(245,165,42,0.2)" stroke-width="1"/>
+  <text x="537" y="227" font-family="monospace" font-weight="700" font-size="10" fill="rgba(245,165,42,0.6)" text-anchor="middle">4</text>
+  <text x="556" y="224" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.55)">Diseñar rasgos visuales clave</text>
+
+  <rect x="526" y="242" width="22" height="22" rx="11" fill="rgba(245,165,42,0.08)" stroke="rgba(245,165,42,0.15)" stroke-width="1"/>
+  <text x="537" y="257" font-family="monospace" font-weight="700" font-size="10" fill="rgba(245,165,42,0.5)" text-anchor="middle">5</text>
+  <text x="556" y="254" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.5)">Generar concept art (Artwork Flow)</text>
+
+  <rect x="526" y="272" width="22" height="22" rx="11" fill="rgba(245,165,42,0.06)" stroke="rgba(245,165,42,0.12)" stroke-width="1"/>
+  <text x="537" y="287" font-family="monospace" font-weight="700" font-size="10" fill="rgba(245,165,42,0.4)" text-anchor="middle">6</text>
+  <text x="556" y="284" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.45)">Crear visual_canon.md</text>
+
+  <rect x="526" y="302" width="22" height="22" rx="11" fill="rgba(245,165,42,0.04)" stroke="rgba(245,165,42,0.1)" stroke-width="1"/>
+  <text x="537" y="317" font-family="monospace" font-weight="700" font-size="10" fill="rgba(245,165,42,0.3)" text-anchor="middle">7</text>
+  <text x="556" y="314" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.4)">Registrar en canon y continuidad</text>
+
+  <!-- Bottom actions -->
+  <rect x="140" y="383" width="680" height="1" fill="rgba(255,255,255,0.07)"/>
+
+  <rect x="160" y="394" width="280" height="32" rx="8" fill="#F5A52A"/>
+  <text x="300" y="415" font-family="system-ui, sans-serif" font-weight="700" font-size="13" fill="#08060F" text-anchor="middle">📋 Copiar para el Asistente</text>
+
+  <rect x="454" y="394" width="150" height="32" rx="8" fill="rgba(240,235,225,0.07)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <text x="529" y="415" font-family="system-ui, sans-serif" font-size="13" fill="rgba(240,235,225,0.55)" text-anchor="middle">Ver en Drive</text>
+
+  <rect x="618" y="394" width="90" height="32" rx="8" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+  <text x="663" y="415" font-family="system-ui, sans-serif" font-size="13" fill="rgba(240,235,225,0.4)" text-anchor="middle">Cerrar</text>
+</svg>

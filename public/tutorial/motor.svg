@@ -1,0 +1,153 @@
+<svg viewBox="0 0 960 440" width="960" height="440" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="accentLine" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#9B6FD4"/>
+      <stop offset="60%" stop-color="#4ECDC4"/>
+      <stop offset="100%" stop-color="#08060F" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="barHigh" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#4ECDC4"/>
+      <stop offset="100%" stop-color="rgba(78,205,196,0.4)"/>
+    </linearGradient>
+    <linearGradient id="barMid" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#F5A52A"/>
+      <stop offset="100%" stop-color="rgba(245,165,42,0.4)"/>
+    </linearGradient>
+    <linearGradient id="barLow" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#D4256A"/>
+      <stop offset="100%" stop-color="rgba(212,37,106,0.4)"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="960" height="440" fill="#08060F"/>
+  <rect x="0" y="0" width="960" height="3" fill="url(#accentLine)"/>
+
+  <!-- Sidebar -->
+  <rect x="0" y="0" width="56" height="440" fill="#0D0920"/>
+  <rect x="56" y="0" width="1" height="440" fill="rgba(255,255,255,0.07)"/>
+
+  <!-- Header -->
+  <text x="80" y="52" font-family="system-ui, sans-serif" font-weight="700" font-size="26" fill="#F0EBE1" letter-spacing="3">MOTOR NUPPA</text>
+  <text x="80" y="70" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.45)">Evaluación en 6 dimensiones por episodio</text>
+  <rect x="80" y="82" width="860" height="1" fill="rgba(255,255,255,0.07)"/>
+
+  <!-- Season selector pills -->
+  <rect x="80" y="94" width="40" height="26" rx="13" fill="#F5A52A"/>
+  <text x="100" y="112" font-family="monospace" font-weight="700" font-size="12" fill="#08060F" text-anchor="middle">T1</text>
+
+  <rect x="128" y="94" width="40" height="26" rx="13" fill="rgba(240,235,225,0.06)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <text x="148" y="112" font-family="monospace" font-size="12" fill="rgba(240,235,225,0.4)" text-anchor="middle">T2</text>
+
+  <rect x="176" y="94" width="40" height="26" rx="13" fill="rgba(240,235,225,0.06)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <text x="196" y="112" font-family="monospace" font-size="12" fill="rgba(240,235,225,0.4)" text-anchor="middle">T3</text>
+
+  <rect x="224" y="94" width="40" height="26" rx="13" fill="rgba(240,235,225,0.06)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <text x="244" y="112" font-family="monospace" font-size="12" fill="rgba(240,235,225,0.4)" text-anchor="middle">T4</text>
+
+  <rect x="272" y="94" width="40" height="26" rx="13" fill="rgba(240,235,225,0.06)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <text x="292" y="112" font-family="monospace" font-size="12" fill="rgba(240,235,225,0.4)" text-anchor="middle">T5</text>
+
+  <!-- Average score -->
+  <text x="820" y="106" font-family="monospace" font-size="11" fill="rgba(240,235,225,0.35)">promedio T1</text>
+  <text x="930" y="110" font-family="system-ui, sans-serif" font-weight="700" font-size="22" fill="#4ECDC4" text-anchor="end">4.4</text>
+  <text x="940" y="110" font-family="monospace" font-size="11" fill="rgba(240,235,225,0.35)">/5</text>
+
+  <!-- Chart background -->
+  <rect x="80" y="132" width="860" height="240" rx="10" fill="#0D0920" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+
+  <!-- Grid lines -->
+  <line x1="120" y1="148" x2="920" y2="148" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+  <line x1="120" y1="184" x2="920" y2="184" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+  <line x1="120" y1="220" x2="920" y2="220" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+  <line x1="120" y1="256" x2="920" y2="256" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+  <line x1="120" y1="292" x2="920" y2="292" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+  <line x1="120" y1="340" x2="920" y2="340" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+
+  <!-- Y axis labels -->
+  <text x="114" y="152" font-family="monospace" font-size="10" fill="rgba(240,235,225,0.25)" text-anchor="end">5.0</text>
+  <text x="114" y="188" font-family="monospace" font-size="10" fill="rgba(240,235,225,0.25)" text-anchor="end">4.5</text>
+  <text x="114" y="224" font-family="monospace" font-size="10" fill="rgba(240,235,225,0.25)" text-anchor="end">4.0</text>
+  <text x="114" y="260" font-family="monospace" font-size="10" fill="rgba(240,235,225,0.25)" text-anchor="end">3.5</text>
+  <text x="114" y="296" font-family="monospace" font-size="10" fill="rgba(240,235,225,0.25)" text-anchor="end">3.0</text>
+
+  <!-- Threshold line at 4.3 -->
+  <line x1="120" y1="198" x2="920" y2="198" stroke="rgba(78,205,196,0.2)" stroke-width="1" stroke-dasharray="4,4"/>
+  <text x="118" y="196" font-family="monospace" font-size="9" fill="rgba(78,205,196,0.4)" text-anchor="end">4.3</text>
+
+  <!-- Bars: each episode. Bar width ~60px, spacing. Chart bottom at y=340, max height=192 (5.0). Scale: 1pt = 38.4px -->
+  <!-- E01: 4.6 high = 176.6px bar, top = 340-176.6=163.4 -->
+  <rect x="134" y="163" width="52" height="177" rx="4" fill="url(#barHigh)" opacity="0.9"/>
+  <text x="160" y="157" font-family="monospace" font-size="10" fill="#4ECDC4" text-anchor="middle">4.6</text>
+  <text x="160" y="356" font-family="monospace" font-size="10" fill="rgba(240,235,225,0.35)" text-anchor="middle">E01</text>
+
+  <!-- E02: 4.4 = 169px -->
+  <rect x="204" y="171" width="52" height="169" rx="4" fill="url(#barHigh)" opacity="0.9"/>
+  <text x="230" y="165" font-family="monospace" font-size="10" fill="#4ECDC4" text-anchor="middle">4.4</text>
+  <text x="230" y="356" font-family="monospace" font-size="10" fill="rgba(240,235,225,0.35)" text-anchor="middle">E02</text>
+
+  <!-- E03: 3.8 = 146px -->
+  <rect x="274" y="194" width="52" height="146" rx="4" fill="url(#barMid)" opacity="0.9"/>
+  <text x="300" y="188" font-family="monospace" font-size="10" fill="#F5A52A" text-anchor="middle">3.8</text>
+  <text x="300" y="356" font-family="monospace" font-size="10" fill="rgba(240,235,225,0.35)" text-anchor="middle">E03</text>
+
+  <!-- E04: 4.7 = 180px -->
+  <rect x="344" y="160" width="52" height="180" rx="4" fill="url(#barHigh)" opacity="0.9"/>
+  <text x="370" y="154" font-family="monospace" font-size="10" fill="#4ECDC4" text-anchor="middle">4.7</text>
+  <text x="370" y="356" font-family="monospace" font-size="10" fill="rgba(240,235,225,0.35)" text-anchor="middle">E04</text>
+
+  <!-- E05: 4.2 = 161px -->
+  <rect x="414" y="179" width="52" height="161" rx="4" fill="url(#barMid)" opacity="0.85"/>
+  <text x="440" y="173" font-family="monospace" font-size="10" fill="#F5A52A" text-anchor="middle">4.2</text>
+  <text x="440" y="356" font-family="monospace" font-size="10" fill="rgba(240,235,225,0.35)" text-anchor="middle">E05</text>
+
+  <!-- E06: 3.1 = 119px -->
+  <rect x="484" y="221" width="52" height="119" rx="4" fill="url(#barLow)" opacity="0.9"/>
+  <text x="510" y="215" font-family="monospace" font-size="10" fill="#D4256A" text-anchor="middle">3.1</text>
+  <text x="510" y="356" font-family="monospace" font-size="10" fill="rgba(240,235,225,0.35)" text-anchor="middle">E06</text>
+
+  <!-- E07: 4.5 = 173px -->
+  <rect x="554" y="167" width="52" height="173" rx="4" fill="url(#barHigh)" opacity="0.9"/>
+  <text x="580" y="161" font-family="monospace" font-size="10" fill="#4ECDC4" text-anchor="middle">4.5</text>
+  <text x="580" y="356" font-family="monospace" font-size="10" fill="rgba(240,235,225,0.35)" text-anchor="middle">E07</text>
+
+  <!-- E08: 4.8 = 184px -->
+  <rect x="624" y="156" width="52" height="184" rx="4" fill="url(#barHigh)" opacity="0.9"/>
+  <text x="650" y="150" font-family="monospace" font-size="10" fill="#4ECDC4" text-anchor="middle">4.8</text>
+  <text x="650" y="356" font-family="monospace" font-size="10" fill="rgba(240,235,225,0.35)" text-anchor="middle">E08</text>
+
+  <!-- E09: 4.1 = 157px -->
+  <rect x="694" y="183" width="52" height="157" rx="4" fill="url(#barMid)" opacity="0.85"/>
+  <text x="720" y="177" font-family="monospace" font-size="10" fill="#F5A52A" text-anchor="middle">4.1</text>
+  <text x="720" y="356" font-family="monospace" font-size="10" fill="rgba(240,235,225,0.35)" text-anchor="middle">E09</text>
+
+  <!-- E10: 4.6 = 176px -->
+  <rect x="764" y="164" width="52" height="176" rx="4" fill="url(#barHigh)" opacity="0.9"/>
+  <text x="790" y="158" font-family="monospace" font-size="10" fill="#4ECDC4" text-anchor="middle">4.6</text>
+  <text x="790" y="356" font-family="monospace" font-size="10" fill="rgba(240,235,225,0.35)" text-anchor="middle">E10</text>
+
+  <!-- Legend area -->
+  <rect x="80" y="390" width="860" height="36" rx="6" fill="rgba(13,9,32,0.8)" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+
+  <circle cx="108" cy="408" r="5" fill="rgba(78,205,196,0.8)"/>
+  <text x="120" y="412" font-family="monospace" font-size="10" fill="rgba(240,235,225,0.5)">Narrativa</text>
+
+  <circle cx="193" cy="408" r="5" fill="rgba(155,111,212,0.8)"/>
+  <text x="205" y="412" font-family="monospace" font-size="10" fill="rgba(240,235,225,0.5)">Personajes</text>
+
+  <circle cx="286" cy="408" r="5" fill="rgba(74,143,232,0.8)"/>
+  <text x="298" y="412" font-family="monospace" font-size="10" fill="rgba(240,235,225,0.5)">Ritmo</text>
+
+  <circle cx="355" cy="408" r="5" fill="rgba(245,165,42,0.8)"/>
+  <text x="367" y="412" font-family="monospace" font-size="10" fill="rgba(240,235,225,0.5)">Visual</text>
+
+  <circle cx="422" cy="408" r="5" fill="rgba(212,37,106,0.8)"/>
+  <text x="434" y="412" font-family="monospace" font-size="10" fill="rgba(240,235,225,0.5)">Diálogos</text>
+
+  <circle cx="501" cy="408" r="5" fill="rgba(240,235,225,0.3)"/>
+  <text x="513" y="412" font-family="monospace" font-size="10" fill="rgba(240,235,225,0.5)">Producción</text>
+
+  <!-- Threshold legend -->
+  <line x1="620" y1="408" x2="644" y2="408" stroke="rgba(78,205,196,0.5)" stroke-width="1" stroke-dasharray="3,3"/>
+  <text x="650" y="412" font-family="monospace" font-size="10" fill="rgba(240,235,225,0.4)">Umbral aprobación (4.3)</text>
+</svg>

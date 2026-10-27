@@ -1,0 +1,129 @@
+<svg viewBox="0 0 960 440" width="960" height="440" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="accentLine" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#9B6FD4"/>
+      <stop offset="60%" stop-color="#4ECDC4"/>
+      <stop offset="100%" stop-color="#08060F" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="960" height="440" fill="#08060F"/>
+  <rect x="0" y="0" width="960" height="3" fill="url(#accentLine)"/>
+
+  <!-- Sidebar -->
+  <rect x="0" y="0" width="56" height="440" fill="#0D0920"/>
+  <rect x="56" y="0" width="1" height="440" fill="rgba(255,255,255,0.07)"/>
+
+  <!-- Sidebar icons -->
+  <rect x="16" y="28" width="24" height="24" rx="6" fill="rgba(255,255,255,0.08)"/>
+  <rect x="20" y="32" width="16" height="3" rx="1" fill="rgba(240,235,225,0.3)"/>
+  <rect x="20" y="38" width="12" height="3" rx="1" fill="rgba(240,235,225,0.3)"/>
+  <rect x="20" y="44" width="14" height="3" rx="1" fill="rgba(240,235,225,0.3)"/>
+
+  <rect x="16" y="76" width="24" height="24" rx="6" fill="#9B6FD4"/>
+  <rect x="21" y="82" width="6" height="12" rx="2" fill="#08060F"/>
+  <rect x="30" y="86" width="6" height="8" rx="2" fill="#08060F"/>
+
+  <!-- Header -->
+  <text x="80" y="52" font-family="system-ui, sans-serif" font-weight="700" font-size="26" fill="#F0EBE1" letter-spacing="3">EPISODIOS</text>
+  <text x="80" y="70" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.45)">Mapa de producción — 5 temporadas × 10 episodios</text>
+  <rect x="80" y="82" width="860" height="1" fill="rgba(255,255,255,0.07)"/>
+
+  <!-- Season rows -->
+  <!-- Row labels config: y start = 100 -->
+
+  <!-- T1 -->
+  <text x="80" y="118" font-family="system-ui, sans-serif" font-weight="600" font-size="13" fill="#F0EBE1">Temporada 1</text>
+  <rect x="80" y="98" width="2" height="40" rx="1" fill="#F5A52A"/>
+  <text x="200" y="114" font-family="monospace" font-size="10" fill="rgba(240,235,225,0.3)">10 eps · T1 2026</text>
+
+  <!-- T1 episode squares -->
+  <!-- Ep 1 - gold (done) -->
+  <rect x="340" y="96" width="52" height="52" rx="8" fill="#F5A52A"/>
+  <text x="366" y="125" font-family="monospace" font-weight="700" font-size="13" fill="#08060F" text-anchor="middle">E01</text>
+  <!-- Ep 2 - purple (in progress) -->
+  <rect x="400" y="96" width="52" height="52" rx="8" fill="#9B6FD4"/>
+  <text x="426" y="125" font-family="monospace" font-weight="700" font-size="13" fill="#08060F" text-anchor="middle">E02</text>
+  <!-- Ep 3 - teal (review) -->
+  <rect x="460" y="96" width="52" height="52" rx="8" fill="#4ECDC4"/>
+  <text x="486" y="125" font-family="monospace" font-weight="700" font-size="13" fill="#08060F" text-anchor="middle">E03</text>
+  <!-- Eps 4-10 empty -->
+  <rect x="520" y="96" width="52" height="52" rx="8" fill="#0D0920" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+  <text x="546" y="125" font-family="system-ui, sans-serif" font-size="18" fill="rgba(240,235,225,0.2)" text-anchor="middle">+</text>
+  <rect x="580" y="96" width="52" height="52" rx="8" fill="#0D0920" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+  <text x="606" y="125" font-family="system-ui, sans-serif" font-size="18" fill="rgba(240,235,225,0.2)" text-anchor="middle">+</text>
+  <rect x="640" y="96" width="52" height="52" rx="8" fill="#0D0920" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+  <text x="666" y="125" font-family="system-ui, sans-serif" font-size="18" fill="rgba(240,235,225,0.2)" text-anchor="middle">+</text>
+  <rect x="700" y="96" width="52" height="52" rx="8" fill="#0D0920" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+  <text x="726" y="125" font-family="system-ui, sans-serif" font-size="18" fill="rgba(240,235,225,0.2)" text-anchor="middle">+</text>
+  <rect x="760" y="96" width="52" height="52" rx="8" fill="#0D0920" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+  <text x="786" y="125" font-family="system-ui, sans-serif" font-size="18" fill="rgba(240,235,225,0.2)" text-anchor="middle">+</text>
+  <rect x="820" y="96" width="52" height="52" rx="8" fill="#0D0920" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+  <text x="846" y="125" font-family="system-ui, sans-serif" font-size="18" fill="rgba(240,235,225,0.2)" text-anchor="middle">+</text>
+  <rect x="880" y="96" width="52" height="52" rx="8" fill="#0D0920" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+  <text x="906" y="125" font-family="system-ui, sans-serif" font-size="18" fill="rgba(240,235,225,0.2)" text-anchor="middle">+</text>
+
+  <!-- T2 -->
+  <rect x="80" y="163" width="2" height="40" rx="1" fill="rgba(155,111,212,0.4)"/>
+  <text x="88" y="188" font-family="system-ui, sans-serif" font-weight="600" font-size="13" fill="#F0EBE1">Temporada 2</text>
+  <text x="200" y="184" font-family="monospace" font-size="10" fill="rgba(240,235,225,0.3)">No iniciada</text>
+  <!-- All empty -->
+  <rect x="340" y="161" width="52" height="52" rx="8" fill="#0D0920" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+  <text x="366" y="190" font-family="system-ui, sans-serif" font-size="18" fill="rgba(240,235,225,0.2)" text-anchor="middle">+</text>
+  <rect x="400" y="161" width="52" height="52" rx="8" fill="#0D0920" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+  <text x="426" y="190" font-family="system-ui, sans-serif" font-size="18" fill="rgba(240,235,225,0.2)" text-anchor="middle">+</text>
+  <rect x="460" y="161" width="52" height="52" rx="8" fill="#0D0920" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+  <text x="486" y="190" font-family="system-ui, sans-serif" font-size="18" fill="rgba(240,235,225,0.2)" text-anchor="middle">+</text>
+  <rect x="520" y="161" width="52" height="52" rx="8" fill="#0D0920" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+  <text x="546" y="190" font-family="system-ui, sans-serif" font-size="18" fill="rgba(240,235,225,0.2)" text-anchor="middle">+</text>
+  <rect x="580" y="161" width="52" height="52" rx="8" fill="#0D0920" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+  <text x="606" y="190" font-family="system-ui, sans-serif" font-size="18" fill="rgba(240,235,225,0.2)" text-anchor="middle">+</text>
+  <rect x="640" y="161" width="52" height="52" rx="8" fill="#0D0920" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+  <text x="666" y="190" font-family="system-ui, sans-serif" font-size="18" fill="rgba(240,235,225,0.2)" text-anchor="middle">+</text>
+  <rect x="700" y="161" width="52" height="52" rx="8" fill="#0D0920" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+  <text x="726" y="190" font-family="system-ui, sans-serif" font-size="18" fill="rgba(240,235,225,0.2)" text-anchor="middle">+</text>
+  <rect x="760" y="161" width="52" height="52" rx="8" fill="#0D0920" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+  <text x="786" y="190" font-family="system-ui, sans-serif" font-size="18" fill="rgba(240,235,225,0.2)" text-anchor="middle">+</text>
+  <rect x="820" y="161" width="52" height="52" rx="8" fill="#0D0920" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+  <text x="846" y="190" font-family="system-ui, sans-serif" font-size="18" fill="rgba(240,235,225,0.2)" text-anchor="middle">+</text>
+  <rect x="880" y="161" width="52" height="52" rx="8" fill="#0D0920" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>
+  <text x="906" y="190" font-family="system-ui, sans-serif" font-size="18" fill="rgba(240,235,225,0.2)" text-anchor="middle">+</text>
+
+  <!-- T3 -->
+  <rect x="80" y="228" width="2" height="40" rx="1" fill="rgba(155,111,212,0.3)"/>
+  <text x="88" y="253" font-family="system-ui, sans-serif" font-weight="600" font-size="13" fill="rgba(240,235,225,0.6)">Temporada 3</text>
+  <text x="200" y="249" font-family="monospace" font-size="10" fill="rgba(240,235,225,0.2)">No iniciada</text>
+  <rect x="340" y="226" width="52" height="52" rx="8" fill="rgba(13,9,32,0.5)" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+  <text x="366" y="255" font-family="system-ui, sans-serif" font-size="18" fill="rgba(240,235,225,0.1)" text-anchor="middle">+</text>
+  <rect x="400" y="226" width="52" height="52" rx="8" fill="rgba(13,9,32,0.5)" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+  <text x="426" y="255" font-family="system-ui, sans-serif" font-size="18" fill="rgba(240,235,225,0.1)" text-anchor="middle">+</text>
+  <rect x="460" y="226" width="52" height="52" rx="8" fill="rgba(13,9,32,0.5)" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+  <text x="486" y="255" font-family="system-ui, sans-serif" font-size="18" fill="rgba(240,235,225,0.1)" text-anchor="middle">+</text>
+  <rect x="520" y="226" width="432" height="52" rx="8" fill="rgba(13,9,32,0.3)" stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
+  <text x="736" y="255" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.12)" text-anchor="middle">7 episodios más...</text>
+
+  <!-- T4 -->
+  <rect x="80" y="293" width="2" height="40" rx="1" fill="rgba(155,111,212,0.2)"/>
+  <text x="88" y="318" font-family="system-ui, sans-serif" font-weight="600" font-size="13" fill="rgba(240,235,225,0.4)">Temporada 4</text>
+  <text x="200" y="314" font-family="monospace" font-size="10" fill="rgba(240,235,225,0.15)">No iniciada</text>
+  <rect x="340" y="291" width="600" height="52" rx="8" fill="rgba(13,9,32,0.3)" stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
+  <text x="640" y="320" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.1)" text-anchor="middle">10 episodios · Bloqueada hasta T3</text>
+
+  <!-- T5 -->
+  <rect x="80" y="358" width="2" height="40" rx="1" fill="rgba(155,111,212,0.15)"/>
+  <text x="88" y="383" font-family="system-ui, sans-serif" font-weight="600" font-size="13" fill="rgba(240,235,225,0.3)">Temporada 5</text>
+  <text x="200" y="379" font-family="monospace" font-size="10" fill="rgba(240,235,225,0.1)">No iniciada</text>
+  <rect x="340" y="356" width="600" height="52" rx="8" fill="rgba(13,9,32,0.2)" stroke="rgba(255,255,255,0.02)" stroke-width="1"/>
+  <text x="640" y="385" font-family="system-ui, sans-serif" font-size="12" fill="rgba(240,235,225,0.08)" text-anchor="middle">10 episodios · Temporada final</text>
+
+  <!-- Legend -->
+  <rect x="80" y="418" width="10" height="10" rx="2" fill="#F5A52A"/>
+  <text x="96" y="427" font-family="monospace" font-size="10" fill="rgba(240,235,225,0.4)">Completado</text>
+  <rect x="180" y="418" width="10" height="10" rx="2" fill="#9B6FD4"/>
+  <text x="196" y="427" font-family="monospace" font-size="10" fill="rgba(240,235,225,0.4)">En progreso</text>
+  <rect x="280" y="418" width="10" height="10" rx="2" fill="#4ECDC4"/>
+  <text x="296" y="427" font-family="monospace" font-size="10" fill="rgba(240,235,225,0.4)">En revisión</text>
+  <rect x="380" y="418" width="10" height="10" rx="2" fill="#0D0920" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+  <text x="396" y="427" font-family="monospace" font-size="10" fill="rgba(240,235,225,0.4)">Pendiente</text>
+</svg>

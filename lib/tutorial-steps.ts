@@ -46,7 +46,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     condition: 'none',
     buttonLabel: 'Siguiente →',
     navLabel: 'Ir al Dashboard →',
-    image: '/tutorial/dashboard.png',
+    image: '/tutorial/dashboard.svg',
   },
 
   // ── EPISODIOS ────────────────────────────────────────────────────────────────
@@ -60,7 +60,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     condition: 'none',
     buttonLabel: 'Siguiente →',
     navLabel: 'Ir a Episodios →',
-    image: '/tutorial/episodes-grid.png',
+    image: '/tutorial/episodes-grid.svg',
   },
 
   {
@@ -71,7 +71,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     dialogue: 'Cuando abres un episodio entras al Episode Builder.\n\nArriba tienes tres modos: Vista general, Guión y Estructura.\n\nA la derecha siempre está el Asistente del episodio — la IA que te acompaña en los tres modos.\n\nVamos modo por modo.',
     condition: 'none',
     buttonLabel: 'Siguiente →',
-    image: '/tutorial/episodes-builder.png',
+    image: '/tutorial/episodes-builder.svg',
   },
 
   {
@@ -135,7 +135,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     condition: 'none',
     buttonLabel: 'Siguiente →',
     navLabel: 'Ir a Continuidad →',
-    image: '/tutorial/continuity.png',
+    image: '/tutorial/continuity.svg',
   },
 
   // ── MOTOR NUPPA ──────────────────────────────────────────────────────────────
@@ -149,7 +149,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     condition: 'none',
     buttonLabel: 'Siguiente →',
     navLabel: 'Ir al Motor NUPPA →',
-    image: '/tutorial/motor.png',
+    image: '/tutorial/motor.svg',
   },
 
   // ── BIBLIA ───────────────────────────────────────────────────────────────────
@@ -162,7 +162,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     condition: 'none',
     buttonLabel: 'Siguiente →',
     navLabel: 'Ir a la Biblia →',
-    image: '/tutorial/bible.png',
+    image: '/tutorial/bible.svg',
   },
 
   {
@@ -175,7 +175,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     dialogueAdmin: '¿Lo ves? Todo el canon oficial. Y tú puedes editarlo.\n\nEso es un poder ENORME. Si cambias algo acá sin pensarlo bien, las consecuencias se propagan a todos los flows, el asistente y los prompts de generación.\n\nTito me hizo prometerle que lo advertiría. Ya te lo advertí.',
     condition: 'none',
     buttonLabel: 'Entendido →',
-    image: '/tutorial/bible-doc.png',
+    image: '/tutorial/bible-doc.svg',
   },
 
   {
@@ -198,7 +198,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     condition: 'none',
     buttonLabel: 'Siguiente →',
     navLabel: 'Ir al Asistente →',
-    image: '/tutorial/studio.png',
+    image: '/tutorial/studio.svg',
   },
 
   {
@@ -231,7 +231,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     condition: 'none',
     buttonLabel: 'Siguiente →',
     navLabel: 'Ir al Artwork Flow →',
-    image: '/tutorial/artwork.png',
+    image: '/tutorial/artwork.svg',
   },
 
   {
@@ -288,7 +288,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     condition: 'none',
     buttonLabel: 'Siguiente →',
     navLabel: 'Ir a la Biblia Visual →',
-    image: '/tutorial/approval.png',
+    image: '/tutorial/approval.svg',
   },
 
   {
@@ -342,7 +342,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     condition: 'none',
     buttonLabel: 'Siguiente →',
     navLabel: 'Ir a Arte →',
-    image: '/tutorial/assets.png',
+    image: '/tutorial/assets.svg',
   },
 
   // ── MARKETING ────────────────────────────────────────────────────────────────
@@ -356,7 +356,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     condition: 'none',
     buttonLabel: 'Siguiente →',
     navLabel: 'Ir a Marketing →',
-    image: '/tutorial/marketing.png',
+    image: '/tutorial/marketing.svg',
   },
 
   // ── WORKFLOWS ────────────────────────────────────────────────────────────────
@@ -370,7 +370,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     condition: 'none',
     buttonLabel: 'Siguiente →',
     navLabel: 'Ir a Workflows →',
-    image: '/tutorial/workflows.png',
+    image: '/tutorial/workflows.svg',
   },
 
   {
@@ -401,7 +401,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     dialogue: 'El botón ⚡ Usar Workflow es donde está la magia.\n\nCuando lo presionas, el sistema:\n1. Carga el contenido completo del workflow — todos sus pasos y criterios\n2. Detecta qué archivos de Knowledge necesita ese proceso\n3. Añade el contexto del estudio: estilo maestro, estado de personajes, estado de locaciones, Biblia\n\nTodo se arma en un prompt listo para ejecutar. Sin abrir ningún archivo manualmente.',
     condition: 'none',
     buttonLabel: 'Siguiente →',
-    image: '/tutorial/workflows-modal.png',
+    image: '/tutorial/workflows-modal.svg',
   },
 
   {
