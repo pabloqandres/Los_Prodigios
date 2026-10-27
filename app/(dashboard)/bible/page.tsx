@@ -853,6 +853,56 @@ function EditModal({ doc, onClose, onSuccess }: { doc: RefDoc; onClose: () => vo
   const [accentColor, setAccentColor] = useState(doc.accent_color || '#9B6FD4')
   const [saving, setSaving] = useState(false)
 
+  // Entity links — live (no need to wait for Save)
+  const [entityLinks, setEntityLinks] = useState<EntityLink[]>([])
+  const [entitySearchQuery, setEntitySearchQuery] = useState('')
+  const [entitySearchResults, setEntitySearchResults] = useState<{ entity_name: string; entity_label: string; category: string }[]>([])
+  const [searchingEntities, setSearchingEntities] = useState(false)
+  const [showEntitySearch, setShowEntitySearch] = useState(false)
+  const editEntityTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    fetch(`/api/entity-doc-links?doc_id=${doc.id}`)
+      .then(r => r.ok ? r.json() : [])
+      .then(setEntityLinks)
+      .catch(() => {})
+  }, [doc.id])
+
+  function handleEntitySearch(q: string) {
+    setEntitySearchQuery(q)
+    if (editEntityTimer.current) clearTimeout(editEntityTimer.current)
+    editEntityTimer.current = setTimeout(async () => {
+      setSearchingEntities(true)
+      try {
+        const res = await fetch(`/api/entity-doc-links?search=${encodeURIComponent(q)}`)
+        if (res.ok) setEntitySearchResults(await res.json())
+      } finally {
+        setSearchingEntities(false)
+      }
+    }, 300)
+  }
+
+  async function addEntityLink(ent: { entity_name: string; entity_label: string; category: string }) {
+    if (entityLinks.some(l => l.entity_name === ent.entity_name)) return
+    const res = await fetch('/api/entity-doc-links', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ doc_id: doc.id, entity_name: ent.entity_name, entity_label: ent.entity_label, entity_category: ent.category, link_type: 'primary' }),
+    })
+    if (res.ok) {
+      const link = await res.json()
+      setEntityLinks(prev => [...prev, link])
+      setShowEntitySearch(false)
+      setEntitySearchQuery('')
+      setEntitySearchResults([])
+    }
+  }
+
+  async function removeEntityLink(id: string) {
+    await fetch(`/api/entity-doc-links?id=${id}`, { method: 'DELETE' })
+    setEntityLinks(prev => prev.filter(l => l.id !== id))
+  }
+
   function toggleCategory(key: string) {
     setCategories((prev) => prev.includes(key) ? prev.filter((c) => c !== key) : [...prev, key])
   }
@@ -873,14 +923,14 @@ function EditModal({ doc, onClose, onSuccess }: { doc: RefDoc; onClose: () => vo
       style={{ position: 'fixed', inset: 0, background: 'rgba(8,6,15,0.92)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 300, padding: '1.5rem' }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
     >
-      <div style={{ background: '#120D28', border: '1px solid rgba(245,165,42,0.15)', borderRadius: '2px', width: '100%', maxWidth: '460px' }}>
-        <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid rgba(245,165,42,0.07)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ background: '#120D28', border: '1px solid rgba(245,165,42,0.15)', borderRadius: '2px', width: '100%', maxWidth: '460px', maxHeight: '90vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid rgba(245,165,42,0.07)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
           <h2 style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '1.25rem', letterSpacing: '0.05em', color: '#F0EBE1' }}>Editar ficha</h2>
           <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'rgba(240,235,225,0.35)', cursor: 'pointer' }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
         </div>
-        <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem', overflowY: 'auto' }}>
           <div>
             <label style={{ display: 'block', fontSize: '0.8125rem', color: 'rgba(240,235,225,0.5)', marginBottom: '0.5rem' }}>Título</label>
             <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} style={{ width: '100%', background: '#1A1235', border: '1px solid rgba(245,165,42,0.12)', borderRadius: '2px', color: '#F0EBE1', fontFamily: 'IBM Plex Sans, sans-serif', fontSize: '0.875rem', padding: '0.625rem 0.75rem', outline: 'none', boxSizing: 'border-box' }} />
@@ -908,21 +958,86 @@ function EditModal({ doc, onClose, onSuccess }: { doc: RefDoc; onClose: () => vo
             <label style={{ display: 'block', fontSize: '0.8125rem', color: 'rgba(240,235,225,0.5)', marginBottom: '0.625rem' }}>Color del lomo</label>
             <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
               {ACCENT_COLORS.map(({ value, label }) => (
-                <button
-                  key={value}
-                  title={label}
-                  onClick={() => setAccentColor(value)}
-                  style={{
-                    width: 28, height: 28, borderRadius: '50%', border: accentColor === value ? '2px solid #F0EBE1' : '2px solid transparent',
-                    background: value, cursor: 'pointer', outline: accentColor === value ? `2px solid ${value}` : 'none', outlineOffset: 2,
-                    boxSizing: 'border-box',
-                  }}
+                <button key={value} title={label} onClick={() => setAccentColor(value)}
+                  style={{ width: 28, height: 28, borderRadius: '50%', border: accentColor === value ? '2px solid #F0EBE1' : '2px solid transparent', background: value, cursor: 'pointer', outline: accentColor === value ? `2px solid ${value}` : 'none', outlineOffset: 2, boxSizing: 'border-box' }}
                 />
               ))}
             </div>
           </div>
+
+          {/* ── Entidades canónicas ── */}
+          <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '1rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.625rem' }}>
+              <label style={{ fontSize: '0.8125rem', color: 'rgba(240,235,225,0.5)' }}>Entidades vinculadas</label>
+              <button
+                onClick={() => { setShowEntitySearch(v => !v); if (!showEntitySearch) handleEntitySearch('') }}
+                style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: '0.6875rem', color: 'rgba(78,205,196,0.6)', fontFamily: 'IBM Plex Sans, sans-serif', display: 'flex', alignItems: 'center', gap: '0.25rem' }}
+              >
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Agregar
+              </button>
+            </div>
+
+            {/* Existing links */}
+            {entityLinks.length > 0 && (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.375rem', marginBottom: showEntitySearch ? '0.75rem' : 0 }}>
+                {entityLinks.map(link => (
+                  <div key={link.id} style={{ display: 'flex', alignItems: 'center', gap: 0, background: 'rgba(78,205,196,0.08)', border: '1px solid rgba(78,205,196,0.25)', borderRadius: '3px', overflow: 'hidden' }}>
+                    <span style={{ padding: '0.25rem 0.5rem', fontSize: '0.6875rem', color: '#4ECDC4', fontFamily: 'IBM Plex Sans, sans-serif' }}>
+                      {link.entity_label}
+                      <span style={{ color: 'rgba(78,205,196,0.4)', marginLeft: '0.3rem' }}>{link.entity_category}</span>
+                    </span>
+                    <button onClick={() => removeEntityLink(link.id)}
+                      style={{ background: 'none', border: 'none', borderLeft: '1px solid rgba(78,205,196,0.15)', padding: '0.25rem 0.375rem', cursor: 'pointer', color: 'rgba(78,205,196,0.4)', lineHeight: 1, display: 'flex', alignItems: 'center' }}>
+                      <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            {entityLinks.length === 0 && !showEntitySearch && (
+              <div style={{ fontSize: '0.75rem', color: 'rgba(240,235,225,0.2)', fontFamily: 'IBM Plex Sans, sans-serif' }}>Sin entidades vinculadas</div>
+            )}
+
+            {/* Search to add */}
+            {showEntitySearch && (
+              <div style={{ background: 'rgba(78,205,196,0.04)', border: '1px solid rgba(78,205,196,0.15)', borderRadius: '3px', padding: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <div style={{ position: 'relative' }}>
+                  <input
+                    autoFocus
+                    value={entitySearchQuery}
+                    onChange={e => handleEntitySearch(e.target.value)}
+                    placeholder="Buscar personaje, locación, prop..."
+                    style={{ width: '100%', background: '#1A1235', border: '1px solid rgba(78,205,196,0.2)', borderRadius: '2px', color: '#F0EBE1', fontFamily: 'IBM Plex Sans, sans-serif', fontSize: '0.8125rem', padding: '0.5rem 0.625rem', outline: 'none', boxSizing: 'border-box' }}
+                  />
+                  {searchingEntities && (
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(78,205,196,0.6)" strokeWidth="2" style={{ position: 'absolute', right: '0.625rem', top: '50%', transform: 'translateY(-50%)', animation: 'spin 1s linear infinite' }}>
+                      <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+                    </svg>
+                  )}
+                </div>
+                {entitySearchResults.length > 0 && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem', maxHeight: '140px', overflowY: 'auto' }}>
+                    {entitySearchResults.map(ent => {
+                      const alreadyLinked = entityLinks.some(l => l.entity_name === ent.entity_name)
+                      return (
+                        <button key={ent.entity_name} onClick={() => !alreadyLinked && addEntityLink(ent)} disabled={alreadyLinked}
+                          style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.375rem 0.5rem', background: alreadyLinked ? 'rgba(78,205,196,0.06)' : 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '2px', cursor: alreadyLinked ? 'default' : 'pointer', textAlign: 'left' }}>
+                          <span style={{ fontSize: '0.8125rem', color: alreadyLinked ? 'rgba(78,205,196,0.4)' : '#F0EBE1', fontFamily: 'IBM Plex Sans, sans-serif' }}>{ent.entity_label}</span>
+                          <span style={{ fontSize: '0.6875rem', color: 'rgba(240,235,225,0.3)', fontFamily: 'IBM Plex Sans, sans-serif' }}>{alreadyLinked ? '✓' : ent.category}</span>
+                        </button>
+                      )
+                    })}
+                  </div>
+                )}
+                {entitySearchQuery.length > 0 && !searchingEntities && entitySearchResults.length === 0 && (
+                  <div style={{ fontSize: '0.75rem', color: 'rgba(240,235,225,0.25)' }}>Sin resultados</div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
-        <div style={{ padding: '1rem 1.5rem', borderTop: '1px solid rgba(245,165,42,0.07)', display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
+        <div style={{ padding: '1rem 1.5rem', borderTop: '1px solid rgba(245,165,42,0.07)', display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', flexShrink: 0 }}>
           <button onClick={onClose} style={{ padding: '0.5rem 1rem', background: 'transparent', border: '1px solid rgba(245,165,42,0.1)', borderRadius: '2px', color: 'rgba(240,235,225,0.45)', fontSize: '0.875rem', cursor: 'pointer', fontFamily: 'IBM Plex Sans, sans-serif' }}>Cancelar</button>
           <button onClick={handleSave} disabled={saving} style={{ padding: '0.5rem 1.25rem', background: '#F5A52A', border: 'none', borderRadius: '2px', color: '#08060F', fontSize: '0.875rem', fontWeight: 600, cursor: 'pointer', fontFamily: 'IBM Plex Sans, sans-serif' }}>
             {saving ? 'Guardando...' : 'Guardar'}
