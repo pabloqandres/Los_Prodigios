@@ -7,10 +7,10 @@ export interface TutorialStep {
   dialogue: string
   dialogueAdmin?: string
   navDialogue?: string
-  condition: 'none' | 'event'
-  conditionEvent?: string
+  condition: 'none'           // All steps are informational — no real interaction required
   buttonLabel: string
   navLabel?: string
+  image?: string              // Optional mockup screenshot: /tutorial/[name].png
 }
 
 export interface TutorialTrack {
@@ -46,6 +46,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     condition: 'none',
     buttonLabel: 'Siguiente →',
     navLabel: 'Ir al Dashboard →',
+    image: '/tutorial/dashboard.png',
   },
 
   // ── EPISODIOS ────────────────────────────────────────────────────────────────
@@ -59,6 +60,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     condition: 'none',
     buttonLabel: 'Siguiente →',
     navLabel: 'Ir a Episodios →',
+    image: '/tutorial/episodes-grid.png',
   },
 
   {
@@ -69,6 +71,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     dialogue: 'Cuando abres un episodio entras al Episode Builder.\n\nArriba tienes tres modos: Vista general, Guión y Estructura.\n\nA la derecha siempre está el Asistente del episodio — la IA que te acompaña en los tres modos.\n\nVamos modo por modo.',
     condition: 'none',
     buttonLabel: 'Siguiente →',
+    image: '/tutorial/episodes-builder.png',
   },
 
   {
@@ -132,6 +135,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     condition: 'none',
     buttonLabel: 'Siguiente →',
     navLabel: 'Ir a Continuidad →',
+    image: '/tutorial/continuity.png',
   },
 
   // ── MOTOR NUPPA ──────────────────────────────────────────────────────────────
@@ -145,6 +149,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     condition: 'none',
     buttonLabel: 'Siguiente →',
     navLabel: 'Ir al Motor NUPPA →',
+    image: '/tutorial/motor.png',
   },
 
   // ── BIBLIA ───────────────────────────────────────────────────────────────────
@@ -153,12 +158,11 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     route: '/bible',
     spotlightSelector: '[data-tutorial="bible-grid"]',
     bit: 'happy',
-    navDialogue: 'Ahora te muestro la Biblia — el corazón de todo. Ahí está el canon oficial escrito de la serie. Vamos.',
     dialogue: 'La Biblia tiene dos tabs:\n\n📚 Canon — todos los documentos canónicos oficiales: perfiles de personajes, el mundo, la historia, las reglas del universo.\n\n✍ Taller — documentos de trabajo en progreso: guiones, notas, materiales de desarrollo.\n\nHaz clic en cualquier tomo para abrirlo y leer su contenido.',
-    condition: 'event',
-    conditionEvent: 'tutorial:bible_opened',
+    condition: 'none',
     buttonLabel: 'Siguiente →',
     navLabel: 'Ir a la Biblia →',
+    image: '/tutorial/bible.png',
   },
 
   {
@@ -171,6 +175,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     dialogueAdmin: '¿Lo ves? Todo el canon oficial. Y tú puedes editarlo.\n\nEso es un poder ENORME. Si cambias algo acá sin pensarlo bien, las consecuencias se propagan a todos los flows, el asistente y los prompts de generación.\n\nTito me hizo prometerle que lo advertiría. Ya te lo advertí.',
     condition: 'none',
     buttonLabel: 'Entendido →',
+    image: '/tutorial/bible-doc.png',
   },
 
   {
@@ -189,12 +194,11 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     route: '/studio',
     spotlightSelector: '[data-tutorial="studio-input"]',
     bit: 'happy',
-    navDialogue: 'El Asistente es el más potente de todos. Conoce toda la Biblia y el sistema de continuidad. Vamos a verlo.',
-    dialogue: 'El Asistente sabe todo lo que está en la Biblia — personajes, locaciones, historia, reglas del mundo.\n\nArriba puedes cambiar el modo (Escritura, Arte, Marketing...) y el asistente se especializa en ese contexto.\n\nPruébalo: escríbele algo relacionado con Los Prodigios y ve qué responde.',
-    condition: 'event',
-    conditionEvent: 'tutorial:message_sent',
+    dialogue: 'El Asistente sabe todo lo que está en la Biblia — personajes, locaciones, historia, reglas del mundo.\n\nArriba puedes cambiar el modo (Escritura, Arte, Marketing...) y el asistente se especializa en ese contexto.\n\nCuando le escribas algo, responde con el canon completo como contexto — no inventa información sobre Los Prodigios.',
+    condition: 'none',
     buttonLabel: 'Siguiente →',
     navLabel: 'Ir al Asistente →',
+    image: '/tutorial/studio.png',
   },
 
   {
@@ -223,12 +227,11 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     route: '/artwork',
     spotlightSelector: null,
     bit: 'surprised',
-    navDialogue: 'Ahora el Artwork Flow — donde se arman los prompts para crear arte con IA. Vamos.',
     dialogue: 'El Artwork Flow construye prompts de imagen en un canvas visual.\n\nPara generar un prompt:\n1. Haz clic en "+ Tipo" y elige el tipo de artwork\n2. Haz clic en "+ Estilo" y selecciona un estilo visual\n3. Haz clic en "+ Entidad" y elige un personaje o locación\n4. Haz clic en "+ Output" para agregar la salida\n5. Arrastra desde los puntos de cada nodo para conectarlos\n6. Presiona "Generar Prompt" en el nodo Output\n\nEl prompt se arma leyendo el doc canónico del personaje desde la Biblia. Directo a Midjourney o ChatGPT.',
-    condition: 'event',
-    conditionEvent: 'tutorial:prompt_generated',
+    condition: 'none',
     buttonLabel: 'Siguiente →',
     navLabel: 'Ir al Artwork Flow →',
+    image: '/tutorial/artwork.png',
   },
 
   {
@@ -285,6 +288,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     condition: 'none',
     buttonLabel: 'Siguiente →',
     navLabel: 'Ir a la Biblia Visual →',
+    image: '/tutorial/approval.png',
   },
 
   {
@@ -338,6 +342,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     condition: 'none',
     buttonLabel: 'Siguiente →',
     navLabel: 'Ir a Arte →',
+    image: '/tutorial/assets.png',
   },
 
   // ── MARKETING ────────────────────────────────────────────────────────────────
@@ -351,6 +356,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     condition: 'none',
     buttonLabel: 'Siguiente →',
     navLabel: 'Ir a Marketing →',
+    image: '/tutorial/marketing.png',
   },
 
   // ── WORKFLOWS ────────────────────────────────────────────────────────────────
@@ -364,6 +370,7 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     condition: 'none',
     buttonLabel: 'Siguiente →',
     navLabel: 'Ir a Workflows →',
+    image: '/tutorial/workflows.png',
   },
 
   {
@@ -391,10 +398,10 @@ export const TUTORIAL_STEPS: TutorialStep[] = [
     route: '/workflows',
     spotlightSelector: '[data-tutorial="workflow-use-btn"]',
     bit: 'surprised',
-    dialogue: 'El botón ⚡ Usar Workflow es donde está la magia.\n\nCuando lo presionas, el sistema:\n1. Carga el contenido completo del workflow — todos sus pasos y criterios\n2. Detecta qué archivos de Knowledge necesita ese proceso\n3. Añade el contexto del estudio: estilo maestro, estado de personajes, estado de locaciones, Biblia\n\nTodo se arma en un prompt listo para ejecutar. Sin abrir ningún archivo manualmente.\n\nHaz clic en ⚡ Usar Workflow en cualquier card.',
-    condition: 'event',
-    conditionEvent: 'tutorial:workflow_opened',
+    dialogue: 'El botón ⚡ Usar Workflow es donde está la magia.\n\nCuando lo presionas, el sistema:\n1. Carga el contenido completo del workflow — todos sus pasos y criterios\n2. Detecta qué archivos de Knowledge necesita ese proceso\n3. Añade el contexto del estudio: estilo maestro, estado de personajes, estado de locaciones, Biblia\n\nTodo se arma en un prompt listo para ejecutar. Sin abrir ningún archivo manualmente.',
+    condition: 'none',
     buttonLabel: 'Siguiente →',
+    image: '/tutorial/workflows-modal.png',
   },
 
   {
@@ -481,20 +488,27 @@ export const TUTORIAL_TRACKS: TutorialTrack[] = [
     icon: '🎬',
     color: '#F5A52A',
     stepIds: [
+      // 1. Bienvenida
       'intro',
       'dashboard',
-      'episodes-grid', 'episodes-builder', 'episodes-overview', 'episodes-script', 'episodes-structure', 'episodes-ai', 'episodes-continuity-log',
-      'continuity',
-      'motor',
+      // 2. Base de conocimiento — primero entender el universo
       'bible-open', 'bible-read', 'bible-template',
       'studio', 'studio-prompt-target', 'studio-canon',
-      'artwork-generate', 'artwork-result',
-      'video-flow-intro', 'video-flow-platform', 'video-flow-antimorphing',
+      // 3. Producción de episodios — el flujo central de trabajo
+      'episodes-grid', 'episodes-builder', 'episodes-overview', 'episodes-script', 'episodes-structure', 'episodes-ai', 'episodes-continuity-log',
+      // 4. Continuidad y calidad — resultado de producir episodios
+      'continuity',
+      'motor',
+      // 5. Pipeline visual — crear, validar y consultar arte
       'approval-intro', 'approval-accordion', 'approval-entity-sheet', 'approval-upload', 'approval-seals',
       'assets',
+      'artwork-generate', 'artwork-result',
+      'video-flow-intro', 'video-flow-platform', 'video-flow-antimorphing',
+      // 6. Operaciones — marketing y procesos del estudio
       'marketing',
       'workflows-intro', 'workflows-phases', 'workflows-card-anatomy', 'workflows-use-button', 'workflows-prompt-anatomy', 'workflows-copy',
       'agents-tab', 'agents-card', 'agents-activate',
+      // 7. Cierre
       'sidebar',
       'done',
     ],
