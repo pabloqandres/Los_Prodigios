@@ -1780,7 +1780,11 @@ export default function BiblePage() {
     <div className="px-4 py-6 md:px-10 md:py-6" style={{ maxWidth: '1100px', width: '100%' }}>
 
       {loading ? (
-        <div style={{ padding: '4rem', textAlign: 'center', color: 'rgba(240,235,225,0.25)', fontSize: '0.875rem' }}>Cargando biblioteca...</div>
+        <div style={{ display: 'flex', gap: '3px', alignItems: 'flex-end', padding: '2rem 0', flexWrap: 'wrap' }}>
+          {[180, 220, 160, 240, 200, 190, 170, 210, 185, 230, 165, 195].map((h, i) => (
+            <div key={i} className="skeleton" style={{ width: 28, height: h, borderRadius: '2px 2px 0 0', flexShrink: 0 }} />
+          ))}
+        </div>
       ) : docs.length === 0 ? (
         <div style={{ background: '#0D0920', border: '1px solid rgba(245,165,42,0.08)', borderRadius: '2px', padding: '5rem 2rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', textAlign: 'center' }}>
           <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(245,165,42,0.15)" strokeWidth="0.75">

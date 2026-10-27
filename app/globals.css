@@ -262,6 +262,14 @@
   .card-enter { animation: card-enter 0.28s ease forwards; }
   .fade-in    { animation: fade-in 0.2s ease forwards; }
 
+  /* Skeleton loader */
+  .skeleton {
+    background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.07) 50%, rgba(255,255,255,0.03) 75%);
+    background-size: 200% auto;
+    border-radius: 3px;
+    animation: shimmer 1.4s ease infinite;
+  }
+
   /* Badges */
   .badge-gold   { animation: gold-pulse 2.5s ease infinite; }
   .badge-teal   { animation: teal-pulse 2.5s ease infinite; }

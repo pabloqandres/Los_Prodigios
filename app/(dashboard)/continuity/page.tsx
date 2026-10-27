@@ -1419,8 +1419,10 @@ export default function ContinuityPage() {
 
         {/* Promises grouped by urgency */}
         {promisesLoading ? (
-          <div style={{ color: 'rgba(240,235,225,0.2)', fontSize: '0.8125rem', padding: '1rem 0', marginBottom: '2.5rem' }}>
-            Cargando promesas…
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '2.5rem' }}>
+            {[1,2,3].map(i => (
+              <div key={i} className="skeleton" style={{ width: '100%', height: 64, borderRadius: 3 }} />
+            ))}
           </div>
         ) : promises.length === 0 ? (
           <div style={{

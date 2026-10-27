@@ -74,6 +74,7 @@ export default function EpisodesPage() {
   }
 
   async function createEpisode(season: number, episode_number: number) {
+    if (creating) return // double-click guard
     setCreating({ season, ep: episode_number })
     try {
       const res = await fetch('/api/episodes', {
@@ -81,8 +82,15 @@ export default function EpisodesPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ season, episode_number }),
       })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}))
+        alert(err.error ?? `Error al crear episodio (${res.status})`)
+        return
+      }
       const data = await res.json()
       if (data.id) router.push(`/episodes/${data.id}`)
+    } catch {
+      alert('Error de red al crear el episodio')
     } finally {
       setCreating(null)
     }

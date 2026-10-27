@@ -1373,8 +1373,28 @@ El original_text debe ser cita LITERAL del guión (para ubicarlo automáticament
   }
 
   if (loading) return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: '#08060F', color: 'rgba(240,235,225,0.2)', fontFamily: 'IBM Plex Sans, sans-serif', fontSize: '0.875rem' }}>
-      Cargando episodio...
+    <div style={{ background: '#08060F', minHeight: '100vh', fontFamily: 'IBM Plex Sans, sans-serif', padding: '0' }}>
+      {/* Topbar skeleton */}
+      <div style={{ height: '52px', borderBottom: '1px solid rgba(245,165,42,0.08)', display: 'flex', alignItems: 'center', gap: '1rem', padding: '0 1.5rem' }}>
+        <div className="skeleton" style={{ width: 28, height: 28, borderRadius: '50%' }} />
+        <div className="skeleton" style={{ width: 80, height: 14 }} />
+        <div className="skeleton" style={{ width: 120, height: 14, marginLeft: 'auto' }} />
+      </div>
+      {/* Tab bar skeleton */}
+      <div style={{ height: '40px', borderBottom: '1px solid rgba(245,165,42,0.06)', display: 'flex', alignItems: 'center', gap: '1.5rem', padding: '0 1.5rem' }}>
+        {[90, 70, 80, 60, 75].map((w, i) => <div key={i} className="skeleton" style={{ width: w, height: 12 }} />)}
+      </div>
+      {/* Content skeleton */}
+      <div style={{ padding: '2rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem', maxWidth: 900 }}>
+        <div className="skeleton" style={{ width: '40%', height: 20 }} />
+        <div style={{ display: 'flex', gap: '1rem' }}>
+          {[1,2,3,4,5].map(i => <div key={i} className="skeleton" style={{ flex: 1, height: 80, borderRadius: 6 }} />)}
+        </div>
+        <div className="skeleton" style={{ width: '100%', height: 160, borderRadius: 4 }} />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          {[100, 80, 90, 60].map((w, i) => <div key={i} className="skeleton" style={{ width: `${w}%`, height: 14 }} />)}
+        </div>
+      </div>
     </div>
   )
 
