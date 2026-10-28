@@ -769,11 +769,11 @@ export default function VisualGapsPanel({
         <div>
           <div style={{
             fontFamily: 'Bebas Neue, Impact, sans-serif',
-            fontSize: '1.125rem',
+            fontSize: '2.25rem',
             letterSpacing: '0.12em',
             color: C.text,
             lineHeight: 1,
-            marginBottom: 4,
+            marginBottom: 6,
           }}>
             Visual Gaps
           </div>
