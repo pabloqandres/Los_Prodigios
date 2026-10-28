@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import dynamic from 'next/dynamic'
 import type { SeasonEpisode } from '@/components/NuppaSeasonGraph'
+import NuppaBarPanel from '@/components/NuppaBarPanel'
 
 const NuppaSeasonGraph = dynamic(() => import('@/components/NuppaSeasonGraph'), { ssr: false })
 
@@ -130,6 +131,26 @@ export default function MotorPage() {
             }}>
               {avgScore.toFixed(1)}
             </span>
+          </div>
+        )}
+      </div>
+
+      {/* Bar panel */}
+      <div style={{
+        borderBottom: '1px solid rgba(223,248,24,0.06)',
+        flexShrink: 0,
+      }}>
+        {!loading && episodes.length > 0 && (
+          <NuppaBarPanel episodes={episodes} seasonLabel={seasonLabel} />
+        )}
+        {!loading && episodes.length === 0 && (
+          <div style={{ padding: '1rem 1.75rem', fontSize: '0.65rem', color: 'rgba(240,235,225,0.15)', letterSpacing: '0.06em' }}>
+            Sin datos para graficar
+          </div>
+        )}
+        {loading && (
+          <div style={{ padding: '1rem 1.75rem', fontSize: '0.65rem', color: 'rgba(240,235,225,0.12)', letterSpacing: '0.06em' }}>
+            Cargando {seasonLabel}...
           </div>
         )}
       </div>
