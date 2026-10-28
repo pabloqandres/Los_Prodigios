@@ -2,7 +2,7 @@ import { createServerClient } from '@/lib/supabase'
 
 export type ActivityAction =
   | 'doc.upload' | 'doc.delete' | 'doc.edit'
-  | 'asset.upload' | 'asset.approve' | 'asset.reject' | 'asset.delete' | 'asset.bulk_approve'
+  | 'asset.upload' | 'asset.approve' | 'asset.reject' | 'asset.delete' | 'asset.bulk_approve' | 'asset.link_episode'
   | 'entity.create' | 'entity.delete'
   | 'episode.create' | 'episode.edit' | 'episode.analyze_script'
   | 'artwork.create' | 'artwork.edit'
