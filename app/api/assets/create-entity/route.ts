@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
   if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const body = await req.json()
-  const { entity_name, entity_label, category, matrix_key: bodyMatrixKey, dry_run } = body
+  const { entity_name, entity_label, category, matrix_key: bodyMatrixKey, dry_run, required_approvals } = body
 
   if (!entity_name || !entity_label || !category) {
     return NextResponse.json({ error: 'Faltan campos: entity_name, entity_label, category' }, { status: 400 })
@@ -47,6 +47,7 @@ export async function POST(req: NextRequest) {
         age_version,
         version_label: makeVersionLabel(row.view_type, row.outfit, age_version),
         status: 'pending',
+        required_approvals: required_approvals ?? 2,
         created_by: token.email ?? 'system',
       })
     }

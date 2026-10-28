@@ -82,8 +82,11 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     .eq('slot_id', slotId)
     .eq('approved', true)
 
-  // Both approved → move file in Supabase Storage
-  if ((count ?? 0) >= 2) {
+  // Check threshold: required_approvals on slot (default 2, can be 1 for production assets)
+  const threshold = slot.required_approvals ?? 2
+
+  // All required approvals received → move file in Supabase Storage
+  if ((count ?? 0) >= threshold) {
     try {
       const { count: existingCount } = await supabase
         .from('asset_slots')

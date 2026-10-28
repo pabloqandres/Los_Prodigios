@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic'
 import { storageUrl } from '@/lib/supabase'
 
 const PDFDownloadSection = dynamic(() => import('@/components/PDFDownloadSection'), { ssr: false })
+const VisualGapsPanel = dynamic(() => import('@/components/VisualGapsPanel'), { ssr: false })
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -1557,7 +1558,7 @@ El original_text debe ser cita LITERAL del guión (para ubicarlo automáticament
             { key: 'overview',   label: 'Datos',        tutorialAttr: 'episode-overview' },
             { key: 'script',     label: 'Guión',        tutorialAttr: 'episode-script-tab' },
             { key: 'structure',  label: 'Análisis',     tutorialAttr: 'episode-structure-tab' },
-            { key: 'produccion', label: 'Producción',   tutorialAttr: 'episode-produccion-tab' },
+            { key: 'produccion', label: 'Visual Gaps',  tutorialAttr: 'episode-produccion-tab' },
           ].map(tab => {
             const dot = tab.key === 'script' ? (scriptDraft.trim().length > 50 ? '#4ECDC4' : null)
               : tab.key === 'structure' ? (episode.scenes.length > 0 ? '#4ECDC4' : null)
@@ -2811,9 +2812,16 @@ El original_text debe ser cita LITERAL del guión (para ubicarlo automáticament
             </div>
           )}
           {/* PRODUCCIÓN MODE */}
-          {mode === 'produccion' && (
+          {mode === 'produccion' && episode && (
+            <VisualGapsPanel
+              episodeId={episode.id}
+              hasScript={!!(scriptDraft && scriptDraft.trim().length >= 50)}
+              episodeLabel={`T${episode.season}E${episode.episode_number}${episode.title ? ` — ${episode.title}` : ''}`}
+            />
+          )}
+          {false && mode === 'produccion' && (
             <div>
-              {/* Header */}
+              {/* Header (legacy — replaced by VisualGapsPanel) */}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
                 <div>
                   <div style={{ ...SECTION_HEADER, marginBottom: '4px' }}>Análisis de producción</div>

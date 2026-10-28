@@ -23,6 +23,7 @@ export const SLOT_MATRIX: Record<string, SlotMatrixRow[]> = {
     { view_type: 'Uniforme partido',   outfit: 'Titular',             age_versions: ['Frontal', 'Espalda'] },
     { view_type: 'Outfit casual',      outfit: 'Variante principal',  age_versions: ['Frontal'] },
     { view_type: 'Acción',            outfit: 'Uniforme titular',    age_versions: ['Celebración', 'Jugada característica'] },
+    { view_type: 'Carta de color',    outfit: null,                  age_versions: ['Color local'] },
     { view_type: 'Accesorio',         outfit: null,                  age_versions: [] },
   ],
 
@@ -34,6 +35,7 @@ export const SLOT_MATRIX: Record<string, SlotMatrixRow[]> = {
     { view_type: 'Outfit técnico',     outfit: 'Ropa de entrenador',  age_versions: ['Frontal', 'Espalda'] },
     { view_type: 'Outfit casual',      outfit: 'Variante principal',  age_versions: ['Frontal'] },
     { view_type: 'Acción banca',       outfit: 'Ropa de entrenador',  age_versions: ['Gesto característico'] },
+    { view_type: 'Carta de color',    outfit: null,                  age_versions: ['Color local'] },
     { view_type: 'Accesorio',         outfit: null,                  age_versions: [] },
   ],
 
@@ -42,6 +44,7 @@ export const SLOT_MATRIX: Record<string, SlotMatrixRow[]> = {
     { view_type: 'Identidad facial',   outfit: null,                    age_versions: ['Frontal', '3/4'] },
     { view_type: 'Cuerpo completo',    outfit: 'Outfit característico', age_versions: ['Frontal'] },
     { view_type: 'Lámina expresiones', outfit: null,                    age_versions: ['Completa'] },
+    { view_type: 'Carta de color',    outfit: null,                    age_versions: ['Color local'] },
     { view_type: 'Accesorio',         outfit: null,                    age_versions: [] },
   ],
 
@@ -52,6 +55,7 @@ export const SLOT_MATRIX: Record<string, SlotMatrixRow[]> = {
     { view_type: 'Lámina expresiones', outfit: null,                 age_versions: ['Completa'] },
     { view_type: 'Uniforme partido',   outfit: 'Hawks titular',      age_versions: ['Frontal', 'Espalda'] },
     { view_type: 'Acción',            outfit: 'Uniforme Hawks',     age_versions: ['Jugada característica'] },
+    { view_type: 'Carta de color',    outfit: null,                 age_versions: ['Color local'] },
     { view_type: 'Accesorio',         outfit: null,                 age_versions: [] },
   ],
 
@@ -60,6 +64,7 @@ export const SLOT_MATRIX: Record<string, SlotMatrixRow[]> = {
   locaciones: [
     { view_type: 'Vista maestra',        outfit: null, age_versions: ['Día'] },
     { view_type: 'Vista complementaria', outfit: null, age_versions: ['Ángulo A', 'Ángulo B'] },
+    { view_type: 'Carta de color',       outfit: null, age_versions: ['Color local'] },
   ],
 
   // ── PROPS & OBJETOS ───────────────────────────────────────────────────────
@@ -67,6 +72,7 @@ export const SLOT_MATRIX: Record<string, SlotMatrixRow[]> = {
     { view_type: 'Vista maestra',   outfit: null, age_versions: ['Frontal'] },
     { view_type: 'Vista lateral',   outfit: null, age_versions: ['v1'] },
     { view_type: 'En contexto',     outfit: null, age_versions: ['En manos / en escena'] },
+    { view_type: 'Carta de color',  outfit: null, age_versions: ['Color local'] },
   ],
 
   // ── CRIATURAS ─────────────────────────────────────────────────────────────
@@ -74,6 +80,7 @@ export const SLOT_MATRIX: Record<string, SlotMatrixRow[]> = {
     { view_type: 'Identidad',              outfit: null, age_versions: ['Frontal neutral'] },
     { view_type: 'Vista lateral',          outfit: null, age_versions: ['Quieto'] },
     { view_type: 'Expresión característica', outfit: null, age_versions: ['Principal'] },
+    { view_type: 'Carta de color',         outfit: null, age_versions: ['Color local'] },
   ],
 
   // ── MASCOTAS ─────────────────────────────────────────────────────────────
@@ -81,17 +88,20 @@ export const SLOT_MATRIX: Record<string, SlotMatrixRow[]> = {
     { view_type: 'Identidad',              outfit: null, age_versions: ['Frontal neutral'] },
     { view_type: 'Vista lateral',          outfit: null, age_versions: ['Quieto'] },
     { view_type: 'Expresión característica', outfit: null, age_versions: ['Principal'] },
+    { view_type: 'Carta de color',         outfit: null, age_versions: ['Color local'] },
   ],
 
   // ── EQUIPOS RIVALES ───────────────────────────────────────────────────────
   rivales: [
     { view_type: 'Uniforme titular', outfit: 'Conjunto completo', age_versions: ['Frontal', 'Espalda'] },
     { view_type: 'Emblema',          outfit: null,                age_versions: ['Limpio sobre fondo'] },
+    { view_type: 'Carta de color',   outfit: null,                age_versions: ['Color local'] },
   ],
 
   // ── SÍMBOLOS & GRÁFICA OFICIAL ────────────────────────────────────────────
   simbolos: [
-    { view_type: 'Ficha técnica', outfit: null, age_versions: ['v1'] },
+    { view_type: 'Ficha técnica',  outfit: null, age_versions: ['v1'] },
+    { view_type: 'Carta de color', outfit: null, age_versions: ['Color local'] },
   ],
 }
 

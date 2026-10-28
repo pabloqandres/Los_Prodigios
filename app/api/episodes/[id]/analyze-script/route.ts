@@ -197,26 +197,41 @@ Reglas:
 
   // ── 7. Save gaps to episode_asset_requests ────────────────────────────────────
   if (gaps.length > 0) {
-    // Clear previous requests for this episode first
+    // Clear previous AI-generated requests for this episode first
     await supabase
       .from('episode_asset_requests')
       .delete()
       .eq('episode_id', episodeId)
       .eq('ai_generated', true)
 
+    // For each gap, find approved slots for the same entity (Maestro suggestions)
+    const uniqueEntities = [...new Set(gaps.map(g => g.entity_name))]
+    const { data: approvedForEntities } = await supabase
+      .from('asset_slots')
+      .select('id, entity_name, view_type, outfit')
+      .in('entity_name', uniqueEntities)
+      .eq('status', 'approved')
+
+    const approvedByEntity: Record<string, string[]> = {}
+    for (const s of approvedForEntities ?? []) {
+      if (!approvedByEntity[s.entity_name]) approvedByEntity[s.entity_name] = []
+      approvedByEntity[s.entity_name].push(s.id)
+    }
+
     const rows = gaps.map(g => ({
-      episode_id:   episodeId,
-      scene_ref:    g.scene_ref,
-      category:     g.category,
-      entity_name:  g.entity_name,
-      entity_label: g.entity_label,
-      matrix_key:   g.matrix_key || g.category,
-      view_type:    g.view_type,
-      outfit:       g.outfit ?? null,
-      age_version:  g.age_version ?? null,
-      reason:       g.reason,
-      status:       'pending',
-      ai_generated: true,
+      episode_id:      episodeId,
+      scene_ref:       g.scene_ref,
+      category:        g.category,
+      entity_name:     g.entity_name,
+      entity_label:    g.entity_label,
+      matrix_key:      g.matrix_key || g.category,
+      view_type:       g.view_type,
+      outfit:          g.outfit ?? null,
+      age_version:     g.age_version ?? null,
+      reason:          g.reason,
+      status:          'pending',
+      ai_generated:    true,
+      suggested_slots: approvedByEntity[g.entity_name] ?? [],
     }))
 
     await supabase.from('episode_asset_requests').insert(rows)
