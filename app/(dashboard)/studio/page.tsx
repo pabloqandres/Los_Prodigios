@@ -92,6 +92,8 @@ export default function StudioPage() {
   const [uploading, setUploading] = useState(false)
   const [savedSessions, setSavedSessions] = useState<{ id: string; title: string; area: string; created_at: string; content: string }[]>([])
   const [viewSession, setViewSession] = useState<{ id: string; title: string; content: string; area: string; created_at: string } | null>(null)
+  const [deleteConfirm, setDeleteConfirm] = useState(false)
+  const [deleteAlsoClear, setDeleteAlsoClear] = useState(false)
 
   const [showCanonCheck, setShowCanonCheck]         = useState(false)
   const [canonQuery, setCanonQuery]                 = useState('')
@@ -465,26 +467,39 @@ export default function StudioPage() {
               NUPPA
             </h1>
           </div>
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              fontSize: '0.75rem',
-              color: 'rgba(240,235,225,0.35)',
-            }}
-          >
-            <div
-              style={{
-                width: '6px',
-                height: '6px',
-                borderRadius: '50%',
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            {messages.length > 0 && (
+              <button
+                onClick={() => { setMessages([]); localStorage.removeItem('studio_chat_autosave') }}
+                title="Nueva conversación"
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '0.375rem',
+                  background: 'rgba(240,235,225,0.04)',
+                  border: '1px solid rgba(240,235,225,0.1)',
+                  borderRadius: 2, cursor: 'pointer',
+                  color: 'rgba(240,235,225,0.45)',
+                  fontSize: '0.6875rem', fontFamily: 'IBM Plex Sans, sans-serif',
+                  letterSpacing: '0.04em', padding: '0.3rem 0.625rem',
+                  transition: 'all 0.12s',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(240,235,225,0.22)'; e.currentTarget.style.color = 'rgba(240,235,225,0.75)' }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(240,235,225,0.1)'; e.currentTarget.style.color = 'rgba(240,235,225,0.45)' }}
+              >
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M12 5v14M5 12h14"/>
+                </svg>
+                Nueva
+              </button>
+            )}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.75rem', color: 'rgba(240,235,225,0.35)' }}>
+              <div style={{
+                width: '6px', height: '6px', borderRadius: '50%',
                 background: loading ? '#F5A52A' : '#4ECDC4',
                 animation: loading ? 'pulse 1s ease-in-out infinite' : 'none',
-              }}
-            />
-            <style>{`@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }`}</style>
-            {loading ? 'Generando...' : 'Listo'}
+              }} />
+              <style>{`@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }`}</style>
+              {loading ? 'Generando...' : 'Listo'}
+            </div>
           </div>
         </div>
 
@@ -1067,7 +1082,7 @@ export default function StudioPage() {
           return (
             <div
               style={{ position: 'fixed', inset: 0, background: 'rgba(8,6,15,0.88)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200, padding: '1.5rem' }}
-              onClick={(e) => { if (e.target === e.currentTarget) setViewSession(null) }}
+              onClick={(e) => { if (e.target === e.currentTarget) { setViewSession(null); setDeleteConfirm(false); setDeleteAlsoClear(false) } }}
             >
               <div style={{ background: '#120D28', border: '1px solid rgba(245,165,42,0.15)', borderRadius: '2px', width: '100%', maxWidth: '640px', maxHeight: '80vh', display: 'flex', flexDirection: 'column' }}>
                 {/* Header */}
@@ -1080,7 +1095,7 @@ export default function StudioPage() {
                       <span style={{ fontSize: '0.625rem', color: 'rgba(240,235,225,0.2)' }}>{sessionMessages.length} mensajes</span>
                     </div>
                   </div>
-                  <button onClick={() => setViewSession(null)} style={{ background: 'none', border: 'none', color: 'rgba(240,235,225,0.35)', cursor: 'pointer', fontSize: '1.125rem', padding: 0, lineHeight: 1 }}>✕</button>
+                  <button onClick={() => { setViewSession(null); setDeleteConfirm(false); setDeleteAlsoClear(false) }} style={{ background: 'none', border: 'none', color: 'rgba(240,235,225,0.35)', cursor: 'pointer', fontSize: '1.125rem', padding: 0, lineHeight: 1 }}>✕</button>
                 </div>
 
                 {/* Message preview */}
@@ -1109,29 +1124,64 @@ export default function StudioPage() {
                 </div>
 
                 {/* Footer: resume + delete */}
-                <div style={{ padding: '1rem 1.5rem', borderTop: '1px solid rgba(245,165,42,0.08)', display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-                  <button
-                    onClick={async () => {
-                      if (!confirm('¿Eliminar esta sesión? No se puede deshacer.')) return
-                      await fetch(`/api/documents?id=${viewSession.id}`, { method: 'DELETE' })
-                      setViewSession(null)
-                      fetchSavedSessions()
-                    }}
-                    style={{ background: 'none', border: '1px solid rgba(212,37,106,0.2)', borderRadius: 2, color: 'rgba(212,37,106,0.5)', cursor: 'pointer', fontSize: '0.75rem', padding: '0.5rem 0.875rem', fontFamily: 'IBM Plex Sans, sans-serif' }}
-                  >
-                    Eliminar
-                  </button>
-                  <div style={{ flex: 1 }} />
-                  <button onClick={() => setViewSession(null)} style={{ background: 'none', border: '1px solid rgba(240,235,225,0.1)', borderRadius: 2, color: 'rgba(240,235,225,0.4)', cursor: 'pointer', fontSize: '0.75rem', padding: '0.5rem 1rem', fontFamily: 'IBM Plex Sans, sans-serif' }}>
-                    Cerrar
-                  </button>
-                  <button
-                    onClick={() => handleResumeSession(viewSession)}
-                    style={{ background: '#F5A52A', border: 'none', borderRadius: 2, color: '#04020E', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 700, padding: '0.5rem 1.25rem', fontFamily: 'IBM Plex Sans, sans-serif', letterSpacing: '0.04em' }}
-                  >
-                    Retomar sesión →
-                  </button>
-                </div>
+                {deleteConfirm ? (
+                  <div style={{ padding: '1rem 1.5rem', borderTop: '1px solid rgba(212,37,106,0.15)', background: 'rgba(212,37,106,0.04)', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                    <div style={{ fontSize: '0.8125rem', color: 'rgba(240,235,225,0.7)', fontFamily: 'IBM Plex Sans, sans-serif' }}>
+                      ¿Eliminar <strong style={{ color: '#F0EBE1' }}>{viewSession.title}</strong>? Esta acción no se puede deshacer.
+                    </div>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                      <input
+                        type="checkbox"
+                        checked={deleteAlsoClear}
+                        onChange={e => setDeleteAlsoClear(e.target.checked)}
+                        style={{ accentColor: '#D4256A', width: 14, height: 14 }}
+                      />
+                      <span style={{ fontSize: '0.75rem', color: 'rgba(240,235,225,0.5)', fontFamily: 'IBM Plex Sans, sans-serif' }}>
+                        También limpiar el chat actual
+                      </span>
+                    </label>
+                    <div style={{ display: 'flex', gap: '0.625rem', justifyContent: 'flex-end' }}>
+                      <button
+                        onClick={() => { setDeleteConfirm(false); setDeleteAlsoClear(false) }}
+                        style={{ background: 'none', border: '1px solid rgba(240,235,225,0.1)', borderRadius: 2, color: 'rgba(240,235,225,0.4)', cursor: 'pointer', fontSize: '0.75rem', padding: '0.4rem 0.875rem', fontFamily: 'IBM Plex Sans, sans-serif' }}
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        onClick={async () => {
+                          await fetch(`/api/documents?id=${viewSession.id}`, { method: 'DELETE' })
+                          if (deleteAlsoClear) { setMessages([]); localStorage.removeItem('studio_chat_autosave') }
+                          setViewSession(null)
+                          setDeleteConfirm(false)
+                          setDeleteAlsoClear(false)
+                          fetchSavedSessions()
+                        }}
+                        style={{ background: '#D4256A', border: 'none', borderRadius: 2, color: '#fff', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 700, padding: '0.4rem 0.875rem', fontFamily: 'IBM Plex Sans, sans-serif' }}
+                      >
+                        Confirmar eliminación
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{ padding: '1rem 1.5rem', borderTop: '1px solid rgba(245,165,42,0.08)', display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                    <button
+                      onClick={() => setDeleteConfirm(true)}
+                      style={{ background: 'none', border: '1px solid rgba(212,37,106,0.2)', borderRadius: 2, color: 'rgba(212,37,106,0.5)', cursor: 'pointer', fontSize: '0.75rem', padding: '0.5rem 0.875rem', fontFamily: 'IBM Plex Sans, sans-serif' }}
+                    >
+                      Eliminar
+                    </button>
+                    <div style={{ flex: 1 }} />
+                    <button onClick={() => setViewSession(null)} style={{ background: 'none', border: '1px solid rgba(240,235,225,0.1)', borderRadius: 2, color: 'rgba(240,235,225,0.4)', cursor: 'pointer', fontSize: '0.75rem', padding: '0.5rem 1rem', fontFamily: 'IBM Plex Sans, sans-serif' }}>
+                      Cerrar
+                    </button>
+                    <button
+                      onClick={() => handleResumeSession(viewSession)}
+                      style={{ background: '#F5A52A', border: 'none', borderRadius: 2, color: '#04020E', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 700, padding: '0.5rem 1.25rem', fontFamily: 'IBM Plex Sans, sans-serif', letterSpacing: '0.04em' }}
+                    >
+                      Retomar sesión →
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           )
