@@ -22,15 +22,17 @@ interface Node3D {
   id: string
   type: 'season' | 'episode' | 'dimension'
   label: string
+  shortLabel: string
   color: string
   r: number
   x: number; y: number; z: number
-  episodeId?: string   // for dimension nodes
-  episodeRef?: string  // episode id for navigation
+  episodeId?: string
+  episodeRef?: string
   score?: number
   dimKey?: string
 }
 
+// ─── Palette (GitNexus-style saturated) ─────────────────────────────────────
 const DIM_COLORS: Record<string, string> = {
   narrativa:   '#FF6B35',
   personajes:  '#4ECDC4',
@@ -40,134 +42,153 @@ const DIM_COLORS: Record<string, string> = {
   franquicia:  '#D4256A',
 }
 
+// Fallback colors for unlabeled dims, cycling through the palette
+const PALETTE = ['#4A8FE8', '#FF6B35', '#4ECDC4', '#DFF818', '#9B6FD4', '#FFE66D', '#D4256A', '#F5A52A', '#88D8B0']
+
+function dimColor(key: string, idx: number): string {
+  return DIM_COLORS[key] ?? PALETTE[idx % PALETTE.length]
+}
+
 function scoreColor(score?: number): string {
-  if (score === undefined) return '#555555'
+  if (score === undefined) return 'rgba(200,195,188,0.4)'
   if (score >= 4.3) return '#88D8B0'
   if (score >= 3.5) return '#FFE66D'
   return '#D4256A'
 }
 
+// ─── Graph builder ───────────────────────────────────────────────────────────
 function buildNodes(episodes: SeasonEpisode[]): Node3D[] {
   const nodes: Node3D[] = []
 
-  // Center: season
   nodes.push({
-    id: 'season',
-    type: 'season',
-    label: 'T01',
+    id: 'season', type: 'season',
+    label: 'T01', shortLabel: 'T01',
     color: '#F2EEEA',
-    r: 22,
-    x: 0, y: 0, z: 0,
+    r: 22, x: 0, y: 0, z: 0,
   })
 
   const total = episodes.length
-  const EP_DIST = 200
+  const EP_DIST = 210
+  const TILT = 0.2
 
   episodes.forEach((ep, i) => {
     const angle = (i / total) * Math.PI * 2 - Math.PI / 2
-    // Tilt slightly for 3D feel
-    const tilt = 0.22
     const ex = Math.cos(angle) * EP_DIST
-    const ey = Math.sin(angle) * EP_DIST * Math.cos(tilt)
-    const ez = Math.sin(angle) * EP_DIST * Math.sin(tilt)
+    const ey = Math.sin(angle) * EP_DIST * Math.cos(TILT)
+    const ez = Math.sin(angle) * EP_DIST * Math.sin(TILT)
 
     const epId = `ep_${ep.id}`
     nodes.push({
-      id: epId,
-      type: 'episode',
+      id: epId, type: 'episode',
       label: `E${String(ep.episode_number).padStart(2, '0')}`,
+      shortLabel: `E${String(ep.episode_number).padStart(2, '0')}`,
       color: scoreColor(ep.overall_score),
-      r: ep.overall_score !== undefined ? 18 : 14,
+      r: ep.overall_score !== undefined ? 20 : 15,
       x: ex, y: ey, z: ez,
       episodeRef: ep.id,
       score: ep.overall_score,
     })
 
-    // Weak dimension nodes — only for analyzed episodes with score < 4.0
-    if (ep.overall_score !== undefined && ep.scores_snapshot) {
-      const weak = ep.scores_snapshot
-        .filter(d => d.score < 3.8)
-        .sort((a, b) => a.score - b.score)
-        .slice(0, 3)
-
-      weak.forEach((dim, j) => {
-        const dimAngle = angle + (j - (weak.length - 1) / 2) * 0.45
-        const dimDist = EP_DIST + 80
-        const dx = Math.cos(dimAngle) * dimDist
-        const dy = Math.sin(dimAngle) * dimDist * Math.cos(tilt)
-        const dz = Math.sin(dimAngle) * dimDist * Math.sin(tilt)
-        nodes.push({
-          id: `dim_${ep.id}_${dim.key}`,
-          type: 'dimension',
-          label: dim.label,
-          color: DIM_COLORS[dim.key] ?? '#888',
-          r: 8,
-          x: dx, y: dy, z: dz,
-          episodeId: epId,
-          episodeRef: ep.id,
-          score: dim.score,
-          dimKey: dim.key,
-        })
+    // Show ALL dimension nodes (not just weak ones)
+    const dims = ep.scores_snapshot ?? []
+    dims.forEach((dim, j) => {
+      const spread = dims.length > 1 ? 0.42 : 0
+      const dimAngle = angle + (j - (dims.length - 1) / 2) * spread
+      const dimDist = EP_DIST + 72
+      const dx = Math.cos(dimAngle) * dimDist
+      const dy = Math.sin(dimAngle) * dimDist * Math.cos(TILT)
+      const dz = Math.sin(dimAngle) * dimDist * Math.sin(TILT)
+      nodes.push({
+        id: `dim_${ep.id}_${dim.key}`,
+        type: 'dimension',
+        label: dim.label,
+        shortLabel: dim.label.slice(0, 8),
+        color: dimColor(dim.key, j),
+        r: dim.score < 3.5 ? 10 : 7,
+        x: dx, y: dy, z: dz,
+        episodeId: epId,
+        episodeRef: ep.id,
+        score: dim.score,
+        dimKey: dim.key,
       })
-    }
+    })
   })
 
   return nodes
 }
 
-function buildLinks(nodes: Node3D[]): Array<{ s: string; t: string; color: string }> {
-  const links: Array<{ s: string; t: string; color: string }> = []
-  const nodeMap = new Map(nodes.map(n => [n.id, n]))
+function buildLinks(nodes: Node3D[], episodes: SeasonEpisode[]): Array<{ s: string; t: string; color: string; width: number }> {
+  const links: Array<{ s: string; t: string; color: string; width: number }> = []
 
-  nodes.forEach(n => {
-    if (n.type === 'episode') {
-      links.push({ s: 'season', t: n.id, color: 'rgba(242,238,234,0.12)' })
-    }
-    if (n.type === 'dimension' && n.episodeId) {
-      const epNode = nodeMap.get(n.episodeId)
-      if (epNode) links.push({ s: n.episodeId, t: n.id, color: n.color + '44' })
+  // Episode → season
+  nodes.filter(n => n.type === 'episode').forEach(n => {
+    links.push({ s: 'season', t: n.id, color: 'rgba(242,238,234,0.1)', width: 1 })
+  })
+
+  // Dimension → episode
+  nodes.filter(n => n.type === 'dimension').forEach(n => {
+    if (n.episodeId) {
+      const isWeak = (n.score ?? 5) < 3.5
+      links.push({ s: n.episodeId, t: n.id, color: n.color + (isWeak ? '66' : '33'), width: isWeak ? 1.5 : 0.8 })
     }
   })
+
+  // Cross-episode links: episodes sharing the same weak dimension key
+  const weakByKey: Record<string, string[]> = {}  // dimKey → [epId, ...]
+  for (const ep of episodes) {
+    for (const dim of ep.scores_snapshot ?? []) {
+      if (dim.score < 3.8) {
+        if (!weakByKey[dim.key]) weakByKey[dim.key] = []
+        weakByKey[dim.key].push(`ep_${ep.id}`)
+      }
+    }
+  }
+  for (const [key, epIds] of Object.entries(weakByKey)) {
+    // Connect pairs (max 3 links per key to avoid clutter)
+    const color = (DIM_COLORS[key] ?? '#888') + '28'
+    for (let i = 0; i < Math.min(epIds.length - 1, 3); i++) {
+      links.push({ s: epIds[i], t: epIds[i + 1], color, width: 0.6 })
+    }
+  }
 
   return links
 }
 
-function project(x: number, y: number, z: number, rx: number, ry: number, W: number, H: number, ws = 1) {
-  // Rotate Y
+// ─── 3D projection ───────────────────────────────────────────────────────────
+function project(x: number, y: number, z: number, rx: number, ry: number, W: number, H: number, ws: number) {
   const cosY = Math.cos(ry), sinY = Math.sin(ry)
   const x1 = x * cosY - z * sinY
   const z1 = x * sinY + z * cosY
-  // Rotate X
   const cosX = Math.cos(rx), sinX = Math.sin(rx)
   const y2 = y * cosX - z1 * sinX
   const z2 = y * sinX + z1 * cosX
   const fov = 600
-  // ws scales the world uniformly so the graph always fits the canvas
   const scale = fov / (fov + z2) * ws
   return { sx: W / 2 + x1 * scale, sy: H / 2 + y2 * scale, scale, z: z2 }
 }
 
+// ─── Component ────────────────────────────────────────────────────────────────
 export default function NuppaSeasonGraph({ episodes, seasonLabel = 'T01' }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const router = useRouter()
-  const rotRef = useRef({ x: 0.3, y: 0 })
+  const rotRef = useRef({ x: 0.28, y: 0 })
   const isDragging = useRef(false)
   const lastMouse = useRef({ x: 0, y: 0 })
   const isHovering = useRef(false)
   const imgRef = useRef<HTMLImageElement | null>(null)
   const [hoveredId, setHoveredId] = useState<string | null>(null)
   const hoveredIdRef = useRef<string | null>(null)
+  const timeRef = useRef(0)
 
   const nodesRef = useRef<Node3D[]>([])
   const linksRef = useRef<ReturnType<typeof buildLinks>>([])
-  const wsRef = useRef(1) // world scale: fits graph to canvas size
+  const wsRef = useRef(1)
 
   useEffect(() => {
     nodesRef.current = buildNodes(episodes)
-    linksRef.current = buildLinks(nodesRef.current)
+    linksRef.current = buildLinks(nodesRef.current, episodes)
   }, [episodes])
 
-  // Load hologram image
   useEffect(() => {
     const img = new Image()
     img.src = '/nuppita.png'
@@ -182,11 +203,8 @@ export default function NuppaSeasonGraph({ episodes, seasonLabel = 'T01' }: Prop
     for (const node of nodesRef.current) {
       const p = project(node.x, node.y, node.z, rx, ry, W, H, ws)
       const dist = Math.hypot(mx - p.sx, my - p.sy)
-      const hitR = Math.max(node.r * p.scale, 14)
-      if (dist < hitR && dist < bestDist) {
-        bestDist = dist
-        best = node
-      }
+      const hitR = Math.max(node.r * p.scale + 4, 14)
+      if (dist < hitR && dist < bestDist) { bestDist = dist; best = node }
     }
     return best
   }
@@ -198,19 +216,28 @@ export default function NuppaSeasonGraph({ episodes, seasonLabel = 'T01' }: Prop
     const W = canvas.width
     const H = canvas.height
     const { x: rx, y: ry } = rotRef.current
-    // Scale world to always fit inside canvas (design baseline: 700px)
-    const ws = Math.min(W, H) / 700
+    const ws = Math.min(W, H) / 720
     wsRef.current = ws
+    timeRef.current += 0.012
 
     ctx.clearRect(0, 0, W, H)
 
-    // Draw hologram (NUPPA head behind graph)
+    // ── Background: dot grid ───────────────────────────────────────────────
+    ctx.fillStyle = 'rgba(245,165,42,0.06)'
+    const gridStep = 28
+    for (let gx = gridStep / 2; gx < W; gx += gridStep) {
+      for (let gy = gridStep / 2; gy < H; gy += gridStep) {
+        ctx.beginPath()
+        ctx.arc(gx, gy, 1, 0, Math.PI * 2)
+        ctx.fill()
+      }
+    }
+
+    // ── NUPPA hologram ─────────────────────────────────────────────────────
     if (imgRef.current) {
-      const hSize = Math.min(W * 0.30, 240)
+      const hSize = Math.min(W * 0.30, 230)
       const hx = W / 2 - hSize / 2
       const hy = H / 2 - hSize * 0.55
-
-      // Step 1: render image to offscreen, screen-composite over black → removes white background
       const off = document.createElement('canvas')
       off.width = hSize; off.height = hSize
       const octx = off.getContext('2d') as CanvasRenderingContext2D
@@ -218,8 +245,6 @@ export default function NuppaSeasonGraph({ episodes, seasonLabel = 'T01' }: Prop
       octx.fillRect(0, 0, hSize, hSize)
       octx.globalCompositeOperation = 'screen'
       octx.drawImage(imgRef.current, 0, 0, hSize, hSize)
-
-      // Step 2: radial fade mask so edges dissolve
       const mask = document.createElement('canvas')
       mask.width = hSize; mask.height = hSize
       const mctx = mask.getContext('2d') as CanvasRenderingContext2D
@@ -232,10 +257,8 @@ export default function NuppaSeasonGraph({ episodes, seasonLabel = 'T01' }: Prop
       mctx.fillRect(0, 0, hSize, hSize)
       octx.globalCompositeOperation = 'destination-in'
       octx.drawImage(mask, 0, 0)
-
-      // Step 3: draw to main canvas with cyan tint filter (no hue-rotate — just saturate to cyan)
       ctx.save()
-      ctx.globalAlpha = 0.28
+      ctx.globalAlpha = 0.26
       ctx.globalCompositeOperation = 'screen'
       ctx.filter = 'saturate(0) sepia(1) hue-rotate(155deg) brightness(1.6) saturate(5)'
       ctx.drawImage(off, hx, hy)
@@ -245,12 +268,25 @@ export default function NuppaSeasonGraph({ episodes, seasonLabel = 'T01' }: Prop
       ctx.restore()
     }
 
-    // Sort nodes by z for depth painting
+    // ── Empty state ────────────────────────────────────────────────────────
+    if (episodes.length === 0) {
+      ctx.font = '13px "IBM Plex Sans", sans-serif'
+      ctx.textAlign = 'center'
+      ctx.textBaseline = 'middle'
+      ctx.fillStyle = 'rgba(240,235,225,0.15)'
+      ctx.fillText('No hay episodios analizados en esta temporada', W / 2, H / 2 + 60)
+      ctx.font = '11px "IBM Plex Sans", sans-serif'
+      ctx.fillStyle = 'rgba(240,235,225,0.07)'
+      ctx.fillText('Analiza un episodio para ver el grafo de producción', W / 2, H / 2 + 82)
+      return
+    }
+
+    // ── Sort by z depth ────────────────────────────────────────────────────
     const sorted = [...nodesRef.current]
       .map(n => ({ n, p: project(n.x, n.y, n.z, rx, ry, W, H, ws) }))
       .sort((a, b) => a.p.z - b.p.z)
 
-    // Draw links first
+    // ── Links ──────────────────────────────────────────────────────────────
     for (const link of linksRef.current) {
       const na = nodesRef.current.find(n => n.id === link.s)
       const nb = nodesRef.current.find(n => n.id === link.t)
@@ -261,161 +297,197 @@ export default function NuppaSeasonGraph({ episodes, seasonLabel = 'T01' }: Prop
       ctx.moveTo(pa.sx, pa.sy)
       ctx.lineTo(pb.sx, pb.sy)
       ctx.strokeStyle = link.color
-      ctx.lineWidth = 1
+      ctx.lineWidth = link.width
       ctx.stroke()
     }
 
-    // Draw nodes
+    // ── Nodes ──────────────────────────────────────────────────────────────
     for (const { n, p } of sorted) {
       const r = n.r * p.scale
       const isHov = hoveredIdRef.current === n.id
+      const pulse = Math.sin(timeRef.current + n.x * 0.01 + n.y * 0.01) * 0.5 + 0.5  // 0–1
 
-      // Glow for hovered or episode nodes
-      if (isHov || n.type === 'episode') {
-        ctx.beginPath()
-        ctx.arc(p.sx, p.sy, r + 6, 0, Math.PI * 2)
-        const g = ctx.createRadialGradient(p.sx, p.sy, r * 0.5, p.sx, p.sy, r + 6)
-        g.addColorStop(0, n.color + '44')
+      // ── Outer ambient glow (always on, pulses) ──────────────────────────
+      if (n.type !== 'season') {
+        const glowR = r + 8 + pulse * 5
+        const g = ctx.createRadialGradient(p.sx, p.sy, r * 0.3, p.sx, p.sy, glowR)
+        g.addColorStop(0, n.color + '55')
+        g.addColorStop(0.4, n.color + '22')
         g.addColorStop(1, 'transparent')
+        ctx.beginPath()
+        ctx.arc(p.sx, p.sy, glowR, 0, Math.PI * 2)
         ctx.fillStyle = g
         ctx.fill()
       }
 
-      // Node fill
+      // ── Hover extra glow ────────────────────────────────────────────────
+      if (isHov) {
+        const hg = ctx.createRadialGradient(p.sx, p.sy, r, p.sx, p.sy, r + 18)
+        hg.addColorStop(0, n.color + '66')
+        hg.addColorStop(1, 'transparent')
+        ctx.beginPath()
+        ctx.arc(p.sx, p.sy, r + 18, 0, Math.PI * 2)
+        ctx.fillStyle = hg
+        ctx.fill()
+      }
+
+      // ── Node fill ───────────────────────────────────────────────────────
       ctx.beginPath()
       ctx.arc(p.sx, p.sy, r, 0, Math.PI * 2)
-      ctx.fillStyle = n.type === 'season' ? 'rgba(242,238,234,0.15)' : n.color + (isHov ? 'FF' : 'CC')
+
+      if (n.type === 'season') {
+        ctx.fillStyle = 'rgba(242,238,234,0.12)'
+      } else if (n.type === 'episode') {
+        // Radial fill for episode nodes
+        const fg = ctx.createRadialGradient(p.sx - r * 0.25, p.sy - r * 0.25, r * 0.05, p.sx, p.sy, r)
+        fg.addColorStop(0, n.color + 'FF')
+        fg.addColorStop(0.65, n.color + 'CC')
+        fg.addColorStop(1, n.color + '55')
+        ctx.fillStyle = n.score !== undefined ? fg : n.color + '40'
+      } else {
+        // dimension
+        const isWeak = (n.score ?? 5) < 3.5
+        ctx.fillStyle = isWeak ? n.color + 'CC' : n.color + '55'
+      }
       ctx.fill()
 
-      // Border
-      ctx.strokeStyle = n.color
-      ctx.lineWidth = n.type === 'season' ? 1.5 : (isHov ? 2 : 1)
+      // ── Border / stroke ─────────────────────────────────────────────────
+      ctx.strokeStyle = n.color + (isHov ? 'FF' : 'AA')
+      ctx.lineWidth = n.type === 'season' ? 1.5 : isHov ? 2.5 : 1.2
       ctx.stroke()
 
-      // Season cross/ring decoration
+      // Season outer ring
       if (n.type === 'season') {
         ctx.beginPath()
-        ctx.arc(p.sx, p.sy, r + 4, 0, Math.PI * 2)
-        ctx.strokeStyle = 'rgba(242,238,234,0.1)'
+        ctx.arc(p.sx, p.sy, r + 5 + pulse * 3, 0, Math.PI * 2)
+        ctx.strokeStyle = 'rgba(242,238,234,0.08)'
         ctx.lineWidth = 1
+        ctx.stroke()
+        ctx.beginPath()
+        ctx.arc(p.sx, p.sy, r + 12 + pulse * 2, 0, Math.PI * 2)
+        ctx.strokeStyle = 'rgba(242,238,234,0.04)'
+        ctx.lineWidth = 0.8
         ctx.stroke()
       }
 
-      // Label inside node (episode + season)
+      // ── Labels ──────────────────────────────────────────────────────────
       if (n.type === 'episode' || n.type === 'season') {
-        ctx.font = `${n.type === 'season' ? 'bold ' : ''}${Math.max(11, 13 * p.scale)}px "IBM Plex Sans", sans-serif`
+        // Text halo (readability)
+        ctx.font = `bold ${Math.max(10, 13 * p.scale)}px "IBM Plex Sans", sans-serif`
         ctx.textAlign = 'center'
         ctx.textBaseline = 'middle'
+        ctx.fillStyle = '#131313'
+        ctx.fillText(n.label, p.sx, p.sy)
         ctx.fillStyle = n.type === 'season' ? '#F2EEEA' : '#131313'
         ctx.fillText(n.label, p.sx, p.sy)
       }
 
-      // Score badge for episode nodes
+      // Score badge for episodes
       if (n.type === 'episode' && n.score !== undefined) {
         const bx = p.sx + r + 3
-        const by = p.sy - r - 2
+        const by = p.sy - r - 1
         ctx.font = `bold ${Math.max(9, 10 * p.scale)}px "IBM Plex Sans", sans-serif`
         ctx.textAlign = 'left'
         ctx.textBaseline = 'bottom'
         ctx.fillStyle = n.color
+        ctx.shadowColor = n.color
+        ctx.shadowBlur = 4
         ctx.fillText(n.score.toFixed(1), bx, by)
+        ctx.shadowBlur = 0
       }
 
-      // Dimension: full label + score always visible below node
+      // Dimension label + score
       if (n.type === 'dimension') {
-        const dimFontSize = Math.max(9, 10 * p.scale)
-        ctx.font = `${dimFontSize}px "IBM Plex Sans", sans-serif`
+        const dimFontSize = Math.max(8, 9.5 * p.scale)
+        const isWeak = (n.score ?? 5) < 3.5
+        ctx.font = `${isWeak ? 'bold ' : ''}${dimFontSize}px "IBM Plex Sans", sans-serif`
         ctx.textAlign = 'center'
         ctx.textBaseline = 'top'
-        ctx.fillStyle = n.color + (isHov ? 'FF' : 'CC')
-        ctx.fillText(n.label, p.sx, p.sy + r + 3)
+        // Glow text for weak dims
+        if (isWeak) {
+          ctx.shadowColor = n.color
+          ctx.shadowBlur = 6
+        }
+        ctx.fillStyle = n.color + (isHov || isWeak ? 'FF' : 'BB')
+        ctx.fillText(n.shortLabel, p.sx, p.sy + r + 2)
         if (n.score !== undefined) {
           ctx.font = `bold ${dimFontSize}px "IBM Plex Sans", sans-serif`
-          ctx.fillStyle = n.color + (isHov ? 'FF' : '99')
-          ctx.fillText(n.score.toFixed(1), p.sx, p.sy + r + 3 + dimFontSize + 1)
+          ctx.fillStyle = n.color + (isHov ? 'FF' : '88')
+          ctx.fillText(n.score.toFixed(1), p.sx, p.sy + r + 2 + dimFontSize + 1)
         }
+        ctx.shadowBlur = 0
       }
     }
 
-    // Hover tooltip
+    // ── Hover tooltip ──────────────────────────────────────────────────────
     if (hoveredIdRef.current) {
       const hovNode = nodesRef.current.find(n => n.id === hoveredIdRef.current)
-      if (!hovNode) { /* skip */ }
-      else if (hovNode.type === 'episode') {
+      if (hovNode?.type === 'episode') {
         const ep = episodes.find(e => e.id === hovNode.episodeRef)
         if (ep) {
           const p = project(hovNode.x, hovNode.y, hovNode.z, rx, ry, W, H, ws)
-          const text = ep.title ? `E${String(ep.episode_number).padStart(2,'0')} — ${ep.title}` : `Episodio ${ep.episode_number}`
-          const scoreText = ep.overall_score !== undefined ? `  ${ep.overall_score.toFixed(1)} / 5` : '  Sin análisis'
-          const fullText = text + scoreText
+          const titleText = ep.title ? `E${String(ep.episode_number).padStart(2,'0')} — ${ep.title}` : `Episodio ${ep.episode_number}`
+          const scoreText = ep.overall_score !== undefined ? `  ★ ${ep.overall_score.toFixed(1)} / 5` : '  Sin análisis'
           ctx.font = '11px "IBM Plex Sans", sans-serif'
-          const tw = ctx.measureText(fullText).width
-          const tx = Math.min(Math.max(p.sx - tw / 2 - 8, 4), W - tw - 20)
-          const ty = Math.max(p.sy - hovNode.r * p.scale - 32, 6)
-          ctx.fillStyle = 'rgba(19,19,19,0.92)'
-          ctx.beginPath()
-          ctx.roundRect(tx, ty, tw + 16, 22, 4)
-          ctx.fill()
-          ctx.strokeStyle = hovNode.color + '88'
+          const tw = ctx.measureText(titleText + scoreText).width
+          const tx = Math.min(Math.max(p.sx - tw / 2 - 10, 4), W - tw - 24)
+          const ty = Math.max(p.sy - hovNode.r * p.scale - 36, 6)
+          ctx.fillStyle = 'rgba(13,9,32,0.94)'
+          ctx.strokeStyle = hovNode.color + '66'
           ctx.lineWidth = 1
-          ctx.stroke()
-          ctx.fillStyle = '#F2EEEA'
-          ctx.textAlign = 'left'
-          ctx.textBaseline = 'middle'
-          ctx.fillText(text, tx + 8, ty + 11)
+          ctx.beginPath()
+          ctx.roundRect(tx, ty, tw + 20, 24, 4)
+          ctx.fill(); ctx.stroke()
+          ctx.fillStyle = '#F0EBE1'
+          ctx.textAlign = 'left'; ctx.textBaseline = 'middle'
+          ctx.fillText(titleText, tx + 10, ty + 12)
           ctx.fillStyle = hovNode.color
-          ctx.fillText(scoreText, tx + 8 + ctx.measureText(text).width, ty + 11)
+          ctx.fillText(scoreText, tx + 10 + ctx.measureText(titleText).width, ty + 12)
         }
-      } else if (hovNode.type === 'dimension') {
+      } else if (hovNode?.type === 'dimension') {
         const ep = episodes.find(e => e.id === hovNode.episodeRef)
-        if (ep && hovNode.score !== undefined) {
+        if (ep) {
           const p = project(hovNode.x, hovNode.y, hovNode.z, rx, ry, W, H, ws)
-          const line1 = `${hovNode.label}  ${hovNode.score.toFixed(1)} / 5`
-          const line2 = ep.title ? `E${String(ep.episode_number).padStart(2,'0')} ${ep.title}` : `Episodio ${ep.episode_number}`
+          const line1 = `${hovNode.label}  ${hovNode.score !== undefined ? hovNode.score.toFixed(1) + ' / 5' : ''}`
+          const line2 = ep.title ? `E${String(ep.episode_number).padStart(2,'0')} ${ep.title} · Click para abrir` : `Episodio ${ep.episode_number} · Click para abrir`
           ctx.font = 'bold 11px "IBM Plex Sans", sans-serif'
           const tw = Math.max(ctx.measureText(line1).width, ctx.measureText(line2).width)
-          const tx = Math.min(Math.max(p.sx - tw / 2 - 10, 4), W - tw - 24)
-          const ty = Math.max(p.sy - hovNode.r * p.scale - 52, 6)
-          ctx.fillStyle = 'rgba(19,19,19,0.94)'
-          ctx.beginPath()
-          ctx.roundRect(tx, ty, tw + 20, 38, 4)
-          ctx.fill()
+          const tx = Math.min(Math.max(p.sx - tw / 2 - 12, 4), W - tw - 28)
+          const ty = Math.max(p.sy - hovNode.r * p.scale - 56, 6)
+          ctx.fillStyle = 'rgba(13,9,32,0.96)'
           ctx.strokeStyle = hovNode.color + 'AA'
           ctx.lineWidth = 1
-          ctx.stroke()
+          ctx.beginPath()
+          ctx.roundRect(tx, ty, tw + 24, 42, 4)
+          ctx.fill(); ctx.stroke()
+          ctx.shadowColor = hovNode.color; ctx.shadowBlur = 4
           ctx.fillStyle = hovNode.color
-          ctx.textAlign = 'left'
-          ctx.textBaseline = 'middle'
-          ctx.fillText(line1, tx + 10, ty + 12)
+          ctx.textAlign = 'left'; ctx.textBaseline = 'middle'
+          ctx.fillText(line1, tx + 12, ty + 13)
+          ctx.shadowBlur = 0
           ctx.font = '10px "IBM Plex Sans", sans-serif'
-          ctx.fillStyle = 'rgba(240,235,225,0.5)'
-          ctx.fillText(line2 + ' · Click para abrir', tx + 10, ty + 27)
+          ctx.fillStyle = 'rgba(240,235,225,0.45)'
+          ctx.fillText(line2, tx + 12, ty + 29)
         }
       }
     }
   }, [episodes])
 
+  // ── Animation loop ─────────────────────────────────────────────────────────
   useEffect(() => {
     let animId: number
     let running = true
-
     function loop() {
       if (!running) return
-      if (!isHovering.current && !isDragging.current) {
-        rotRef.current.y += 0.0004
-      }
+      if (!isHovering.current && !isDragging.current) rotRef.current.y += 0.0004
       drawFrame()
       animId = requestAnimationFrame(loop)
     }
     loop()
-
-    return () => {
-      running = false
-      cancelAnimationFrame(animId)
-    }
+    return () => { running = false; cancelAnimationFrame(animId) }
   }, [drawFrame])
 
-  // Resize observer
+  // ── Resize observer ────────────────────────────────────────────────────────
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
@@ -429,29 +501,26 @@ export default function NuppaSeasonGraph({ episodes, seasonLabel = 'T01' }: Prop
     return () => obs.disconnect()
   }, [])
 
+  // ── Interaction ────────────────────────────────────────────────────────────
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current
     if (!canvas) return
     const rect = canvas.getBoundingClientRect()
     const mx = e.clientX - rect.left
     const my = e.clientY - rect.top
-
     if (isDragging.current) {
-      const dx = e.clientX - lastMouse.current.x
-      const dy = e.clientY - lastMouse.current.y
-      rotRef.current.y += dx * 0.007
-      rotRef.current.x += dy * 0.007
+      rotRef.current.y += (e.clientX - lastMouse.current.x) * 0.007
+      rotRef.current.x += (e.clientY - lastMouse.current.y) * 0.007
       rotRef.current.x = Math.max(-0.8, Math.min(0.8, rotRef.current.x))
       lastMouse.current = { x: e.clientX, y: e.clientY }
       return
     }
-
     const hit = hitTest(mx, my, canvas.width, canvas.height)
     const newId = hit?.id ?? null
     if (newId !== hoveredIdRef.current) {
       hoveredIdRef.current = newId
       setHoveredId(newId)
-      canvas.style.cursor = (hit && (hit.type === 'episode' || hit.type === 'dimension')) ? 'pointer' : 'grab'
+      canvas.style.cursor = hit && (hit.type === 'episode' || hit.type === 'dimension') ? 'pointer' : 'grab'
     }
   }, [])
 
@@ -460,28 +529,19 @@ export default function NuppaSeasonGraph({ episodes, seasonLabel = 'T01' }: Prop
     lastMouse.current = { x: e.clientX, y: e.clientY }
   }, [])
 
-  const handleMouseUp = useCallback(() => {
-    isDragging.current = false
-  }, [])
-
+  const handleMouseUp = useCallback(() => { isDragging.current = false }, [])
   const handleMouseEnter = useCallback(() => { isHovering.current = true }, [])
   const handleMouseLeave = useCallback(() => {
-    isHovering.current = false
-    isDragging.current = false
-    hoveredIdRef.current = null
-    setHoveredId(null)
+    isHovering.current = false; isDragging.current = false
+    hoveredIdRef.current = null; setHoveredId(null)
   }, [])
 
   const handleClick = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current
     if (!canvas) return
     const rect = canvas.getBoundingClientRect()
-    const mx = e.clientX - rect.left
-    const my = e.clientY - rect.top
-    const hit = hitTest(mx, my, canvas.width, canvas.height)
-    if (hit?.episodeRef) {
-      router.push(`/episodes/${hit.episodeRef}`)
-    }
+    const hit = hitTest(e.clientX - rect.left, e.clientY - rect.top, canvas.width, canvas.height)
+    if (hit?.episodeRef) router.push(`/episodes/${hit.episodeRef}`)
   }, [router])
 
   return (
