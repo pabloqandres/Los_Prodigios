@@ -237,6 +237,8 @@ export default function StudioPage() {
       runway: 'Runway (máx. 1.000 chars)',
       midjourney: 'Midjourney/Sora (máx. 2.000 chars)',
       sora: 'Midjourney/Sora (máx. 2.000 chars)',
+      higgsfield: 'Higgsfield (máx. 800 chars · movimiento de cámara)',
+      cinema_studio: 'Cinema Studio (máx. 1.500 chars · animación 2D/3D)',
     }
     const enriched = `[Motor de destino: ${targetLabel[target]}]\n\n${pendingMessage}`
     setCanonQuery(pendingMessage)
