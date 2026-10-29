@@ -899,7 +899,7 @@ export default function StudioPage() {
                 {savedOk ? '✓ Guardado' : 'Guardar sesión'}
               </button>
               <button
-                onClick={() => setMessages([]); localStorage.removeItem('studio_chat_autosave')}
+                onClick={() => { setMessages([]); localStorage.removeItem('studio_chat_autosave') }}
                 style={{
                   width: '100%',
                   padding: '0.5rem',
