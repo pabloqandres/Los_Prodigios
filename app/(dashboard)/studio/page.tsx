@@ -153,13 +153,38 @@ export default function StudioPage() {
     }
   }
 
+  // Parse a saved session content back into messages (supports JSON or legacy text format)
+  function parseSessionMessages(content: string): Message[] {
+    try {
+      const parsed = JSON.parse(content)
+      if (Array.isArray(parsed.messages)) {
+        return parsed.messages.map((m: Message) => ({ ...m, timestamp: new Date(m.timestamp) }))
+      }
+    } catch { /* fall through to legacy parser */ }
+    // Legacy format: "**Tú:** ..." / "**NUPPA:** ..."
+    return content.split('\n\n---\n\n').map(part => {
+      const isUser = part.startsWith('**Tú:**')
+      const text = part.replace(/^\*\*(Tú|NUPPA|Asistente):\*\*\s*/, '').trim()
+      if (!text) return null
+      return { role: isUser ? 'user' : 'assistant', content: text, timestamp: new Date() } as Message
+    }).filter(Boolean) as Message[]
+  }
+
+  function handleResumeSession(s: { title: string; content: string; area: string; created_at: string }) {
+    const restored = parseSessionMessages(s.content)
+    if (restored.length === 0) return
+    setMessages(restored)
+    setSelectedContext(s.area)
+    localStorage.setItem('studio_chat_autosave', JSON.stringify({ messages: restored, context: s.area, savedAt: Date.now() }))
+    setViewSession(null)
+  }
+
   async function handleSave() {
     if (!saveTitle.trim() || saving) return
     setSaving(true)
     try {
-      const content = messages
-        .map((m) => `**${m.role === 'user' ? 'Tú' : 'NUPPA'}:** ${m.content}`)
-        .join('\n\n---\n\n')
+      // Save as JSON so sessions can be fully restored
+      const content = JSON.stringify({ messages, context: selectedContext })
       const res = await fetch('/api/documents', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1037,30 +1062,68 @@ export default function StudioPage() {
         )}
 
         {/* View session modal */}
-        {viewSession && (
-          <div
-            style={{ position: 'fixed', inset: 0, background: 'rgba(8,6,15,0.88)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200, padding: '1.5rem' }}
-            onClick={(e) => { if (e.target === e.currentTarget) setViewSession(null) }}
-          >
-            <div style={{ background: '#120D28', border: '1px solid rgba(245,165,42,0.15)', borderRadius: '2px', width: '100%', maxWidth: '640px', maxHeight: '80vh', display: 'flex', flexDirection: 'column' }}>
-              <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid rgba(245,165,42,0.08)', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem' }}>
-                <div>
-                  <div style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '1.25rem', letterSpacing: '0.05em', color: '#F0EBE1' }}>{viewSession.title}</div>
-                  <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.25rem' }}>
-                    <span style={{ fontSize: '0.625rem', color: '#F5A52A', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{viewSession.area}</span>
-                    <span style={{ fontSize: '0.625rem', color: 'rgba(240,235,225,0.3)' }}>{new Date(viewSession.created_at).toLocaleDateString('es-CL', { day: '2-digit', month: 'long', year: 'numeric' })}</span>
+        {viewSession && (() => {
+          const sessionMessages = parseSessionMessages(viewSession.content)
+          return (
+            <div
+              style={{ position: 'fixed', inset: 0, background: 'rgba(8,6,15,0.88)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200, padding: '1.5rem' }}
+              onClick={(e) => { if (e.target === e.currentTarget) setViewSession(null) }}
+            >
+              <div style={{ background: '#120D28', border: '1px solid rgba(245,165,42,0.15)', borderRadius: '2px', width: '100%', maxWidth: '640px', maxHeight: '80vh', display: 'flex', flexDirection: 'column' }}>
+                {/* Header */}
+                <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid rgba(245,165,42,0.08)', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem' }}>
+                  <div>
+                    <div style={{ fontFamily: 'Bebas Neue, Impact, sans-serif', fontSize: '1.25rem', letterSpacing: '0.05em', color: '#F0EBE1' }}>{viewSession.title}</div>
+                    <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.25rem' }}>
+                      <span style={{ fontSize: '0.625rem', color: '#F5A52A', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{viewSession.area}</span>
+                      <span style={{ fontSize: '0.625rem', color: 'rgba(240,235,225,0.3)' }}>{new Date(viewSession.created_at).toLocaleDateString('es-CL', { day: '2-digit', month: 'long', year: 'numeric' })}</span>
+                      <span style={{ fontSize: '0.625rem', color: 'rgba(240,235,225,0.2)' }}>{sessionMessages.length} mensajes</span>
+                    </div>
                   </div>
+                  <button onClick={() => setViewSession(null)} style={{ background: 'none', border: 'none', color: 'rgba(240,235,225,0.35)', cursor: 'pointer', fontSize: '1.125rem', padding: 0, lineHeight: 1 }}>✕</button>
                 </div>
-                <button onClick={() => setViewSession(null)} style={{ background: 'none', border: 'none', color: 'rgba(240,235,225,0.35)', cursor: 'pointer', fontSize: '1.125rem', padding: 0, lineHeight: 1 }}>✕</button>
-              </div>
-              <div style={{ flex: 1, overflowY: 'auto', padding: '1.25rem 1.5rem' }}>
-                <pre style={{ fontFamily: 'IBM Plex Sans, sans-serif', fontSize: '0.8125rem', color: 'rgba(240,235,225,0.65)', lineHeight: 1.65, whiteSpace: 'pre-wrap', wordBreak: 'break-word', margin: 0 }}>
-                  {viewSession.content}
-                </pre>
+
+                {/* Message preview */}
+                <div style={{ flex: 1, overflowY: 'auto', padding: '1rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  {sessionMessages.map((m, i) => (
+                    <div key={i} style={{ display: 'flex', gap: '0.625rem', alignItems: 'flex-start' }}>
+                      <div style={{
+                        flexShrink: 0, fontSize: '0.5rem', letterSpacing: '0.12em', textTransform: 'uppercase',
+                        color: m.role === 'user' ? 'rgba(240,235,225,0.35)' : '#F5A52A',
+                        marginTop: 3, width: 44, textAlign: 'right',
+                      }}>
+                        {m.role === 'user' ? 'Tú' : 'NUPPA'}
+                      </div>
+                      <div style={{
+                        flex: 1, fontSize: '0.8125rem', lineHeight: 1.6,
+                        color: m.role === 'user' ? 'rgba(240,235,225,0.55)' : 'rgba(240,235,225,0.8)',
+                        borderLeft: `2px solid ${m.role === 'user' ? 'rgba(240,235,225,0.08)' : 'rgba(245,165,42,0.25)'}`,
+                        paddingLeft: '0.625rem',
+                        maxHeight: '6rem', overflow: 'hidden',
+                        maskImage: 'linear-gradient(to bottom, black 60%, transparent 100%)',
+                      }}>
+                        {m.content}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Footer: resume button */}
+                <div style={{ padding: '1rem 1.5rem', borderTop: '1px solid rgba(245,165,42,0.08)', display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
+                  <button onClick={() => setViewSession(null)} style={{ background: 'none', border: '1px solid rgba(240,235,225,0.1)', borderRadius: 2, color: 'rgba(240,235,225,0.4)', cursor: 'pointer', fontSize: '0.75rem', padding: '0.5rem 1rem', fontFamily: 'IBM Plex Sans, sans-serif' }}>
+                    Cerrar
+                  </button>
+                  <button
+                    onClick={() => handleResumeSession(viewSession)}
+                    style={{ background: '#F5A52A', border: 'none', borderRadius: 2, color: '#04020E', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 700, padding: '0.5rem 1.25rem', fontFamily: 'IBM Plex Sans, sans-serif', letterSpacing: '0.04em' }}
+                  >
+                    Retomar sesión →
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )
+        })()}
 
         {/* All contexts list */}
         <div
