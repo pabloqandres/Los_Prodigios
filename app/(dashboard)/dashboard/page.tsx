@@ -176,14 +176,33 @@ export default function DashboardPage() {
   const [loadingMore, setLoadingMore] = useState(false)
   const [activityOffset, setActivityOffset] = useState(0)
   const [activityHasMore, setActivityHasMore] = useState(false)
+  const [activityMonth, setActivityMonth] = useState<string>('current')
+  const [archivedMonths, setArchivedMonths] = useState<string[]>([])
   const ACTIVITY_PAGE = 10
+
+  function monthLabel(m: string): string {
+    if (m === 'current') return 'Este mes'
+    const [year, month] = m.split('-')
+    const date = new Date(parseInt(year), parseInt(month) - 1, 1)
+    return date.toLocaleDateString('es-CL', { month: 'long', year: 'numeric' })
+  }
 
   const [stats, setStats] = useState<StatsData | null>(null)
   const [promises, setPromises] = useState<PromiseItem[]>([])
   const [episodes, setEpisodes] = useState<EpisodeItem[]>([])
 
   useEffect(() => {
-    fetch(`/api/activity?limit=${ACTIVITY_PAGE}&offset=0`)
+    // Load archived months list
+    fetch('/api/activity?months=1').then(r => r.json()).then(d => { if (Array.isArray(d)) setArchivedMonths(d) }).catch(() => {})
+  }, [])
+
+  useEffect(() => {
+    setLoadingActivity(true)
+    setActivity([])
+    setActivityOffset(0)
+    setActivityHasMore(false)
+    const monthParam = activityMonth === 'current' ? '' : `&month=${activityMonth}`
+    fetch(`/api/activity?limit=${ACTIVITY_PAGE}&offset=0${monthParam}`)
       .then(r => r.json())
       .then(d => {
         if (Array.isArray(d)) {
@@ -565,8 +584,31 @@ export default function DashboardPage() {
 
         {/* Recent activity */}
         <div>
-          <div style={{ fontSize: '0.625rem', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(240,235,225,0.30)', fontWeight: 600, marginBottom: '1rem' }}>
-            Actividad reciente
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', gap: '0.75rem', flexWrap: 'wrap' }}>
+            <div style={{ fontSize: '0.625rem', letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(240,235,225,0.30)', fontWeight: 600 }}>
+              Actividad reciente
+            </div>
+            {archivedMonths.length > 0 && (
+              <div style={{ display: 'flex', gap: '0.25rem', flexWrap: 'wrap' }}>
+                {(['current', ...archivedMonths] as string[]).map(m => (
+                  <button
+                    key={m}
+                    onClick={() => setActivityMonth(m)}
+                    style={{
+                      fontSize: '0.6rem', letterSpacing: '0.06em',
+                      padding: '0.25rem 0.625rem', borderRadius: 2, cursor: 'pointer',
+                      fontFamily: 'IBM Plex Sans, sans-serif',
+                      border: activityMonth === m ? '1px solid rgba(245,165,42,0.5)' : '1px solid rgba(240,235,225,0.08)',
+                      background: activityMonth === m ? 'rgba(245,165,42,0.1)' : 'transparent',
+                      color: activityMonth === m ? '#F5A52A' : 'rgba(240,235,225,0.35)',
+                      transition: 'all 0.12s',
+                    }}
+                  >
+                    {monthLabel(m)}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
           {loadingActivity ? (
             <div style={{ background: '#0D0920', border: '1px solid rgba(245,165,42,0.07)', borderRadius: '4px', padding: '2rem', color: 'rgba(240,235,225,0.2)', fontSize: '0.8125rem' }}>
@@ -621,7 +663,8 @@ export default function DashboardPage() {
                   onClick={async () => {
                     setLoadingMore(true)
                     try {
-                      const res = await fetch(`/api/activity?limit=${ACTIVITY_PAGE}&offset=${activityOffset}`)
+                      const monthParam = activityMonth === 'current' ? '' : `&month=${activityMonth}`
+                      const res = await fetch(`/api/activity?limit=${ACTIVITY_PAGE}&offset=${activityOffset}${monthParam}`)
                       const next = await res.json()
                       if (Array.isArray(next) && next.length > 0) {
                         setActivity(prev => [...prev, ...next])

@@ -43,12 +43,34 @@ export async function GET(request: NextRequest) {
   const supabase = createServerClient()
   const limit = parseInt(request.nextUrl.searchParams.get('limit') ?? '10')
   const offset = parseInt(request.nextUrl.searchParams.get('offset') ?? '0')
+  const month = request.nextUrl.searchParams.get('month') // 'current' | 'YYYY-MM' | null
 
-  const { data, error } = await supabase
+  // ?months=1 → return list of distinct archived months
+  if (request.nextUrl.searchParams.get('months') === '1') {
+    const { data, error } = await supabase
+      .from('activity_log')
+      .select('archive_month')
+      .not('archive_month', 'is', null)
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    const months = [...new Set((data ?? []).map((r: { archive_month: string }) => r.archive_month))].sort().reverse()
+    return NextResponse.json(months)
+  }
+
+  let q = supabase
     .from('activity_log')
     .select('*')
     .order('created_at', { ascending: false })
     .range(offset, offset + limit - 1)
+
+  if (!month || month === 'current') {
+    // Current month: rows not yet archived
+    q = q.is('archive_month', null)
+  } else {
+    // Specific archived month
+    q = q.eq('archive_month', month)
+  }
+
+  const { data, error } = await q
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
