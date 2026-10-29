@@ -103,6 +103,28 @@ export default function StudioPage() {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  // Auto-save chat to localStorage on every message change
+  useEffect(() => {
+    if (messages.length > 0) {
+      localStorage.setItem('studio_chat_autosave', JSON.stringify({ messages, context: selectedContext, savedAt: Date.now() }))
+    }
+  }, [messages, selectedContext])
+
+  // Restore chat from localStorage on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('studio_chat_autosave')
+      if (saved) {
+        const { messages: m, context: ctx } = JSON.parse(saved)
+        if (Array.isArray(m) && m.length > 0) {
+          setMessages(m.map((msg: Message) => ({ ...msg, timestamp: new Date(msg.timestamp) })))
+          if (ctx) setSelectedContext(ctx)
+        }
+      }
+    } catch { /* ignore */ }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   // Apply URL params from marketing page redirect (context + prefill)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
@@ -759,7 +781,7 @@ export default function StudioPage() {
             onChange={(ctx) => {
               if (messages.length > 0 && !confirm('¿Cambiar de contexto? Se borrará la conversación actual.')) return
               setSelectedContext(ctx)
-              setMessages([])
+              setMessages([]); localStorage.removeItem('studio_chat_autosave')
             }}
           />
         </div>
@@ -875,7 +897,7 @@ export default function StudioPage() {
                 {savedOk ? '✓ Guardado' : 'Guardar sesión'}
               </button>
               <button
-                onClick={() => setMessages([])}
+                onClick={() => setMessages([]); localStorage.removeItem('studio_chat_autosave')}
                 style={{
                   width: '100%',
                   padding: '0.5rem',
@@ -1064,7 +1086,7 @@ export default function StudioPage() {
                 onClick={() => {
                   if (messages.length > 0 && !confirm('¿Cambiar de contexto? Se borrará la conversación actual.')) return
                   setSelectedContext(key)
-                  setMessages([])
+                  setMessages([]); localStorage.removeItem('studio_chat_autosave')
                 }}
                 style={{
                   padding: '0.25rem 0.5rem',
