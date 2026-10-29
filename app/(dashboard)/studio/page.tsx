@@ -158,7 +158,7 @@ export default function StudioPage() {
     setSaving(true)
     try {
       const content = messages
-        .map((m) => `**${m.role === 'user' ? 'Tú' : 'Asistente'}:** ${m.content}`)
+        .map((m) => `**${m.role === 'user' ? 'Tú' : 'NUPPA'}:** ${m.content}`)
         .join('\n\n---\n\n')
       const res = await fetch('/api/documents', {
         method: 'POST',
@@ -425,7 +425,7 @@ export default function StudioPage() {
                 marginBottom: '0.25rem',
               }}
             >
-              Asistente de Producción
+              Sistema Operativo del Estudio
             </div>
             <h1
               style={{
@@ -435,7 +435,7 @@ export default function StudioPage() {
                 color: '#F0EBE1',
               }}
             >
-              Studio AI
+              NUPPA
             </h1>
           </div>
           <div
