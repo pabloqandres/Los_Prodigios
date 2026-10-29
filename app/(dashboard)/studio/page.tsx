@@ -91,7 +91,7 @@ export default function StudioPage() {
   const [uploadedDoc, setUploadedDoc] = useState<{ filename: string; text: string } | null>(null)
   const [uploading, setUploading] = useState(false)
   const [savedSessions, setSavedSessions] = useState<{ id: string; title: string; area: string; created_at: string; content: string }[]>([])
-  const [viewSession, setViewSession] = useState<{ title: string; content: string; area: string; created_at: string } | null>(null)
+  const [viewSession, setViewSession] = useState<{ id: string; title: string; content: string; area: string; created_at: string } | null>(null)
 
   const [showCanonCheck, setShowCanonCheck]         = useState(false)
   const [canonQuery, setCanonQuery]                 = useState('')
@@ -1108,8 +1108,20 @@ export default function StudioPage() {
                   ))}
                 </div>
 
-                {/* Footer: resume button */}
-                <div style={{ padding: '1rem 1.5rem', borderTop: '1px solid rgba(245,165,42,0.08)', display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
+                {/* Footer: resume + delete */}
+                <div style={{ padding: '1rem 1.5rem', borderTop: '1px solid rgba(245,165,42,0.08)', display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                  <button
+                    onClick={async () => {
+                      if (!confirm('¿Eliminar esta sesión? No se puede deshacer.')) return
+                      await fetch(`/api/documents?id=${viewSession.id}`, { method: 'DELETE' })
+                      setViewSession(null)
+                      fetchSavedSessions()
+                    }}
+                    style={{ background: 'none', border: '1px solid rgba(212,37,106,0.2)', borderRadius: 2, color: 'rgba(212,37,106,0.5)', cursor: 'pointer', fontSize: '0.75rem', padding: '0.5rem 0.875rem', fontFamily: 'IBM Plex Sans, sans-serif' }}
+                  >
+                    Eliminar
+                  </button>
+                  <div style={{ flex: 1 }} />
                   <button onClick={() => setViewSession(null)} style={{ background: 'none', border: '1px solid rgba(240,235,225,0.1)', borderRadius: 2, color: 'rgba(240,235,225,0.4)', cursor: 'pointer', fontSize: '0.75rem', padding: '0.5rem 1rem', fontFamily: 'IBM Plex Sans, sans-serif' }}>
                     Cerrar
                   </button>
