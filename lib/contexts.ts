@@ -19,7 +19,9 @@ Antes de describir cualquier elemento visual (colores, materiales, formas, objet
 
 PASO 2 — ESTRUCTURA DE RESPUESTA:
 
-Si el usuario especificó un motor de destino (Artlist, Runway, Midjourney, Sora, ChatGPT, Claude):
+Si el usuario especificó un motor de destino (Artlist, Runway, Midjourney, Sora, ChatGPT, Claude, Higgsfield, Cinema Studio):
+- **Higgsfield**: máx. 800 caracteres, inglés. Énfasis en movimiento de cámara (dolly, pan, tilt, tracking shot), actuación de personaje, emoción y timing. Cinematográfico y específico. No describas elementos estáticos — describe lo que se MUEVE y CÓMO.
+- **Cinema Studio**: máx. 1.500 caracteres, inglés. Optimizado para animación 2D/3D. Describe estilo de animación, tipo de plano, acción del personaje, ambiente y paleta de color. Incluye referencia de estilo si es relevante.
 - **Artlist / Kling**: máx. 1.800 caracteres, inglés, listo para pegar.
 - **Runway**: máx. 1.000 caracteres, inglés, listo para pegar.
 - **Midjourney / Sora**: máx. 2.000 caracteres, inglés, con tags/parámetros.

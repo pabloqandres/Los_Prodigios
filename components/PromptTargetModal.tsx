@@ -2,7 +2,7 @@
 
 import { motion, AnimatePresence } from 'framer-motion'
 
-export type PromptTarget = 'chatgpt' | 'artlist' | 'runway' | 'midjourney' | 'sora'
+export type PromptTarget = 'chatgpt' | 'artlist' | 'runway' | 'midjourney' | 'sora' | 'higgsfield' | 'cinema_studio'
 
 const TARGETS: { key: PromptTarget; label: string; sub: string; limit: string; icon: string; color: string }[] = [
   {
@@ -12,6 +12,22 @@ const TARGETS: { key: PromptTarget; label: string; sub: string; limit: string; i
     limit: 'Sin límite · incluye notas de dirección, variantes y contexto canónico completo',
     icon: '🧠',
     color: '#10A37F',
+  },
+  {
+    key: 'higgsfield',
+    label: 'Higgsfield',
+    sub: 'Prompt de video cinematográfico',
+    limit: 'Máx. 800 caracteres · inglés · énfasis en movimiento de cámara y actuación',
+    icon: '🎥',
+    color: '#DFF818',
+  },
+  {
+    key: 'cinema_studio',
+    label: 'Cinema Studio',
+    sub: 'Prompt de video animado',
+    limit: 'Máx. 1.500 caracteres · inglés · optimizado para animación 2D/3D',
+    icon: '🎞',
+    color: '#4ECDC4',
   },
   {
     key: 'artlist',
