@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
   const { text, filename } = await request.json()
   if (!text) return NextResponse.json({ error: 'No text provided' }, { status: 400 })
 
-  const excerpt = text.substring(0, 6000)
+  const excerpt = text.substring(0, 10000)
 
   const response = await client.messages.create({
     model: 'claude-haiku-4-5-20251001',
@@ -47,19 +47,23 @@ Reglas para "categories" (máximo 4, solo estas): personajes, arte, guion, conti
 
 Reglas para assets:
 - "needs_assets": true si el documento describe un elemento visual concreto que necesitará imágenes de referencia aprobadas: un personaje, locación, prop, criatura, mascota, personaje secundario, O un equipo rival. false si es un documento conceptual, de reglas narrativas, guión, marketing, o cualquier cosa que NO requiera arte visual aprobado.
-- "asset_category": una de: personajes, locaciones, props, criaturas, secundarios, mascotas, rivales, hawks. IMPORTANTE: "hawks" es SOLO para el equipo rival Hawks FC y su cuerpo técnico específicamente. Personajes del equipo principal Los Prodigios (jugadores, entrenadores, staff) van en "personajes". Usa "rivales" para otros equipos rivales como equipo. Usa "secundarios" para personajes de apoyo sin arco propio. Solo si needs_assets es true.
-- "asset_matrix_key": determina QUÉ TIPO DE SLOTS DE ARTE se generarán. Analiza el ROL del personaje en el documento:
-    * "personajes" → jugadores activos (juegan partidos, tienen poses de fútbol, uniformes de partido)
-    * "entrenadores" → entrenadores, DTs, preparadores físicos (están en banca, dan indicaciones, no juegan)
-    * "secundarios" → personajes de apoyo, familiares, figuras institucionales, comentaristas, árbitros
-    * "locaciones" → espacios físicos donde ocurren escenas
+- "asset_category": una de: personajes, locaciones, props, criaturas, secundarios, mascotas, rivales, hawks. Reglas:
+    * "personajes" → TODOS los miembros del cast principal de Los Prodigios: jugadores, entrenadores, analistas, staff con arco propio y presencia recurrente (aunque no jueguen fútbol). Si el documento tiene secciones como "arco de personaje", "función en el equipo" o "relaciones con los prodigios", es "personajes".
+    * "secundarios" → personajes menores SIN arco propio: familiares episódicos, árbitros, comentaristas, hinchas, figuras de fondo.
+    * "hawks" → SOLO Hawks FC y su cuerpo técnico específicamente.
+    * "rivales" → otros equipos rivales como identidad visual de equipo.
+    Solo si needs_assets es true.
+- "asset_matrix_key": determina QUÉ TIPO DE SLOTS DE ARTE se generarán:
+    * "personajes" → jugadores activos (juegan partidos, tienen uniforme de partido y poses de acción deportiva)
+    * "entrenadores" → entrenadores, DTs, preparadores físicos (banca, no juegan)
+    * "secundarios" → personajes sin uniforme ni acción deportiva (analistas, staff técnico, personajes de apoyo con arco). Usar también para miembros principales que NO juegan partidos (ej: analista de datos, médico del equipo).
+    * "locaciones" → espacios físicos
     * "props" → objetos con significado narrativo
     * "criaturas" → animales o criaturas
     * "mascotas" → mascotas del equipo
-    * "rivales" → equipos rivales (identidad visual del equipo)
-    * "hawks" → jugadores o cuerpo técnico de Hawks FC específicamente
+    * "rivales" → equipos rivales
+    * "hawks" → jugadores o cuerpo técnico de Hawks FC
     * "simbolos" → emblemas, logos, gráfica oficial
-  Si el personaje NO juega partidos (no es jugador activo), NO uses "personajes" como matrix_key aunque sea category "personajes".
 - "asset_entity_name": slug en PascalCase sin espacios ni acentos (ej: "MateoGonzalez", "CanchaBarrio"). Solo si needs_assets es true.
 - "asset_entity_label": nombre legible con acentos (ej: "Mateo González"). Solo si needs_assets es true.
 - "asset_confidence": número entre 0 y 1. Solo si needs_assets es true.
