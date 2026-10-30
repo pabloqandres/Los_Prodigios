@@ -67,7 +67,15 @@ Reglas para assets:
 - "asset_entity_name": slug en PascalCase sin espacios ni acentos (ej: "MateoGonzalez", "CanchaBarrio"). Solo si needs_assets es true.
 - "asset_entity_label": nombre legible con acentos (ej: "Mateo González"). Solo si needs_assets es true.
 - "asset_confidence": número entre 0 y 1. Solo si needs_assets es true.
-- "asset_accessories": lista de objetos físicos con significado visual o narrativo que el personaje/entidad posee de forma característica (máximo 5). Ejemplos: "Collar / fragmento cerámica", "Libreta negra (detalle)", "Reloj analógico (herencia)". Solo si needs_assets es true y el documento menciona objetos característicos. Si no hay objetos relevantes, devuelve [].
+- "asset_accessories": lista de OBJETOS O PROPS físicos que el personaje lleva o usa de forma recurrente y que necesitan su propia ilustración de detalle (máximo 5).
+  INCLUIR: objetos personales con significado emocional o narrativo (collares, pulseras con historia, libretas, relojes heredados, pelotas, instrumentos, mochilas características), herramientas o equipamiento propio del personaje (tablet, inhalador, guantes de arquero, botines especiales).
+  EXCLUIR SIEMPRE:
+    * Ropa o prendas (camisas, pantalones, guayaberas, vestidos, chaquetas — eso va en slots de Outfit)
+    * Rasgos físicos del personaje (pelo, ojos, cicatrices, tatuajes — eso va en Identidad facial)
+    * Uniformes de partido o ropa deportiva (ya existen como slots base)
+    * Props narrativos de un solo uso (maleta de llegada, carta de convocatoria — solo aparecen en un episodio)
+  Si no hay objetos que cumplan estos criterios, devuelve [].
+  Ejemplos correctos: "Collar / fragmento cerámica", "Libreta negra (detalle)", "Reloj analógico (herencia)", "Pelota de béisbol (herencia)", "Pulsera tejida (regalo de hermana)", "Colgante de jade", "Tablet (detalle)", "Botines (detalle)".
 
 Nombre del archivo: ${filename}
 
