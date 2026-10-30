@@ -123,7 +123,7 @@ export const ENTITIES: Record<string, EntityDef[]> = {
       accessories: ['Cintas de raso (atado)', 'Zapatillas de ballet'],
     },
     {
-      entity_name: 'ProfesorCasas', entity_label: 'Emilio "Profe" Casas',
+      entity_name: 'EmilioCasas', entity_label: 'Emilio "Profe" Casas',
       matrix_key: 'entrenadores',
       // Reloj analógico de su padre, libreta negra inseparable, lápiz amarillo con el que piensa
       accessories: ['Reloj analógico (herencia)', 'Libreta negra (detalle)', 'Lápiz amarillo', 'Zapatillas deportivas gastadas'],

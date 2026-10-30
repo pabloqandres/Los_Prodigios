@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
   if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const body = await req.json()
-  const { entity_name, entity_label, category, matrix_key: bodyMatrixKey, dry_run, required_approvals } = body
+  const { entity_name, entity_label, category, matrix_key: bodyMatrixKey, dry_run, required_approvals, accessories: bodyAccessories } = body
 
   if (!entity_name || !entity_label || !category) {
     return NextResponse.json({ error: 'Faltan campos: entity_name, entity_label, category' }, { status: 400 })
@@ -30,11 +30,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: `Categoría no válida: ${category}` }, { status: 400 })
   }
 
+  // Prioridad de accesorios: body (extraídos por analyze-doc) > config > ninguno
+  const resolvedAccessories: string[] =
+    (Array.isArray(bodyAccessories) && bodyAccessories.length > 0)
+      ? bodyAccessories
+      : (entityDef?.accessories ?? [])
+
   // Generar todos los slots esperados para esta entidad
   const expectedSlots: object[] = []
   for (const row of matrix) {
-    const ageVersions = (row.view_type === 'Accesorio' && entityDef?.accessories?.length)
-      ? entityDef.accessories
+    const ageVersions = (row.view_type === 'Accesorio' && resolvedAccessories.length)
+      ? resolvedAccessories
       : row.age_versions
     if (ageVersions.length === 0) continue
     for (const age_version of ageVersions) {

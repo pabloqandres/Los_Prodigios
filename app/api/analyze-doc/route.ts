@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
 
   const response = await client.messages.create({
     model: 'claude-haiku-4-5-20251001',
-    max_tokens: 700,
+    max_tokens: 900,
     messages: [
       {
         role: 'user',
@@ -39,7 +39,8 @@ Analiza el siguiente documento y devuelve SOLO un objeto JSON válido con este f
   "asset_matrix_key": "entrenadores",
   "asset_entity_name": "MateoGonzalez",
   "asset_entity_label": "Mateo González",
-  "asset_confidence": 0.95
+  "asset_confidence": 0.95,
+  "asset_accessories": ["Nombre del objeto 1", "Nombre del objeto 2"]
 }
 
 Reglas para "categories" (máximo 4, solo estas): personajes, arte, guion, continuidad, marketing, merchandise, trailers, redes, licensing, general
@@ -62,6 +63,7 @@ Reglas para assets:
 - "asset_entity_name": slug en PascalCase sin espacios ni acentos (ej: "MateoGonzalez", "CanchaBarrio"). Solo si needs_assets es true.
 - "asset_entity_label": nombre legible con acentos (ej: "Mateo González"). Solo si needs_assets es true.
 - "asset_confidence": número entre 0 y 1. Solo si needs_assets es true.
+- "asset_accessories": lista de objetos físicos con significado visual o narrativo que el personaje/entidad posee de forma característica (máximo 5). Ejemplos: "Collar / fragmento cerámica", "Libreta negra (detalle)", "Reloj analógico (herencia)". Solo si needs_assets es true y el documento menciona objetos característicos. Si no hay objetos relevantes, devuelve [].
 
 Nombre del archivo: ${filename}
 
@@ -90,6 +92,9 @@ Responde ÚNICAMENTE con el JSON, sin texto adicional.`,
     const matrixKey = VALID_MATRIX_KEYS.includes(parsed.asset_matrix_key) ? parsed.asset_matrix_key : assetCategory
     const confidence = typeof parsed.asset_confidence === 'number' ? parsed.asset_confidence : 0
     const needsAssets = parsed.needs_assets === true && confidence > 0 && !!assetCategory && !!parsed.asset_entity_name
+    const accessories = needsAssets && Array.isArray(parsed.asset_accessories)
+      ? parsed.asset_accessories.filter((a: unknown) => typeof a === 'string' && a.trim().length > 0).slice(0, 5)
+      : []
 
     return NextResponse.json({
       description,
@@ -100,6 +105,7 @@ Responde ÚNICAMENTE con el JSON, sin texto adicional.`,
       asset_entity_name: needsAssets ? (parsed.asset_entity_name ?? null) : null,
       asset_entity_label: needsAssets ? (parsed.asset_entity_label ?? null) : null,
       asset_confidence: needsAssets ? confidence : null,
+      asset_accessories: accessories,
     })
   } catch {
     return NextResponse.json({ description: '', categories: ['general'], needs_assets: false })

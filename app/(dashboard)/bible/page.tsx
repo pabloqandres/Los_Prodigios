@@ -85,7 +85,7 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
   const [error, setError] = useState('')
   const [storagePath, setStoragePath] = useState<string | null>(null)
   const [assetSuggestion, setAssetSuggestion] = useState<{
-    category: string; matrix_key: string; entity_name: string; entity_label: string; confidence: number
+    category: string; matrix_key: string; entity_name: string; entity_label: string; confidence: number; accessories?: string[]
   } | null>(null)
   const [createAssetSlots, setCreateAssetSlots] = useState(false)
   const [existingSlotCount, setExistingSlotCount] = useState<number | null>(null)
@@ -228,6 +228,7 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
             entity_name: data.asset_entity_name,
             entity_label: data.asset_entity_label,
             confidence: data.asset_confidence,
+            accessories: data.asset_accessories ?? [],
           }
           setAssetSuggestion(suggestion)
 
@@ -302,6 +303,7 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
             matrix_key: assetSuggestion.matrix_key,
             entity_name: assetSuggestion.entity_name,
             entity_label: assetSuggestion.entity_label,
+            accessories: assetSuggestion.accessories ?? [],
           }),
         })
       }
