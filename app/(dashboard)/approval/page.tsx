@@ -37,29 +37,13 @@ function EntityCard({
   const complete = approved === total && total > 0
 
   const portrait = (() => {
-    // isHero: Vista general · Frente (approved or pending)
-    const isHero = (s: { view_type: string; age_version: string | null }) =>
-      s.view_type === 'Vista general' && (s.age_version === 'Frente' || s.age_version === 'v1' || !s.age_version)
-    // isGeneral: any Vista general (excludes accessories, acciones, etc.)
-    const isGeneral = (s: { view_type: string }) => s.view_type === 'Vista general'
-
-    const approvedHero = slots.find(s => isHero(s) && s.status === 'approved' && s.approved_drive_file_id)
-    if (approvedHero) return storageUrl(approvedHero.approved_drive_file_id)
-
-    const pendingHero = slots.find(s => isHero(s) && s.pending_drive_file_id)
-    if (pendingHero) return storageUrl(pendingHero.pending_drive_file_id)
-
-    const anyApprovedGeneral = slots.find(s => isGeneral(s) && s.status === 'approved' && s.approved_drive_file_id)
-    if (anyApprovedGeneral) return storageUrl(anyApprovedGeneral.approved_drive_file_id)
-
-    const anyApproved = slots.find(s => s.status === 'approved' && s.approved_drive_file_id)
-    if (anyApproved) return storageUrl(anyApproved.approved_drive_file_id)
-
-    // Fallback: any pending image (covers simbolos and non-standard view types)
-    const anyPending = slots.find(s => s.pending_drive_file_id)
-    if (anyPending) return storageUrl(anyPending.pending_drive_file_id)
-
-    return null
+    // Only show approved "Identidad facial · Frontal" as entity thumbnail
+    const face = slots.find(s =>
+      s.view_type === 'Identidad facial' &&
+      (s.age_version === 'Frontal' || !s.age_version) &&
+      s.status === 'approved' && s.approved_drive_file_id
+    )
+    return face ? storageUrl(face.approved_drive_file_id) : null
   })()
 
   return (
