@@ -37,13 +37,17 @@ function EntityCard({
   const complete = approved === total && total > 0
 
   const portrait = (() => {
-    // Only show approved "Identidad facial · Frontal" as entity thumbnail
-    const face = slots.find(s =>
-      s.view_type === 'Identidad facial' &&
-      (s.age_version === 'Frontal' || !s.age_version) &&
-      s.status === 'approved' && s.approved_drive_file_id
-    )
-    return face ? storageUrl(face.approved_drive_file_id) : null
+    // Show "Identidad facial · Frontal" as entity thumbnail (approved or pending)
+    const isFace = (s: { view_type: string; age_version: string | null }) =>
+      s.view_type === 'Identidad facial' && (s.age_version === 'Frontal' || !s.age_version)
+
+    const approvedFace = slots.find(s => isFace(s) && s.approved_drive_file_id)
+    if (approvedFace) return storageUrl(approvedFace.approved_drive_file_id)
+
+    const pendingFace = slots.find(s => isFace(s) && s.pending_drive_file_id)
+    if (pendingFace) return storageUrl(pendingFace.pending_drive_file_id)
+
+    return null
   })()
 
   return (
