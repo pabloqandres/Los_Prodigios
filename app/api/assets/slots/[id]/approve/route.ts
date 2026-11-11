@@ -87,6 +87,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
   // All required approvals received → move file in Supabase Storage
   if ((count ?? 0) >= threshold) {
+    let approvedPath: string | null = null
+    let fileMoved = false
+
     try {
       const { count: existingCount } = await supabase
         .from('asset_slots')
@@ -103,7 +106,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       )
 
       const pendingPath: string = slot.pending_drive_file_id
-      const approvedPath = `${slot.category}/${slot.entity_name}/approved/${newName}`
+      approvedPath = `${slot.category}/${slot.entity_name}/approved/${newName}`
 
       // Copy pending → approved
       const { error: copyErr } = await supabase.storage
@@ -114,39 +117,42 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
       // Delete pending
       await supabase.storage.from('assets').remove([pendingPath])
-
-      // Update slot
-      await supabase
-        .from('asset_slots')
-        .update({
-          status: 'approved',
-          approved_drive_file_id: approvedPath,
-          approved_drive_folder_id: `${slot.category}/${slot.entity_name}/approved`,
-          pending_drive_file_id: null,
-          pending_drive_folder_id: null,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', slotId)
-
-      const { data: updated } = await supabase
-        .from('asset_slots')
-        .select('*, asset_approvals(*)')
-        .eq('id', slotId)
-        .single()
-
-      await logActivity({
-        action: 'asset.approve',
-        entity_type: 'asset_slot',
-        entity_id: slotId,
-        entity_label: `${slot.entity_label} — ${slot.version_label}`,
-        detail: `Aprobado por ambos revisores`,
-        user_email: email,
-      })
-
-      return NextResponse.json({ slot: updated, moved: true })
+      fileMoved = true
     } catch (err) {
       console.error('[approve] error moving file:', err)
+      // File move failed — approve anyway, keep image in pending path
+      approvedPath = null
     }
+
+    // Always mark as approved regardless of file move success
+    await supabase
+      .from('asset_slots')
+      .update({
+        status: 'approved',
+        approved_drive_file_id: fileMoved ? approvedPath : slot.pending_drive_file_id,
+        approved_drive_folder_id: fileMoved ? `${slot.category}/${slot.entity_name}/approved` : slot.pending_drive_folder_id,
+        pending_drive_file_id: fileMoved ? null : slot.pending_drive_file_id,
+        pending_drive_folder_id: fileMoved ? null : slot.pending_drive_folder_id,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', slotId)
+
+    const { data: updated } = await supabase
+      .from('asset_slots')
+      .select('*, asset_approvals(*)')
+      .eq('id', slotId)
+      .single()
+
+    await logActivity({
+      action: 'asset.approve',
+      entity_type: 'asset_slot',
+      entity_id: slotId,
+      entity_label: `${slot.entity_label} — ${slot.version_label}`,
+      detail: fileMoved ? `Aprobado por ambos revisores` : `Aprobado por ambos revisores (archivo pendiente de mover)`,
+      user_email: email,
+    })
+
+    return NextResponse.json({ slot: updated, moved: fileMoved })
   }
 
   // Mark in_review if not already
