@@ -156,7 +156,7 @@ function copyToClipboard(text: string, setCopied: (v: boolean) => void) {
 }
 
 function SlotRow({
-  slot, userEmail, onUpdated, onDeleted, promptData, refImage, genOrder, validationResult, onShowValidation,
+  slot, userEmail, onUpdated, onDeleted, promptData, refImage, genOrder, validationResult, onShowValidation, onRequestCanonScan,
 }: {
   slot: AssetSlotWithApprovals
   userEmail: string
@@ -167,6 +167,7 @@ function SlotRow({
   genOrder?: number
   validationResult?: ValidationResult | null
   onShowValidation?: () => void
+  onRequestCanonScan?: (slot: AssetSlotWithApprovals) => void
 }) {
   const [voting, setVoting] = useState(false)
   const [removing, setRemoving] = useState(false)
@@ -175,6 +176,7 @@ function SlotRow({
   const [copiedPrompt, setCopiedPrompt] = useState(false)
   const [showReplace, setShowReplace] = useState(false)
   const [conflictWarning, setConflictWarning] = useState(false)
+  const [showApproveChoice, setShowApproveChoice] = useState(false)
   // Record when this slot was loaded to detect concurrent edits
   const loadedAt = useRef(slot.updated_at ?? new Date().toISOString())
   const isReviewer  = !!REVIEWERS[userEmail]
@@ -479,11 +481,74 @@ function SlotRow({
               note={getNote(name)}
               canVote={canVote && Object.entries(REVIEWERS).find(([, n]) => n === name)?.[0] === userEmail}
               voting={voting}
-              onApprove={() => vote(true)}
+              onApprove={() => {
+                // If already validated, approve directly
+                if (validationResult) {
+                  vote(true)
+                } else {
+                  setShowApproveChoice(true)
+                }
+              }}
               onReject={(note) => vote(false, note)}
             />
           ))}
         </div>
+        {/* Canon scan choice — shown when reviewer clicks ✓ without prior validation */}
+        {showApproveChoice && (
+          <div style={{
+            width: '100%', padding: '10px 12px',
+            background: 'rgba(245,165,42,0.04)',
+            border: '1px solid rgba(245,165,42,0.15)',
+            borderRadius: 6,
+            display: 'flex', flexDirection: 'column', gap: 8,
+          }}>
+            <div style={{ fontSize: '0.6875rem', color: 'rgba(240,235,225,0.6)', lineHeight: 1.5 }}>
+              ¿Comparar contra el canon visual antes de aprobar?
+              <span style={{ display: 'block', fontSize: '0.575rem', color: 'rgba(240,235,225,0.25)', marginTop: 2 }}>
+                El escaneo usa IA y consume créditos de API
+              </span>
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button
+                onClick={() => { setShowApproveChoice(false); vote(true) }}
+                disabled={voting}
+                style={{
+                  padding: '5px 12px', background: 'rgba(78,205,196,0.08)',
+                  border: '1px solid rgba(78,205,196,0.25)', borderRadius: 4,
+                  color: '#4ECDC4', fontSize: '0.65rem', fontWeight: 600, cursor: 'pointer',
+                  fontFamily: 'IBM Plex Sans, sans-serif',
+                }}
+              >
+                Aprobar directo
+              </button>
+              <button
+                onClick={() => {
+                  setShowApproveChoice(false)
+                  onRequestCanonScan?.(slot)
+                }}
+                style={{
+                  padding: '5px 12px', background: 'rgba(245,165,42,0.08)',
+                  border: '1px solid rgba(245,165,42,0.25)', borderRadius: 4,
+                  color: '#F5A52A', fontSize: '0.65rem', fontWeight: 600, cursor: 'pointer',
+                  fontFamily: 'IBM Plex Sans, sans-serif',
+                }}
+              >
+                Escanear canon
+              </button>
+              <button
+                onClick={() => setShowApproveChoice(false)}
+                style={{
+                  padding: '5px 8px', background: 'none',
+                  border: '1px solid rgba(255,255,255,0.08)', borderRadius: 4,
+                  color: 'rgba(240,235,225,0.25)', fontSize: '0.65rem', cursor: 'pointer',
+                  fontFamily: 'IBM Plex Sans, sans-serif',
+                }}
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        )}
         {conflictWarning && (
           <div style={{ width: '100%', marginBottom: '0.5rem', padding: '0.5rem 0.75rem', background: 'rgba(245,165,42,0.08)', border: '1px solid rgba(245,165,42,0.25)', borderRadius: 3, fontSize: '0.75rem', color: '#F5A52A', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
@@ -938,19 +1003,14 @@ export default function EntitySheet({ entity, category, slots, userEmail, onClos
                           key={slot.id}
                           slot={slot}
                           userEmail={userEmail}
-                          onUpdated={(updated) => {
-                            onSlotUpdated(updated)
-                            // Trigger canon validation when image is freshly uploaded
-                            if (updated.status === 'in_review' && updated.pending_drive_file_id) {
-                              setValidatingSlot(updated)
-                            }
-                          }}
+                          onUpdated={onSlotUpdated}
                           onDeleted={onSlotDeleted}
                           promptData={prompts[slot.id]}
                           refImage={getReferenceImage(slot, slots)}
                           genOrder={orderCounter}
                           validationResult={validationResults[slot.id] ?? null}
                           onShowValidation={validationResults[slot.id] && validationSlots[slot.id] ? () => setShowingResult({ slot: validationSlots[slot.id], result: validationResults[slot.id] }) : undefined}
+                          onRequestCanonScan={(s) => setValidatingSlot(s)}
                         />
                       )
                     })}
@@ -963,7 +1023,7 @@ export default function EntitySheet({ entity, category, slots, userEmail, onClos
       </div>
     </div>
 
-    {/* Canon Validator Modal — scanning mode (post-upload) */}
+    {/* Canon Validator Modal — scanning mode (on-demand) */}
     {validatingSlot && (
       <CanonValidatorModal
         slot={validatingSlot}
