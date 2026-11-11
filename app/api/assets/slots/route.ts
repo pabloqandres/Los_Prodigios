@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
 
   let query = supabase
     .from('asset_slots')
-    .select('*, asset_approvals(*)')
+    .select('*, approvals:asset_approvals(*)')
     .order('category')
     .order('entity_name')
     .order('view_type')

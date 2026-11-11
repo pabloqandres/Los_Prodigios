@@ -69,7 +69,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
     const { data: updated } = await supabase
       .from('asset_slots')
-      .select('*, asset_approvals(*)')
+      .select('*, approvals:asset_approvals(*)')
       .eq('id', slotId)
       .single()
     return NextResponse.json({ slot: updated, moved: false })
@@ -139,7 +139,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
     const { data: updated } = await supabase
       .from('asset_slots')
-      .select('*, asset_approvals(*)')
+      .select('*, approvals:asset_approvals(*)')
       .eq('id', slotId)
       .single()
 
@@ -174,7 +174,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
   const { data: updated } = await supabase
     .from('asset_slots')
-    .select('*, asset_approvals(*)')
+    .select('*, approvals:asset_approvals(*)')
     .eq('id', slotId)
     .single()
 

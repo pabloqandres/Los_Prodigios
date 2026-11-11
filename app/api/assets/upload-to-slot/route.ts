@@ -66,7 +66,7 @@ export async function POST(req: NextRequest) {
 
   const { data: updated } = await supabase
     .from('asset_slots')
-    .select('*, asset_approvals(*)')
+    .select('*, approvals:asset_approvals(*)')
     .eq('id', slot_id)
     .single()
 
