@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
 import { storageUrl } from '@/lib/supabase'
 import ApprovalStats from '@/components/approval/ApprovalStats'
+import type { StatusFilter } from '@/components/approval/ApprovalStats'
 import EntitySheet from '@/components/approval/EntitySheet'
 import type { AssetSlotWithApprovals } from '@/lib/supabase'
 import { SLOT_MATRIX, CATEGORY_LABELS, CATEGORY_ORDER } from '@/lib/approval-config'
@@ -449,6 +450,8 @@ export default function ApprovalPage() {
   const [openCats, setOpenCats] = useState<Record<string, boolean>>(
     Object.fromEntries(CATEGORY_ORDER.map(c => [c, false]))
   )
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
+  const [categoryFilter, setCategoryFilter] = useState<string | null>(null)
   const userEmail = session?.user?.email ?? ''
 
   const fetchSlots = useCallback(async () => {
@@ -481,12 +484,23 @@ export default function ApprovalPage() {
     setSlots(prev => prev.filter(s => s.entity_name !== entity_name))
   }
 
-  // Group slots by category
+  // Apply status filter
+  const filteredSlots = statusFilter === 'all'
+    ? slots
+    : slots.filter(s => s.status === statusFilter)
+
+  // Group filtered slots by category
   const byCategory: Record<string, AssetSlotWithApprovals[]> = {}
-  for (const slot of slots) {
+  for (const slot of filteredSlots) {
     if (!byCategory[slot.category]) byCategory[slot.category] = []
     byCategory[slot.category].push(slot)
   }
+
+  // Categories that have data (for filter pills)
+  const catsWithSlots = CATEGORY_ORDER.filter(c => {
+    // Show category pill if it has slots (unfiltered)
+    return slots.some(s => s.category === c)
+  })
 
   return (
     <div style={{ padding: '2.5rem 2.5rem 4rem', maxWidth: '1400px', width: '100%' }}>
@@ -519,8 +533,49 @@ export default function ApprovalPage() {
         </p>
       </div>
 
-      {/* Stats */}
-      <ApprovalStats slots={slots} />
+      {/* Stats — clickable filters */}
+      <ApprovalStats slots={slots} activeFilter={statusFilter} onFilterChange={setStatusFilter} />
+
+      {/* Category filter pills */}
+      {catsWithSlots.length > 1 && (
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
+          <button
+            onClick={() => setCategoryFilter(null)}
+            style={{
+              padding: '4px 12px', borderRadius: 20,
+              background: !categoryFilter ? 'rgba(240,235,225,0.1)' : 'rgba(255,255,255,0.03)',
+              border: `1px solid ${!categoryFilter ? 'rgba(240,235,225,0.3)' : 'rgba(255,255,255,0.08)'}`,
+              color: !categoryFilter ? 'rgba(240,235,225,0.8)' : 'rgba(240,235,225,0.35)',
+              fontSize: '0.6875rem', cursor: 'pointer', fontFamily: 'IBM Plex Sans, sans-serif',
+              fontWeight: !categoryFilter ? 600 : 400, transition: 'all 0.15s',
+            }}
+          >
+            Todas
+          </button>
+          {catsWithSlots.map(cat => {
+            const isActive = categoryFilter === cat
+            const catStyle = CATEGORY_STYLE[cat] ?? { color: '#F0EBE1' }
+            const catCount = byCategory[cat]?.length ?? 0
+            return (
+              <button
+                key={cat}
+                onClick={() => setCategoryFilter(isActive ? null : cat)}
+                style={{
+                  padding: '4px 12px', borderRadius: 20,
+                  background: isActive ? `${catStyle.color}15` : 'rgba(255,255,255,0.03)',
+                  border: `1px solid ${isActive ? `${catStyle.color}55` : 'rgba(255,255,255,0.08)'}`,
+                  color: isActive ? catStyle.color : 'rgba(240,235,225,0.35)',
+                  fontSize: '0.6875rem', cursor: 'pointer', fontFamily: 'IBM Plex Sans, sans-serif',
+                  fontWeight: isActive ? 600 : 400, transition: 'all 0.15s',
+                }}
+              >
+                {CATEGORY_LABELS[cat] ?? cat}
+                {catCount > 0 && <span style={{ marginLeft: 4, opacity: 0.5 }}>{catCount}</span>}
+              </button>
+            )
+          })}
+        </div>
+      )}
 
       {/* Categories */}
       {loading ? (
@@ -529,7 +584,10 @@ export default function ApprovalPage() {
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          {CATEGORY_ORDER.map(category => (
+          {CATEGORY_ORDER
+            .filter(cat => !categoryFilter || categoryFilter === cat)
+            .filter(cat => statusFilter === 'all' || (byCategory[cat]?.length ?? 0) > 0)
+            .map(category => (
             <CategoryAccordion
               key={category}
               category={category}

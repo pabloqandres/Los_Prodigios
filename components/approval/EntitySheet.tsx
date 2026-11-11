@@ -393,6 +393,22 @@ function SlotRow({
           {{pending:'Pendiente',in_review:'En revisión',approved:'Aprobado',rejected:'Rechazado'}[slot.status] ?? slot.status}
         </div>
 
+        {/* Rejection notes */}
+        {slot.status === 'rejected' && slot.approvals?.filter(a => !a.approved && a.note).map(a => (
+          <div key={a.id} style={{
+            padding: '6px 10px',
+            background: 'rgba(212,37,106,0.06)',
+            border: '1px solid rgba(212,37,106,0.15)',
+            borderRadius: 4,
+            fontSize: '0.675rem', lineHeight: 1.5,
+          }}>
+            <span style={{ color: 'rgba(212,37,106,0.7)', fontWeight: 600, fontSize: '0.575rem', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+              {a.reviewer_name}:
+            </span>{' '}
+            <span style={{ color: 'rgba(240,235,225,0.55)' }}>{a.note}</span>
+          </div>
+        ))}
+
         {/* Prompt block */}
         {promptData && (
           <div style={{ marginTop: 4, display: 'flex', flexDirection: 'column', gap: 4 }}>
