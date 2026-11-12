@@ -46,6 +46,12 @@ export async function POST(req: NextRequest) {
 
   if (uploadErr) return NextResponse.json({ error: uploadErr.message }, { status: 500 })
 
+  // Reset previous approvals — new image needs fresh review
+  await supabase
+    .from('asset_approvals')
+    .delete()
+    .eq('slot_id', slot_id)
+
   // Update slot
   const { error: updateErr } = await supabase
     .from('asset_slots')
@@ -53,6 +59,8 @@ export async function POST(req: NextRequest) {
       status: 'in_review',
       pending_drive_file_id: storagePath,   // reusing column to store storage path
       pending_drive_folder_id: `${slot.category}/${slot.entity_name}/pending`,
+      approved_drive_file_id: null,
+      approved_drive_folder_id: null,
       updated_at: new Date().toISOString(),
     })
     .eq('id', slot_id)
