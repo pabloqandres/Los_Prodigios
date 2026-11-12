@@ -22,23 +22,27 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     .single()
 
   if (slotErr || !slot) return NextResponse.json({ error: 'Slot no encontrado' }, { status: 404 })
-  if (slot.status === 'approved') return NextResponse.json({ error: 'No se puede eliminar un asset ya aprobado' }, { status: 400 })
 
-  // Delete from Supabase Storage
-  if (slot.pending_drive_file_id) {
-    await supabase.storage.from('assets').remove([slot.pending_drive_file_id])
+  // Delete from Supabase Storage (pending and/or approved images)
+  const filesToRemove: string[] = []
+  if (slot.pending_drive_file_id) filesToRemove.push(slot.pending_drive_file_id)
+  if (slot.approved_drive_file_id) filesToRemove.push(slot.approved_drive_file_id)
+  if (filesToRemove.length > 0) {
+    await supabase.storage.from('assets').remove(filesToRemove)
   }
 
   // Clear approvals
   await supabase.from('asset_approvals').delete().eq('slot_id', slotId)
 
-  // Reset slot
+  // Reset slot completely
   await supabase
     .from('asset_slots')
     .update({
       status: 'pending',
       pending_drive_file_id: null,
       pending_drive_folder_id: null,
+      approved_drive_file_id: null,
+      approved_drive_folder_id: null,
       updated_at: new Date().toISOString(),
     })
     .eq('id', slotId)

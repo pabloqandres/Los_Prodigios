@@ -196,7 +196,7 @@ function SlotRow({
     !isCanonBlocked
   )
   const showUploader = (slot.status === 'pending' && !slot.pending_drive_file_id) || showReplace
-  const canRemove = !!(slot.pending_drive_file_id && slot.status !== 'approved')
+  const canRemove = !!(slot.pending_drive_file_id || slot.approved_drive_file_id)
 
   const getBadgeStatus = (name: string): 'approved' | 'rejected' | 'pending' => {
     const email = Object.entries(REVIEWERS).find(([, n]) => n === name)?.[0]
