@@ -143,7 +143,7 @@ function Lightbox({ slot, onClose }: { slot: ApprovedSlot; onClose: () => void }
             }}>
               {slot.entity_label}
             </div>
-            <div style={{ fontSize: '0.75rem', color: 'rgba(240,235,225,0.4)', marginTop: 2 }}>
+            <div style={{ fontSize: '0.8125rem', color: 'rgba(240,235,225,0.55)', marginTop: 2 }}>
               {slot.version_label}
             </div>
           </div>
@@ -157,10 +157,10 @@ function Lightbox({ slot, onClose }: { slot: ApprovedSlot; onClose: () => void }
             ] as Array<{ l: string; v: string } | null>).filter(Boolean).map(b => (
               <div key={b!.l} style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 <span style={{
-                  fontSize: '0.5rem', letterSpacing: '0.14em', textTransform: 'uppercase',
-                  color: 'rgba(240,235,225,0.22)', fontFamily: 'monospace',
+                  fontSize: '0.5625rem', letterSpacing: '0.14em', textTransform: 'uppercase',
+                  color: 'rgba(240,235,225,0.35)', fontFamily: 'monospace',
                 }}>{b!.l}</span>
-                <span style={{ fontSize: '0.6875rem', color: 'rgba(240,235,225,0.65)' }}>{b!.v}</span>
+                <span style={{ fontSize: '0.75rem', color: 'rgba(240,235,225,0.75)' }}>{b!.v}</span>
               </div>
             ))}
           </div>
@@ -227,7 +227,7 @@ function EntityGallery({
         </h2>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.875rem', marginTop: '0.625rem', flexWrap: 'wrap' }}>
-          <span style={{ fontSize: '0.6875rem', color: 'rgba(240,235,225,0.3)' }}>
+          <span style={{ fontSize: '0.8125rem', color: 'rgba(240,235,225,0.45)' }}>
             {entity.slots.length} asset{entity.slots.length !== 1 ? 's' : ''} aprobado{entity.slots.length !== 1 ? 's' : ''}
           </span>
 
@@ -275,14 +275,14 @@ function EntityGallery({
           <div key={vt}>
             {/* Section label */}
             <div style={{
-              fontSize: '0.5875rem', letterSpacing: '0.16em', textTransform: 'uppercase',
-              color: 'rgba(240,235,225,0.28)', marginBottom: '0.875rem',
+              fontSize: '0.75rem', letterSpacing: '0.14em', textTransform: 'uppercase',
+              color: 'rgba(240,235,225,0.5)', marginBottom: '0.875rem',
               display: 'flex', alignItems: 'center', gap: '0.75rem',
-              fontFamily: 'monospace',
+              fontFamily: 'Bebas Neue, Impact, sans-serif',
             }}>
               {vt}
-              <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.04)' }} />
-              <span style={{ color, opacity: 0.7 }}>{vtSlots.length}</span>
+              <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.08)' }} />
+              <span style={{ color, opacity: 0.8 }}>{vtSlots.length}</span>
             </div>
 
             {/* Image grid */}
@@ -331,7 +331,7 @@ function EntityGallery({
                     }
                   </div>
                   <div style={{ padding: '0.5rem 0.625rem' }}>
-                    <div style={{ fontSize: '0.5625rem', color: 'rgba(240,235,225,0.35)', lineHeight: 1.4 }}>
+                    <div style={{ fontSize: '0.6875rem', color: 'rgba(240,235,225,0.55)', lineHeight: 1.4 }}>
                       {slot.version_label}
                     </div>
                   </div>
