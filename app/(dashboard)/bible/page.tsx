@@ -354,15 +354,29 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
             accessories: assetSuggestion.accessories ?? [],
           }),
         })
+        // Auto-link entity to source document
+        if (data.id) {
+          await fetch('/api/entity-doc-links', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              doc_id: data.id,
+              entity_name: assetSuggestion.entity_name,
+              entity_label: assetSuggestion.entity_label,
+              entity_category: assetSuggestion.category,
+              link_type: 'primary',
+            }),
+          })
+        }
       }
 
-      // Multi-entity: create all selected entities in parallel
+      // Multi-entity: create all selected entities and auto-link to source doc
       if (multiEntities.length > 1 && selectedEntityIdxs.size > 0) {
         await Promise.all(
-          Array.from(selectedEntityIdxs).map(idx => {
+          Array.from(selectedEntityIdxs).map(async idx => {
             const ent = multiEntities[idx]
-            if (!ent) return Promise.resolve()
-            return fetch('/api/assets/create-entity', {
+            if (!ent) return
+            await fetch('/api/assets/create-entity', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
@@ -373,6 +387,20 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
                 accessories: ent.accessories ?? [],
               }),
             })
+            // Auto-link each entity to source document
+            if (data.id) {
+              await fetch('/api/entity-doc-links', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  doc_id: data.id,
+                  entity_name: ent.entity_name,
+                  entity_label: ent.entity_label,
+                  entity_category: ent.category,
+                  link_type: 'primary',
+                }),
+              })
+            }
           })
         )
       }

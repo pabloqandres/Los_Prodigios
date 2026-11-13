@@ -110,11 +110,36 @@ export async function GET(request: NextRequest) {
 
   const supabase = createServerClient()
 
-  // Use assembleEntityContext for full-text search across all doc content
+  // ── 1. Check explicit doc links FIRST (most reliable) ──────────────────────
+  const { data: links } = await supabase
+    .from('entity_doc_links')
+    .select('doc_id, link_type')
+    .eq('entity_name', entity_name)
+    .order('link_type', { ascending: true }) // 'primary' first
+
+  if (links?.length) {
+    const docIds = links.map(l => l.doc_id)
+    const { data: linkedDocs } = await supabase
+      .from('reference_docs')
+      .select('id, title, content')
+      .in('id', docIds)
+      .not('content', 'is', null)
+
+    if (linkedDocs?.length) {
+      const bestDoc = linkedDocs[0]
+      const fields = parseProseProfile(bestDoc.content, entity_label)
+      return NextResponse.json({
+        match: { id: bestDoc.id, title: bestDoc.title },
+        fields,
+        docs_used: linkedDocs.map(d => ({ id: d.id, title: d.title })),
+      })
+    }
+  }
+
+  // ── 2. Fallback: full-text search across canon docs ────────────────────────
   const context = await assembleEntityContext(supabase, entity_name, entity_label)
 
   if (!context.docs_used.length) {
-    // Fallback debug info using old title-only approach
     const { data: list } = await supabase.from('reference_docs').select('id, title').order('title')
     const labelWords = normalize(entity_label).split(/\s+/).filter(w => w.length > 2)
     const nameWords  = entity_name.replace(/([A-Z])/g, ' $1').trim().split(/\s+/).map(normalize).filter(w => w.length > 2)

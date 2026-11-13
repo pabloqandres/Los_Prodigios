@@ -62,7 +62,7 @@ export const SLOT_MATRIX: Record<string, SlotMatrixRow[]> = {
   // ── LOCACIONES ────────────────────────────────────────────────────────────
   // Vista maestra + 2 complementarias. Variantes de luz/estado por demanda.
   locaciones: [
-    { view_type: 'Vista maestra',        outfit: null, age_versions: ['Día'] },
+    { view_type: 'Vista maestra',        outfit: null, age_versions: ['Día', 'Noche'] },
     { view_type: 'Vista complementaria', outfit: null, age_versions: ['Ángulo A', 'Ángulo B'] },
     { view_type: 'Carta de color',       outfit: null, age_versions: ['Color local'] },
   ],
