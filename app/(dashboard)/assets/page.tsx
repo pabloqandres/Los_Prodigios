@@ -139,11 +139,11 @@ function Lightbox({ slot, onClose }: { slot: ApprovedSlot; onClose: () => void }
           <div>
             <div style={{
               fontFamily: 'Bebas Neue, Impact, sans-serif',
-              fontSize: '1.125rem', color: '#F0EBE1', letterSpacing: '0.04em',
+              fontSize: '1.375rem', color: '#F0EBE1', letterSpacing: '0.04em',
             }}>
               {slot.entity_label}
             </div>
-            <div style={{ fontSize: '0.8125rem', color: 'rgba(240,235,225,0.55)', marginTop: 2 }}>
+            <div style={{ fontSize: '0.9375rem', color: 'rgba(240,235,225,0.7)', marginTop: 2 }}>
               {slot.version_label}
             </div>
           </div>
@@ -157,10 +157,10 @@ function Lightbox({ slot, onClose }: { slot: ApprovedSlot; onClose: () => void }
             ] as Array<{ l: string; v: string } | null>).filter(Boolean).map(b => (
               <div key={b!.l} style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 <span style={{
-                  fontSize: '0.5625rem', letterSpacing: '0.14em', textTransform: 'uppercase',
-                  color: 'rgba(240,235,225,0.35)', fontFamily: 'monospace',
+                  fontSize: '0.6875rem', letterSpacing: '0.14em', textTransform: 'uppercase',
+                  color: 'rgba(240,235,225,0.5)', fontFamily: 'monospace',
                 }}>{b!.l}</span>
-                <span style={{ fontSize: '0.75rem', color: 'rgba(240,235,225,0.75)' }}>{b!.v}</span>
+                <span style={{ fontSize: '0.875rem', color: 'rgba(240,235,225,0.85)' }}>{b!.v}</span>
               </div>
             ))}
           </div>
@@ -213,8 +213,8 @@ function EntityGallery({
         borderBottom: '1px solid rgba(255,255,255,0.05)',
       }}>
         <div style={{
-          fontSize: '0.5625rem', letterSpacing: '0.18em', textTransform: 'uppercase',
-          color: color, marginBottom: '0.4rem', fontFamily: 'monospace', opacity: 0.75,
+          fontSize: '0.75rem', letterSpacing: '0.18em', textTransform: 'uppercase',
+          color: color, marginBottom: '0.4rem', fontFamily: 'monospace', opacity: 0.85,
         }}>
           {CATEGORY_LABELS[category] ?? category}
         </div>
@@ -227,7 +227,7 @@ function EntityGallery({
         </h2>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.875rem', marginTop: '0.625rem', flexWrap: 'wrap' }}>
-          <span style={{ fontSize: '0.8125rem', color: 'rgba(240,235,225,0.45)' }}>
+          <span style={{ fontSize: '0.9375rem', color: 'rgba(240,235,225,0.6)' }}>
             {entity.slots.length} asset{entity.slots.length !== 1 ? 's' : ''} aprobado{entity.slots.length !== 1 ? 's' : ''}
           </span>
 
@@ -236,8 +236,8 @@ function EntityGallery({
             <>
               <div style={{ width: 1, height: 12, background: 'rgba(255,255,255,0.08)', flexShrink: 0 }} />
               <span style={{
-                fontSize: '0.5rem', letterSpacing: '0.12em', textTransform: 'uppercase',
-                color: 'rgba(240,235,225,0.2)', fontFamily: 'monospace',
+                fontSize: '0.6875rem', letterSpacing: '0.12em', textTransform: 'uppercase',
+                color: 'rgba(240,235,225,0.4)', fontFamily: 'monospace',
               }}>Biblia</span>
               {docLinks.map((link: any) => {
                 const doc = link.reference_docs
@@ -256,7 +256,7 @@ function EntityGallery({
                   >
                     <div style={{ width: 5, height: 5, borderRadius: 1, background: accent, flexShrink: 0 }} />
                     <span style={{
-                      fontSize: '0.625rem', color: `${accent}CC`,
+                      fontSize: '0.75rem', color: `${accent}CC`,
                       fontFamily: 'IBM Plex Sans, sans-serif', whiteSpace: 'nowrap',
                     }}>
                       {doc?.title ?? 'Tomo'}
@@ -275,14 +275,14 @@ function EntityGallery({
           <div key={vt}>
             {/* Section label */}
             <div style={{
-              fontSize: '0.75rem', letterSpacing: '0.14em', textTransform: 'uppercase',
-              color: 'rgba(240,235,225,0.5)', marginBottom: '0.875rem',
+              fontSize: '1.0625rem', letterSpacing: '0.1em', textTransform: 'uppercase',
+              color: 'rgba(240,235,225,0.7)', marginBottom: '0.875rem',
               display: 'flex', alignItems: 'center', gap: '0.75rem',
               fontFamily: 'Bebas Neue, Impact, sans-serif',
             }}>
               {vt}
               <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.08)' }} />
-              <span style={{ color, opacity: 0.8 }}>{vtSlots.length}</span>
+              <span style={{ color, opacity: 1 }}>{vtSlots.length}</span>
             </div>
 
             {/* Image grid */}
@@ -331,7 +331,7 @@ function EntityGallery({
                     }
                   </div>
                   <div style={{ padding: '0.5rem 0.625rem' }}>
-                    <div style={{ fontSize: '0.6875rem', color: 'rgba(240,235,225,0.55)', lineHeight: 1.4 }}>
+                    <div style={{ fontSize: '0.8125rem', color: 'rgba(240,235,225,0.72)', lineHeight: 1.4 }}>
                       {slot.version_label}
                     </div>
                   </div>
@@ -480,8 +480,8 @@ function AssetsContent() {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <div style={{
-              fontSize: '0.5625rem', letterSpacing: '0.22em', textTransform: 'uppercase',
-              color: '#9B6FD4', fontWeight: 600, marginBottom: '0.375rem', opacity: 0.8,
+              fontSize: '0.75rem', letterSpacing: '0.22em', textTransform: 'uppercase',
+              color: '#9B6FD4', fontWeight: 600, marginBottom: '0.375rem', opacity: 0.9,
             }}>Arte · Canon visual</div>
             <h1 style={{
               fontFamily: 'Bebas Neue, Impact, sans-serif',
@@ -499,13 +499,13 @@ function AssetsContent() {
                 {loading ? '…' : slots.length}
               </span>
               <span style={{
-                fontSize: '0.5625rem', letterSpacing: '0.14em', textTransform: 'uppercase',
-                color: 'rgba(240,235,225,0.25)', fontWeight: 600,
+                fontSize: '0.75rem', letterSpacing: '0.14em', textTransform: 'uppercase',
+                color: 'rgba(240,235,225,0.5)', fontWeight: 600,
               }}>aprobados</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
               <div style={{ width: 5, height: 5, borderRadius: '50%', background: error ? '#D4256A' : '#4ECDC4' }} />
-              <span style={{ fontSize: '0.6125rem', color: 'rgba(240,235,225,0.3)', letterSpacing: '0.03em' }}>
+              <span style={{ fontSize: '0.75rem', color: 'rgba(240,235,225,0.5)', letterSpacing: '0.03em' }}>
                 {loading ? 'Cargando…' : error ? 'Error' : 'Canon activo'}
               </span>
             </div>
@@ -601,15 +601,15 @@ function AssetsContent() {
                     }} />
                     <span style={{
                       fontFamily: 'Bebas Neue, Impact, sans-serif',
-                      fontSize: '1.0625rem', letterSpacing: '0.07em',
-                      color: isOpen ? '#F0EBE1' : 'rgba(240,235,225,0.6)',
+                      fontSize: '1.25rem', letterSpacing: '0.07em',
+                      color: isOpen ? '#F0EBE1' : 'rgba(240,235,225,0.65)',
                       flex: 1, transition: 'color 0.15s',
                     }}>
                       {cat.label}
                     </span>
                     <span style={{
-                      fontSize: '0.6875rem', fontFamily: 'monospace',
-                      color: isOpen ? color : 'rgba(240,235,225,0.3)',
+                      fontSize: '0.875rem', fontFamily: 'monospace',
+                      color: isOpen ? color : 'rgba(240,235,225,0.4)',
                     }}>
                       {cat.entities.length}
                     </span>
@@ -618,7 +618,7 @@ function AssetsContent() {
                         flexShrink: 0,
                         transform: isOpen ? 'rotate(180deg)' : 'none',
                         transition: 'transform 0.18s',
-                        opacity: 0.35,
+                        opacity: 0.5,
                       }}
                       width="10" height="10" viewBox="0 0 24 24"
                       fill="none" stroke="#F0EBE1" strokeWidth="2" strokeLinecap="round"
@@ -675,16 +675,16 @@ function AssetsContent() {
                             </div>
 
                             <span style={{
-                              fontSize: '0.9375rem',
-                              color: isSel ? '#F0EBE1' : 'rgba(240,235,225,0.72)',
+                              fontSize: '1.0625rem',
+                              color: isSel ? '#F0EBE1' : 'rgba(240,235,225,0.75)',
                               fontFamily: 'IBM Plex Sans, sans-serif',
                               flex: 1, lineHeight: 1.3,
                             }}>
                               {entity.entity_label}
                             </span>
                             <span style={{
-                              fontSize: '0.75rem', fontFamily: 'monospace',
-                              color: isSel ? color : 'rgba(240,235,225,0.35)', flexShrink: 0,
+                              fontSize: '0.875rem', fontFamily: 'monospace',
+                              color: isSel ? color : 'rgba(240,235,225,0.45)', flexShrink: 0,
                             }}>
                               {entity.slots.length}
                             </span>
