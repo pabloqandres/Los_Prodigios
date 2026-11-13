@@ -48,8 +48,8 @@ export async function POST(request: NextRequest) {
   const { text, filename } = await request.json()
   if (!text) return NextResponse.json({ error: 'No text provided' }, { status: 400 })
 
-  // Use more text for multi-entity detection
-  const excerpt = text.substring(0, 16000)
+  // Use enough text to capture all entities (8 detailed profiles can exceed 20K chars)
+  const excerpt = text.substring(0, 40000)
 
   const response = await client.messages.create({
     model: 'claude-sonnet-4-6',
