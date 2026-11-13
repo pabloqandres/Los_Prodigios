@@ -55,7 +55,6 @@ export const SLOT_MATRIX: Record<string, SlotMatrixRow[]> = {
     { view_type: 'Cuerpo completo',    outfit: 'Uniforme colegio',   age_versions: ['Frontal'] },
     { view_type: 'Cuerpo completo',    outfit: 'Casual',             age_versions: ['Frontal'] },
     { view_type: 'Lámina expresiones', outfit: null,                 age_versions: ['Completa'] },
-    { view_type: 'Uniforme partido',   outfit: 'Hawks titular',      age_versions: ['Frontal', 'Espalda'] },
     { view_type: 'Acción',            outfit: 'Uniforme Hawks',     age_versions: ['Jugada característica'] },
     { view_type: 'Carta de color',    outfit: null,                 age_versions: ['Color local'] },
     { view_type: 'Accesorio',         outfit: null,                 age_versions: [] },
