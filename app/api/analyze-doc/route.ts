@@ -90,7 +90,7 @@ Reglas para cada entidad en "entities":
     * "hawks" → SOLO Hawks FC y su cuerpo técnico.
     * "rivales" → otros equipos rivales como identidad visual de equipo.
 - "asset_matrix_key": determina los TIPOS DE SLOTS DE ARTE:
-    * "personajes" → jugadores activos (uniforme de partido, poses de acción deportiva)
+    * "personajes" → jugadores activos del cast principal (poses de acción deportiva, cuerpo completo)
     * "entrenadores" → entrenadores, DTs, preparadores físicos (banca, no juegan)
     * "secundarios" → personajes sin uniforme ni acción deportiva
     * "locaciones" → espacios físicos
