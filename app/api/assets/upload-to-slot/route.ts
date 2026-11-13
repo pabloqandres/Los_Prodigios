@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getToken } from 'next-auth/jwt'
 import { createServerClient } from '@/lib/supabase'
+import { REVIEWERS } from '@/lib/approval-config'
 import { logActivity } from '@/lib/activity'
 
 export const runtime = 'nodejs'
@@ -51,6 +52,22 @@ export async function POST(req: NextRequest) {
     .from('asset_approvals')
     .delete()
     .eq('slot_id', slot_id)
+
+  // Auto-approve for uploader if they are a reviewer
+  const uploaderEmail = token.email as string
+  const reviewerName = REVIEWERS[uploaderEmail]
+  if (reviewerName) {
+    await supabase
+      .from('asset_approvals')
+      .insert({
+        slot_id,
+        reviewer_email: uploaderEmail,
+        reviewer_name: reviewerName,
+        approved: true,
+        note: null,
+        drive_file_id: storagePath,
+      })
+  }
 
   // Update slot
   const { error: updateErr } = await supabase
