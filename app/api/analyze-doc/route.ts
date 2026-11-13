@@ -112,7 +112,7 @@ REGLA CRÍTICA para documentos multi-personaje:
 - Si el documento describe un EQUIPO con varios jugadores/miembros, crea UNA entidad POR CADA persona individual. Lee el documento COMPLETO y extrae TODOS los personajes, no solo el primero.
 - Ejemplo: un doc con 7 jugadores + 1 DT = 8 entidades en el array "entities" (7 jugadores + 1 entrenador).
 - NUNCA crees una entidad genérica del equipo (como "Hawks FC" o "Equipo Rival"). Solo entidades de PERSONAS individuales con nombre propio.
-- Si el documento describe una locación con múltiples áreas diferenciadas, crea una entidad para la locación principal.
+- Si el documento describe un CAMPUS, COMPLEJO o INSTALACIÓN con múltiples áreas visualmente distintas (edificio principal, canchas, piscina, camarines, gimnasio, etc.), crea UNA entidad por cada área que requiera su propio diseño visual. Cada área es una locación independiente.
 - Si un personaje es DT, entrenador, director técnico o cuerpo técnico, SIEMPRE usa asset_matrix_key "entrenadores" (NO "hawks" ni "personajes"). Esto le da slots de banca/técnico en vez de uniforme de partido.
 - Incluye SIEMPRE a los entrenadores/DT como entidades separadas. No los omitas.
 
