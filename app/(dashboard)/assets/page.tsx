@@ -480,8 +480,8 @@ function AssetsContent() {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <div style={{
-              fontSize: '0.75rem', letterSpacing: '0.22em', textTransform: 'uppercase',
-              color: '#9B6FD4', fontWeight: 600, marginBottom: '0.375rem', opacity: 0.9,
+              fontSize: '0.9375rem', letterSpacing: '0.22em', textTransform: 'uppercase',
+              color: '#9B6FD4', fontWeight: 600, marginBottom: '0.375rem', opacity: 1,
             }}>Arte · Canon visual</div>
             <h1 style={{
               fontFamily: 'Bebas Neue, Impact, sans-serif',
@@ -494,18 +494,18 @@ function AssetsContent() {
             <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.3rem' }}>
               <span style={{
                 fontFamily: 'Bebas Neue, Impact, sans-serif',
-                fontSize: '1.25rem', color: '#9B6FD4',
+                fontSize: '1.625rem', color: '#9B6FD4',
               }}>
                 {loading ? '…' : slots.length}
               </span>
               <span style={{
-                fontSize: '0.75rem', letterSpacing: '0.14em', textTransform: 'uppercase',
-                color: 'rgba(240,235,225,0.5)', fontWeight: 600,
+                fontSize: '0.9375rem', letterSpacing: '0.14em', textTransform: 'uppercase',
+                color: 'rgba(240,235,225,0.65)', fontWeight: 600,
               }}>aprobados</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
               <div style={{ width: 5, height: 5, borderRadius: '50%', background: error ? '#D4256A' : '#4ECDC4' }} />
-              <span style={{ fontSize: '0.75rem', color: 'rgba(240,235,225,0.5)', letterSpacing: '0.03em' }}>
+              <span style={{ fontSize: '0.875rem', color: 'rgba(240,235,225,0.65)', letterSpacing: '0.03em' }}>
                 {loading ? 'Cargando…' : error ? 'Error' : 'Canon activo'}
               </span>
             </div>
