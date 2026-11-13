@@ -601,15 +601,15 @@ function AssetsContent() {
                     }} />
                     <span style={{
                       fontFamily: 'Bebas Neue, Impact, sans-serif',
-                      fontSize: '0.9375rem', letterSpacing: '0.07em',
-                      color: isOpen ? '#F0EBE1' : 'rgba(240,235,225,0.45)',
+                      fontSize: '1.0625rem', letterSpacing: '0.07em',
+                      color: isOpen ? '#F0EBE1' : 'rgba(240,235,225,0.6)',
                       flex: 1, transition: 'color 0.15s',
                     }}>
                       {cat.label}
                     </span>
                     <span style={{
-                      fontSize: '0.5rem', fontFamily: 'monospace',
-                      color: isOpen ? color : 'rgba(240,235,225,0.18)',
+                      fontSize: '0.6875rem', fontFamily: 'monospace',
+                      color: isOpen ? color : 'rgba(240,235,225,0.3)',
                     }}>
                       {cat.entities.length}
                     </span>
@@ -675,16 +675,16 @@ function AssetsContent() {
                             </div>
 
                             <span style={{
-                              fontSize: '0.875rem',
-                              color: isSel ? '#F0EBE1' : 'rgba(240,235,225,0.55)',
+                              fontSize: '0.9375rem',
+                              color: isSel ? '#F0EBE1' : 'rgba(240,235,225,0.72)',
                               fontFamily: 'IBM Plex Sans, sans-serif',
-                              flex: 1, lineHeight: 1.25,
+                              flex: 1, lineHeight: 1.3,
                             }}>
                               {entity.entity_label}
                             </span>
                             <span style={{
-                              fontSize: '0.625rem', fontFamily: 'monospace',
-                              color: isSel ? color : 'rgba(240,235,225,0.22)', flexShrink: 0,
+                              fontSize: '0.75rem', fontFamily: 'monospace',
+                              color: isSel ? color : 'rgba(240,235,225,0.35)', flexShrink: 0,
                             }}>
                               {entity.slots.length}
                             </span>
