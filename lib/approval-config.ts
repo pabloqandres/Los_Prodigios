@@ -20,7 +20,6 @@ export const SLOT_MATRIX: Record<string, SlotMatrixRow[]> = {
     { view_type: 'Identidad facial',   outfit: null,                  age_versions: ['Frontal', '3/4'] },
     { view_type: 'Cuerpo completo',    outfit: 'Casual',              age_versions: ['Frontal', '3/4', 'Espalda'] },
     { view_type: 'Lámina expresiones', outfit: null,                  age_versions: ['Completa'] },
-    { view_type: 'Uniforme partido',   outfit: 'Titular',             age_versions: ['Frontal', 'Espalda'] },
     { view_type: 'Outfit casual',      outfit: 'Variante principal',  age_versions: ['Frontal'] },
     { view_type: 'Acción',            outfit: 'Uniforme titular',    age_versions: ['Celebración', 'Jugada característica'] },
     { view_type: 'Carta de color',    outfit: null,                  age_versions: ['Color local'] },
