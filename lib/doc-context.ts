@@ -61,11 +61,56 @@ function extractRelevantParagraphs(content: string, keywords: string[], maxChars
   return result.join('\n\n').substring(0, maxChars)
 }
 
+// ── Entity section extractor ─────────────────────────────────────────────────
+
+/**
+ * For multi-character documents, extract only the section about the specific entity.
+ * Looks for the entity label as a heading/line and captures text until the next entity heading.
+ */
+function extractEntitySection(content: string, entityLabel: string): string {
+  const labelNorm = entityLabel.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+  const lines = content.split('\n')
+
+  // Find the line that contains the entity label (as a heading or standalone)
+  let startIdx = -1
+  for (let i = 0; i < lines.length; i++) {
+    const lineNorm = lines[i].toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim()
+    if (lineNorm.includes(labelNorm) && lineNorm.length < labelNorm.length + 40) {
+      startIdx = i
+      break
+    }
+  }
+  if (startIdx === -1) return content // not found → use full doc
+
+  // Find the end: next line that looks like another person's name heading
+  // Heuristic: all-caps line, short standalone name, or numbered section
+  let endIdx = lines.length
+  for (let i = startIdx + 1; i < lines.length; i++) {
+    const line = lines[i].trim()
+    if (!line) continue
+    // Another person heading: short line (< 50 chars), mostly uppercase or title case, not a sentence
+    if (line.length < 50 && line.length > 3 && !/[.,:;]$/.test(line)) {
+      // Check if it looks like a name (capitalized words) or section number
+      const isNameLike = /^[A-ZÁÉÍÓÚÜÑ][a-záéíóúüñ]+(\s+[A-ZÁÉÍÓÚÜÑ][a-záéíóúüñ]+)+$/.test(line)
+      const isCapsHeading = /^[A-ZÁÉÍÓÚÜÑ\s\d.]{4,}$/.test(line) && line !== lines[startIdx].trim()
+      const isNumberedSection = /^\d+[.)]\s/.test(line)
+      if ((isNameLike || isCapsHeading || isNumberedSection) && i > startIdx + 3) {
+        endIdx = i
+        break
+      }
+    }
+  }
+
+  return lines.slice(startIdx, endIdx).join('\n')
+}
+
 // ── Structured field parser (reused from entity-doc) ──────────────────────────
 
 function parseStructuredFields(content: string, entityLabel: string): Record<string, string> {
   const fields: Record<string, string> = {}
-  const lines = content.split('\n').map(l => l.trim()).filter(Boolean)
+  // Try to extract only the entity's section from multi-character docs
+  const section = extractEntitySection(content, entityLabel)
+  const lines = section.split('\n').map(l => l.trim()).filter(Boolean)
 
   // Try markdown **Key**: Value format first
   for (const line of lines) {
@@ -85,7 +130,7 @@ function parseStructuredFields(content: string, entityLabel: string): Record<str
   const codeMatch = content.match(/LP-[A-Z]{1,4}-\d+/)
   if (codeMatch) fields['Código'] = codeMatch[0]
 
-  const ageMatch = content.match(/tiene\s+(\w+)\s+años|(\d{1,2})\s+años/i)
+  const ageMatch = section.match(/tiene\s+(\w+)\s+años|(\d{1,2})\s+años/i)
   if (ageMatch) {
     const raw = ageMatch[1] ?? ageMatch[2]
     const wordMap: Record<string, string> = {
@@ -95,24 +140,27 @@ function parseStructuredFields(content: string, entityLabel: string): Record<str
     fields['Edad'] = wordMap[raw?.toLowerCase()] ? `${wordMap[raw.toLowerCase()]} años` : `${raw} años`
   }
 
-  const heightMatch = content.match(/(?:entre\s+)?(1[,.]?\d{2})(?:\s+y\s+(1[,.]?\d{2}))?\s+metros/i)
+  const heightMatch = section.match(/(?:entre\s+)?(1[,.]?\d{2})(?:\s+y\s+(1[,.]?\d{2}))?\s+metros/i)
   if (heightMatch) {
     fields['Estatura'] = heightMatch[2]
       ? `${heightMatch[1]}–${heightMatch[2]} m`
       : `${heightMatch[1]} m`
   }
 
-  const natMatch = content.match(/es\s+(chileno|argentino|mexicano|colombiano|venezolano|peruano|ecuatoriano|boliviano|uruguayo|paraguayo|brasileño)/i)
+  const natMatch = section.match(/es\s+(chileno|argentino|mexicano|colombiano|venezolano|peruano|ecuatoriano|boliviano|uruguayo|paraguayo|brasileño)/i)
   if (natMatch) fields['Nacionalidad'] = natMatch[1].charAt(0).toUpperCase() + natMatch[1].slice(1)
 
-  const hairMatch = content.match(/pelo\s+([^.,;]{5,80})/i) ?? content.match(/cabello\s+([^.,;]{5,80})/i)
+  const hairMatch = section.match(/pelo\s+([^.,;]{5,80})/i) ?? section.match(/cabello\s+([^.,;]{5,80})/i)
   if (hairMatch) fields['Pelo'] = hairMatch[1].trim()
 
-  const eyeMatch = content.match(/ojos\s+(cafés|marrones|verdes|azules|negros|grises|castaños|claros|oscuros)[^.,;]{0,30}/i)
+  const eyeMatch = section.match(/ojos\s+(cafés|marrones|verdes|azules|negros|grises|castaños|claros|oscuros)[^.,;]{0,30}/i)
   if (eyeMatch) fields['Ojos'] = eyeMatch[0].replace(/^ojos\s+/i, '').trim()
 
-  const buildMatch = content.match(/contextura\s+([^.,]{5,50})/i)
+  const buildMatch = section.match(/contextura\s+([^.,]{5,50})/i)
   if (buildMatch) fields['Complexión'] = buildMatch[1].trim()
+
+  const posMatch = section.match(/(?:juega\s+(?:de|como)\s+|posición[:\s]+)([^.,;]{5,60})/i)
+  if (posMatch) fields['Posición'] = posMatch[1].trim()
 
   return fields
 }
