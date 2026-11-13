@@ -149,6 +149,7 @@ export async function assembleEntityContext(
       .select('id, title, content')
       .textSearch('search_vector', searchQuery, { type: 'websearch', config: 'simple' })
       .not('content', 'is', null)
+      .neq('doc_type', 'craft')
       .limit(8)
 
     if (tsResults?.length) {
@@ -162,6 +163,7 @@ export async function assembleEntityContext(
       .from('reference_docs')
       .select('id, title, content')
       .not('content', 'is', null)
+      .neq('doc_type', 'craft')
 
     if (allDocs?.length) {
       const scored = allDocs.map(d => {

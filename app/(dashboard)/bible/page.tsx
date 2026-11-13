@@ -90,6 +90,12 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
   const [createAssetSlots, setCreateAssetSlots] = useState(false)
   const [existingSlotCount, setExistingSlotCount] = useState<number | null>(null)
   const [expectedSlotCount, setExpectedSlotCount] = useState<number | null>(null)
+  // Multi-entity support
+  type EntitySug = { category: string; matrix_key: string; entity_name: string; entity_label: string; confidence: number; accessories?: string[] }
+  const [multiEntities, setMultiEntities] = useState<EntitySug[]>([])
+  const [selectedEntityIdxs, setSelectedEntityIdxs] = useState<Set<number>>(new Set())
+  const [entitySlotInfo, setEntitySlotInfo] = useState<Record<number, { existing: number; expected: number }>>({})
+  const [loadingSlotInfo, setLoadingSlotInfo] = useState(false)
   const [showManualEntity, setShowManualEntity] = useState(false)
   const [manualLabel, setManualLabel] = useState('')
   const [manualType, setManualType] = useState('personaje_jugador')
@@ -182,6 +188,9 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
     setCreateAssetSlots(false)
     setExistingSlotCount(null)
     setExpectedSlotCount(null)
+    setMultiEntities([])
+    setSelectedEntityIdxs(new Set())
+    setEntitySlotInfo({})
     setStoragePath(null)
     setAnalysisRan(false)
     setShowManualEntity(false)
@@ -221,21 +230,61 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
         setDescription(data.description ?? '')
         setCategories(data.categories ?? [])
         setAnalysisRan(true)
-        if (data.needs_assets && data.asset_entity_name) {
-          const suggestion = {
-            category: data.asset_category,
-            matrix_key: data.asset_matrix_key ?? data.asset_category,
-            entity_name: data.asset_entity_name,
-            entity_label: data.asset_entity_label,
-            confidence: data.asset_confidence,
-            accessories: data.asset_accessories ?? [],
-          }
-          setAssetSuggestion(suggestion)
 
-          // Check existing slots and expected total in parallel
+        // Multi-entity support
+        const entities: EntitySug[] = Array.isArray(data.entities) && data.entities.length > 0
+          ? data.entities.map((e: Record<string, unknown>) => ({
+              category: e.asset_category as string,
+              matrix_key: (e.asset_matrix_key ?? e.asset_category) as string,
+              entity_name: e.asset_entity_name as string,
+              entity_label: e.asset_entity_label as string,
+              confidence: (e.asset_confidence as number) ?? 0,
+              accessories: (e.asset_accessories as string[]) ?? [],
+            }))
+          : data.needs_assets && data.asset_entity_name
+          ? [{
+              category: data.asset_category,
+              matrix_key: data.asset_matrix_key ?? data.asset_category,
+              entity_name: data.asset_entity_name,
+              entity_label: data.asset_entity_label,
+              confidence: data.asset_confidence ?? 0,
+              accessories: data.asset_accessories ?? [],
+            }]
+          : []
+
+        if (entities.length > 1) {
+          // Multi-entity mode
+          setMultiEntities(entities)
+          const highConfIdxs = new Set(entities.map((_: EntitySug, i: number) => i).filter((i: number) => entities[i].confidence >= 0.7))
+          setSelectedEntityIdxs(highConfIdxs)
+          setAssetSuggestion(null)
+          setCreateAssetSlots(false)
+
+          // Fetch slot info for all entities in parallel
+          setLoadingSlotInfo(true)
+          const infoMap: Record<number, { existing: number; expected: number }> = {}
+          await Promise.all(entities.map(async (ent: EntitySug, idx: number) => {
+            try {
+              const [existingRes, previewRes] = await Promise.all([
+                fetch(`/api/assets/slots?entity_name=${encodeURIComponent(ent.entity_name)}`),
+                fetch(`/api/assets/seed-checklist/preview?entity_name=${encodeURIComponent(ent.entity_name)}&category=${encodeURIComponent(ent.category)}&matrix_key=${encodeURIComponent(ent.matrix_key)}`),
+              ])
+              const existing = existingRes.ok ? await existingRes.json() : []
+              const preview = previewRes.ok ? await previewRes.json() : { total: 0 }
+              infoMap[idx] = { existing: Array.isArray(existing) ? existing.length : 0, expected: preview.total ?? 0 }
+            } catch { infoMap[idx] = { existing: 0, expected: 0 } }
+          }))
+          setEntitySlotInfo(infoMap)
+          setLoadingSlotInfo(false)
+        } else if (entities.length === 1) {
+          // Single entity — use legacy UI
+          const suggestion = entities[0]
+          setAssetSuggestion(suggestion)
+          setMultiEntities([])
+
           const [existingRes, previewRes] = await Promise.all([
-            fetch(`/api/assets/slots?entity_name=${encodeURIComponent(data.asset_entity_name)}`),
-            fetch(`/api/assets/seed-checklist/preview?entity_name=${encodeURIComponent(data.asset_entity_name)}&category=${encodeURIComponent(data.asset_category)}&matrix_key=${encodeURIComponent(data.asset_matrix_key ?? data.asset_category)}`),
+            fetch(`/api/assets/slots?entity_name=${encodeURIComponent(suggestion.entity_name)}`),
+            fetch(`/api/assets/seed-checklist/preview?entity_name=${encodeURIComponent(suggestion.entity_name)}&category=${encodeURIComponent(suggestion.category)}&matrix_key=${encodeURIComponent(suggestion.matrix_key)}`),
           ])
           if (existingRes.ok) {
             const existingData = await existingRes.json()
@@ -245,8 +294,7 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
             const previewData = await previewRes.json()
             setExpectedSlotCount(previewData.total ?? null)
           }
-          // Auto-activate only if high confidence — otherwise user must confirm
-          setCreateAssetSlots((data.asset_confidence ?? 0) >= 0.7)
+          setCreateAssetSlots(suggestion.confidence >= 0.7)
         }
       }
     } finally {
@@ -306,6 +354,27 @@ function UploadModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: (
             accessories: assetSuggestion.accessories ?? [],
           }),
         })
+      }
+
+      // Multi-entity: create all selected entities in parallel
+      if (multiEntities.length > 1 && selectedEntityIdxs.size > 0) {
+        await Promise.all(
+          Array.from(selectedEntityIdxs).map(idx => {
+            const ent = multiEntities[idx]
+            if (!ent) return Promise.resolve()
+            return fetch('/api/assets/create-entity', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                category: ent.category,
+                matrix_key: ent.matrix_key,
+                entity_name: ent.entity_name,
+                entity_label: ent.entity_label,
+                accessories: ent.accessories ?? [],
+              }),
+            })
+          })
+        )
       }
 
       // Si el usuario vinculó el tomo a una entidad canónica
@@ -685,6 +754,98 @@ Confidencial — Uso interno de desarrollo, guion, arte, producción y licencias
               </div>
             )
           })()}
+
+          {/* Multi-entity panel */}
+          {multiEntities.length > 1 && (
+            <div style={{
+              background: 'rgba(78,205,196,0.05)',
+              border: `1px solid ${selectedEntityIdxs.size > 0 ? 'rgba(78,205,196,0.3)' : 'rgba(255,255,255,0.08)'}`,
+              borderRadius: '4px', padding: '0.875rem 1rem',
+              display: 'flex', flexDirection: 'column', gap: '0.625rem',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ fontSize: '0.8125rem', color: '#4ECDC4', fontWeight: 600 }}>
+                  {multiEntities.length} entidades detectadas
+                </div>
+                <div style={{ display: 'flex', gap: '0.375rem' }}>
+                  <button
+                    onClick={() => setSelectedEntityIdxs(new Set(multiEntities.map((_, i) => i)))}
+                    style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: '0.65rem', color: 'rgba(78,205,196,0.6)', fontFamily: 'IBM Plex Sans, sans-serif', textDecoration: 'underline' }}
+                  >Todas</button>
+                  <button
+                    onClick={() => setSelectedEntityIdxs(new Set())}
+                    style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: '0.65rem', color: 'rgba(240,235,225,0.3)', fontFamily: 'IBM Plex Sans, sans-serif', textDecoration: 'underline' }}
+                  >Ninguna</button>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', maxHeight: '240px', overflowY: 'auto' }}>
+                {multiEntities.map((ent, idx) => {
+                  const selected = selectedEntityIdxs.has(idx)
+                  const info = entitySlotInfo[idx]
+                  const newSlots = info ? Math.max(0, info.expected - info.existing) : null
+                  const alreadyComplete = newSlots === 0
+                  const typeLabel = MANUAL_TYPES.find(t => t.category === ent.category && t.matrix_key === ent.matrix_key)?.label ?? ent.matrix_key
+
+                  return (
+                    <button
+                      key={idx}
+                      onClick={() => setSelectedEntityIdxs(prev => {
+                        const next = new Set(prev)
+                        if (next.has(idx)) next.delete(idx); else next.add(idx)
+                        return next
+                      })}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: '0.5rem',
+                        padding: '0.5rem 0.625rem',
+                        background: selected ? 'rgba(78,205,196,0.1)' : 'rgba(255,255,255,0.02)',
+                        border: `1px solid ${selected ? 'rgba(78,205,196,0.35)' : 'rgba(255,255,255,0.06)'}`,
+                        borderRadius: '3px', cursor: alreadyComplete ? 'default' : 'pointer',
+                        textAlign: 'left', width: '100%',
+                        opacity: alreadyComplete ? 0.5 : 1,
+                      }}
+                    >
+                      <span style={{
+                        width: 16, height: 16, borderRadius: '3px', flexShrink: 0,
+                        background: selected && !alreadyComplete ? '#4ECDC4' : 'transparent',
+                        border: `1.5px solid ${selected && !alreadyComplete ? '#4ECDC4' : 'rgba(255,255,255,0.15)'}`,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: '0.6rem', color: '#08060F', fontWeight: 700,
+                      }}>{selected && !alreadyComplete ? '✓' : ''}</span>
+                      <span style={{ flex: 1, fontSize: '0.8125rem', color: '#F0EBE1', fontFamily: 'IBM Plex Sans, sans-serif' }}>{ent.entity_label}</span>
+                      <span style={{ fontSize: '0.625rem', color: 'rgba(240,235,225,0.35)', fontFamily: 'IBM Plex Sans, sans-serif' }}>{typeLabel}</span>
+                      {info && !alreadyComplete && (
+                        <span style={{ fontSize: '0.6rem', color: 'rgba(78,205,196,0.5)', fontFamily: 'monospace' }}>+{newSlots}</span>
+                      )}
+                      {alreadyComplete && (
+                        <span style={{ fontSize: '0.6rem', color: 'rgba(245,165,42,0.6)', fontFamily: 'monospace' }}>completa</span>
+                      )}
+                    </button>
+                  )
+                })}
+              </div>
+
+              {loadingSlotInfo && (
+                <div style={{ fontSize: '0.6875rem', color: 'rgba(245,165,42,0.6)' }}>Calculando slots...</div>
+              )}
+
+              {selectedEntityIdxs.size > 0 && !loadingSlotInfo && (
+                <div style={{ fontSize: '0.6875rem', color: 'rgba(78,205,196,0.7)' }}>
+                  Se crearán slots para <strong>{selectedEntityIdxs.size}</strong> entidades al guardar.
+                  {' '}Total estimado: <strong>{Array.from(selectedEntityIdxs).reduce((sum, idx) => {
+                    const info = entitySlotInfo[idx]
+                    return sum + (info ? Math.max(0, info.expected - info.existing) : 0)
+                  }, 0)}</strong> slots nuevos.
+                </div>
+              )}
+
+              {selectedEntityIdxs.size === 0 && !loadingSlotInfo && (
+                <div style={{ fontSize: '0.6875rem', color: 'rgba(240,235,225,0.3)' }}>
+                  No se crearán slots. Selecciona las entidades que quieres crear.
+                </div>
+              )}
+            </div>
+          )}
 
           {/* ── Paso 2: Vincular a entidad canónica ────────────────────────── */}
           {!analyzing && file && (
