@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
   const excerpt = text.substring(0, 16000)
 
   const response = await client.messages.create({
-    model: 'claude-haiku-4-5-20251001',
+    model: 'claude-sonnet-4-6',
     max_tokens: 4000,
     messages: [
       {
@@ -109,10 +109,12 @@ Reglas para cada entidad en "entities":
   Si no hay, devuelve [].
 
 REGLA CRÍTICA para documentos multi-personaje:
-- Si el documento describe un EQUIPO con varios jugadores, crea UNA entidad POR CADA jugador/entrenador individual.
+- Si el documento describe un EQUIPO con varios jugadores/miembros, crea UNA entidad POR CADA persona individual. Lee el documento COMPLETO y extrae TODOS los personajes, no solo el primero.
+- Ejemplo: un doc con 7 jugadores + 1 DT = 8 entidades en el array "entities" (7 jugadores + 1 entrenador).
+- NUNCA crees una entidad genérica del equipo (como "Hawks FC" o "Equipo Rival"). Solo entidades de PERSONAS individuales con nombre propio.
 - Si el documento describe una locación con múltiples áreas diferenciadas, crea una entidad para la locación principal.
-- Si un personaje es DT/entrenador, usa asset_matrix_key "entrenadores" en vez de "hawks" o "personajes".
-- NO crees una entidad genérica del equipo si ya existen los jugadores individuales.
+- Si un personaje es DT, entrenador, director técnico o cuerpo técnico, SIEMPRE usa asset_matrix_key "entrenadores" (NO "hawks" ni "personajes"). Esto le da slots de banca/técnico en vez de uniforme de partido.
+- Incluye SIEMPRE a los entrenadores/DT como entidades separadas. No los omitas.
 
 Nombre del archivo: ${filename}
 
