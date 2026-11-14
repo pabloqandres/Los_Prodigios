@@ -38,15 +38,27 @@ function EntityCard({
   const complete = approved === total && total > 0
 
   const portrait = (() => {
-    // Show "Identidad facial · Frontal" as entity thumbnail (approved or pending)
-    const isFace = (s: { view_type: string; age_version: string | null }) =>
+    // Category-aware thumbnail selection
+    const isPortrait = (s: { view_type: string; age_version: string | null }) =>
       s.view_type === 'Identidad facial' && (s.age_version === 'Frontal' || !s.age_version)
+    const isVistaMaestra = (s: { view_type: string; age_version: string | null }) =>
+      s.view_type === 'Vista maestra' && (s.age_version === 'Día' || s.age_version === 'Frontal' || !s.age_version)
+    const isVistaFrontal = (s: { view_type: string; age_version: string | null }) =>
+      s.view_type === 'Vista maestra' || s.view_type === 'Vista frontal'
 
-    const approvedFace = slots.find(s => isFace(s) && s.approved_drive_file_id)
-    if (approvedFace) return storageUrl(approvedFace.approved_drive_file_id)
+    // Try each matcher in priority order
+    for (const matcher of [isPortrait, isVistaMaestra, isVistaFrontal]) {
+      const approved = slots.find(s => matcher(s) && s.approved_drive_file_id)
+      if (approved) return storageUrl(approved.approved_drive_file_id)
+      const pending = slots.find(s => matcher(s) && s.pending_drive_file_id)
+      if (pending) return storageUrl(pending.pending_drive_file_id)
+    }
 
-    const pendingFace = slots.find(s => isFace(s) && s.pending_drive_file_id)
-    if (pendingFace) return storageUrl(pendingFace.pending_drive_file_id)
+    // Last resort: any slot with an image
+    const anyApproved = slots.find(s => s.approved_drive_file_id)
+    if (anyApproved) return storageUrl(anyApproved.approved_drive_file_id)
+    const anyPending = slots.find(s => s.pending_drive_file_id)
+    if (anyPending) return storageUrl(anyPending.pending_drive_file_id)
 
     return null
   })()

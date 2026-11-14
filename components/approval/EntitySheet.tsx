@@ -661,6 +661,7 @@ export default function EntitySheet({ entity, category, slots, userEmail, onClos
         const params = new URLSearchParams({
           entity_name:  entity.entity_name,
           entity_label: entity.entity_label,
+          category,
         })
         const res = await fetch(`/api/assets/entity-doc?${params}`)
         if (!res.ok) {

@@ -13,10 +13,50 @@ function normalize(s: string): string {
     .replace(/\s+/g, ' ').trim()
 }
 
+/**
+ * For multi-entity documents, extract only the section about the specific entity.
+ */
+function extractEntitySection(content: string, entityLabel: string): string {
+  const labelNorm = entityLabel.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+  const lines = content.split('\n')
+
+  let startIdx = -1
+  for (let i = 0; i < lines.length; i++) {
+    const lineNorm = lines[i].toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim()
+    if (lineNorm.includes(labelNorm) && lineNorm.length < labelNorm.length + 40) {
+      startIdx = i
+      break
+    }
+  }
+  if (startIdx === -1) return content
+
+  let endIdx = lines.length
+  for (let i = startIdx + 1; i < lines.length; i++) {
+    const line = lines[i].trim()
+    if (!line) continue
+    if (line.length < 50 && line.length > 3 && !/[.,:;]$/.test(line)) {
+      const isNameLike = /^[A-ZÁÉÍÓÚÜÑ][a-záéíóúüñ]+(\s+[A-ZÁÉÍÓÚÜÑ][a-záéíóúüñ]+)+$/.test(line)
+      const isCapsHeading = /^[A-ZÁÉÍÓÚÜÑ\s\d.]{4,}$/.test(line) && line !== lines[startIdx].trim()
+      const isNumberedSection = /^\d+[.)]\s/.test(line)
+      if ((isNameLike || isCapsHeading || isNumberedSection) && i > startIdx + 3) {
+        endIdx = i
+        break
+      }
+    }
+  }
+
+  return lines.slice(startIdx, endIdx).join('\n')
+}
+
+// Categories that should NOT get character-specific fields (hair, eyes, skin, etc.)
+const NON_CHARACTER_CATEGORIES = ['locaciones', 'props', 'criaturas', 'mascotas', 'simbolos']
+
 // Extract key fields from plain-text profile docs (mammoth output from .docx)
-function parseProseProfile(content: string, entityLabel: string): Record<string, string> {
+function parseProseProfile(content: string, entityLabel: string, category?: string): Record<string, string> {
   const fields: Record<string, string> = {}
-  const lines = content.split('\n').map(l => l.trim()).filter(Boolean)
+  const isCharacter = !category || !NON_CHARACTER_CATEGORIES.includes(category)
+  const section = extractEntitySection(content, entityLabel)
+  const lines = section.split('\n').map(l => l.trim()).filter(Boolean)
 
   // ── Try markdown-style **Key**: Value first ─────────────────────────────────
   for (const line of lines) {
@@ -29,8 +69,7 @@ function parseProseProfile(content: string, entityLabel: string): Record<string,
 
   if (Object.keys(fields).length >= 3) return fields
 
-  // ── Fallback: extract from prose ───────────────────────────────────────────
-  const fullText = content
+  // ── Fallback: extract from prose (using entity section, not full doc) ───────
 
   // Name: first all-caps line that is NOT a generic org header
   const SKIP_CAPS = /BIBLIOTECA|OFICIAL|PRODIGIOS|VERSIÓN|CONFIDENCIAL|DOCUMENTO|INTERNO|USO\s/i
@@ -38,71 +77,71 @@ function parseProseProfile(content: string, entityLabel: string): Record<string,
   if (capsLine) fields['Nombre completo'] = capsLine.trim()
   else fields['Nombre completo'] = entityLabel
 
-  // Doc code (LP-FP-XX pattern)
-  const codeMatch = fullText.match(/LP-[A-Z]{1,4}-\d+/)
+  // Doc code (LP-FP-XX pattern) — search full content for this
+  const codeMatch = content.match(/LP-[A-Z]{1,4}-\d+/)
   if (codeMatch) fields['Código'] = codeMatch[0]
 
-  // Age — "tiene X años" or "X años"
-  const ageMatch = fullText.match(/tiene\s+(\w+)\s+años|(\d{1,2})\s+años/i)
-  if (ageMatch) {
-    const raw = ageMatch[1] || ageMatch[2]
-    // Convert word numbers
-    const wordMap: Record<string, string> = { quince: '15', catorce: '14', trece: '13', doce: '12', dieciséis: '16', diecisiete: '17' }
-    fields['Edad'] = wordMap[raw.toLowerCase()] ? `${wordMap[raw.toLowerCase()]} años` : `${raw} años`
-  }
+  // Character-specific fields — only for personajes, hawks, secundarios, entrenadores
+  if (isCharacter) {
+    const ageMatch = section.match(/tiene\s+(\w+)\s+años|(\d{1,2})\s+años/i)
+    if (ageMatch) {
+      const raw = ageMatch[1] || ageMatch[2]
+      const wordMap: Record<string, string> = { quince: '15', catorce: '14', trece: '13', doce: '12', dieciséis: '16', diecisiete: '17' }
+      fields['Edad'] = wordMap[raw.toLowerCase()] ? `${wordMap[raw.toLowerCase()]} años` : `${raw} años`
+    }
 
-  // Height — "1,6X metros" or "entre 1,6X y 1,7X"
-  const heightMatch = fullText.match(/(?:entre\s+)?(1[,\.]\d{2})(?:\s+y\s+(1[,\.]\d{2}))?\s+metros/i)
-  if (heightMatch) {
-    fields['Estatura'] = heightMatch[2]
-      ? `${heightMatch[1]}–${heightMatch[2]} m`
-      : `${heightMatch[1]} m`
-  }
+    const heightMatch = section.match(/(?:entre\s+)?(1[,\.]\d{2})(?:\s+y\s+(1[,\.]\d{2}))?\s+metros/i)
+    if (heightMatch) {
+      fields['Estatura'] = heightMatch[2]
+        ? `${heightMatch[1]}–${heightMatch[2]} m`
+        : `${heightMatch[1]} m`
+    }
 
-  // Nationality/origin
-  const natMatch = fullText.match(/es\s+(chileno|argentino|mexicano|colombiano|venezolano|peruano|ecuatoriano|boliviano|uruguayo|paraguayo|brasileño)/i)
-  if (natMatch) fields['Nacionalidad'] = natMatch[1].charAt(0).toUpperCase() + natMatch[1].slice(1)
+    const natMatch = section.match(/es\s+(chileno|argentino|mexicano|colombiano|venezolano|peruano|ecuatoriano|boliviano|uruguayo|paraguayo|brasileño)/i)
+    if (natMatch) fields['Nacionalidad'] = natMatch[1].charAt(0).toUpperCase() + natMatch[1].slice(1)
 
-  // Position / role
-  const posMatch = fullText.match(/[Jj]uega\s+como\s+([^.]{5,60}?)(?:\s+y\s+es|\s*\.|,)/i)
-  if (posMatch) fields['Posición'] = posMatch[1].trim()
+    const posMatch = section.match(/[Jj]uega\s+como\s+([^.]{5,60}?)(?:\s+y\s+es|\s*\.|,)/i)
+    if (posMatch) fields['Posición'] = posMatch[1].trim()
 
-  const rolMatch = fullText.match(/(?:es el|como)\s+(protagonista|antagonista|capitán|portero|entrenador|árbitro)[^.]{0,40}/i)
-  if (rolMatch) fields['Rol'] = rolMatch[0].replace(/^(?:es el|como)\s+/i, '').replace(/[.,].*$/, '').trim()
+    const rolMatch = section.match(/(?:es el|como)\s+(protagonista|antagonista|capitán|portero|entrenador|árbitro)[^.]{0,40}/i)
+    if (rolMatch) fields['Rol'] = rolMatch[0].replace(/^(?:es el|como)\s+/i, '').replace(/[.,].*$/, '').trim()
 
-  // Body build
-  const buildMatch = fullText.match(/contextura\s+([^.,]{5,50})/i)
-  if (buildMatch) fields['Complexión'] = buildMatch[1].trim()
+    const buildMatch = section.match(/contextura\s+([^.,]{5,50})/i)
+    if (buildMatch) fields['Complexión'] = buildMatch[1].trim()
 
-  // Hair
-  const hairMatch = fullText.match(/pelo\s+([^.,;]{5,80})/i) || fullText.match(/cabello\s+([^.,;]{5,80})/i)
-  if (hairMatch) fields['Pelo'] = hairMatch[1].trim()
+    const hairMatch = section.match(/pelo\s+([^.,;]{5,80})/i) || section.match(/cabello\s+([^.,;]{5,80})/i)
+    if (hairMatch) fields['Pelo'] = hairMatch[1].trim()
 
-  // Eyes
-  const eyeMatch = fullText.match(/ojos\s+(cafés|marrones|verdes|azules|negros|grises|castaños|claros|oscuros)[^.,;]{0,30}/i)
-  if (eyeMatch) fields['Ojos'] = eyeMatch[0].replace(/^ojos\s+/i, '').trim()
+    const eyeMatch = section.match(/ojos\s+(cafés|marrones|verdes|azules|negros|grises|castaños|claros|oscuros)[^.,;]{0,30}/i)
+    if (eyeMatch) fields['Ojos'] = eyeMatch[0].replace(/^ojos\s+/i, '').trim()
 
-  // Skin
-  const skinMatch = fullText.match(/[Pp]iel\s+([^.,;]{5,60})/)
-  if (skinMatch) fields['Piel'] = skinMatch[1].trim()
+    const skinMatch = section.match(/[Pp]iel\s+([^.,;]{5,60})/)
+    if (skinMatch) fields['Piel'] = skinMatch[1].trim()
 
-  // First sentence of section 1 as role description
-  const sec1 = fullText.match(/1\.\s+Identidad[^\n]*\n+([\s\S]{30,300}?)(?:\n\n|\n\d\.)/i)
-  if (sec1) {
-    const firstSentence = sec1[1].split(/\.\s+/)[0].trim()
-    if (firstSentence.length > 20) fields['Descripción'] = firstSentence + '.'
+    const sec1 = section.match(/1\.\s+Identidad[^\n]*\n+([\s\S]{30,300}?)(?:\n\n|\n\d\.)/i)
+    if (sec1) {
+      const firstSentence = sec1[1].split(/\.\s+/)[0].trim()
+      if (firstSentence.length > 20) fields['Descripción'] = firstSentence + '.'
+    }
+  } else {
+    // Location/prop: extract first meaningful paragraph as description
+    const descLines = section.split('\n').map(l => l.trim()).filter(l => l.length > 40)
+    if (descLines.length > 0) {
+      fields['Descripción'] = descLines[0].substring(0, 200)
+    }
   }
 
   return fields
 }
 
-// GET /api/assets/entity-doc?entity_name=MateoGonzalez&entity_label=Mateo+González
+// GET /api/assets/entity-doc?entity_name=MateoGonzalez&entity_label=Mateo+González&category=personajes
 export async function GET(request: NextRequest) {
   const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET })
   if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const entity_name  = request.nextUrl.searchParams.get('entity_name') ?? ''
   const entity_label = request.nextUrl.searchParams.get('entity_label') ?? ''
+  const category     = request.nextUrl.searchParams.get('category') ?? ''
 
   if (!entity_name && !entity_label) {
     return NextResponse.json({ error: 'entity_name or entity_label required' }, { status: 400 })
@@ -127,7 +166,7 @@ export async function GET(request: NextRequest) {
 
     if (linkedDocs?.length) {
       const bestDoc = linkedDocs[0]
-      const fields = parseProseProfile(bestDoc.content, entity_label)
+      const fields = parseProseProfile(bestDoc.content, entity_label, category)
       return NextResponse.json({
         match: { id: bestDoc.id, title: bestDoc.title },
         fields,
