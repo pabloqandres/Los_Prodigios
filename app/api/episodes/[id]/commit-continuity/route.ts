@@ -33,7 +33,25 @@ export async function POST(
   const label = body.episode_label
   const date = new Date().toISOString().split('T')[0]
 
-  // 2. Build updated content for each module
+  // 2. Strip previous data from this episode (idempotent re-commits)
+  //    Each episode section starts with a heading containing the label (e.g. "## T1E01")
+  //    We remove from that heading to the next same-level heading or end of string.
+  function stripEpisodeSection(content: string, epLabel: string): string {
+    if (!content) return ''
+    // Match ## heading or ### heading containing the episode label
+    const escaped = epLabel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    const pattern = new RegExp(
+      `\\n*##+ .*${escaped}[^\\n]*(?:\\n(?!##+ ).*)*`,
+      'g'
+    )
+    return content.replace(pattern, '').trim()
+  }
+
+  for (const key of Object.keys(moduleMap)) {
+    moduleMap[key] = stripEpisodeSection(moduleMap[key], label)
+  }
+
+  // 3. Build updated content for each module
 
   // canon_log
   let canonLogAppend = `\n\n## ${label} — ${date}`
@@ -99,7 +117,7 @@ export async function POST(
   }
   const newOpenIssues = (moduleMap['open_issues'] ?? '') + openIssuesAppend
 
-  // 3. Update all modules in supabase
+  // 4. Update all modules in supabase
   const moduleUpdates = [
     { key: 'canon_log', content: newCanonLog },
     { key: 'timeline', content: newTimeline },
@@ -117,7 +135,7 @@ export async function POST(
       )
   }
 
-  // 4. Bible propagation — only insert NEW docs, never modify existing
+  // 5. Bible propagation — only insert NEW docs, never modify existing
   let newBibleDocs = 0
 
   if (body.new_entities.length > 0) {
@@ -159,18 +177,17 @@ export async function POST(
     }
   }
 
-  // 5. Insert new open promises into narrative_promises (deduplicated by promise_id)
+  // 6. Insert new open promises into narrative_promises (deduplicated by promise_id)
   let newPromisesInserted = 0
 
   if (body.promises_opened.length > 0) {
-    // Fetch existing promise_ids to avoid duplicates across re-runs
-    const { data: existingPromises } = await supabase
+    // Delete existing promises from this episode first (idempotent re-commits)
+    await supabase
       .from('narrative_promises')
-      .select('promise_id')
+      .delete()
+      .eq('episode_label', label)
 
-    const existingIds = new Set(
-      (existingPromises ?? []).map((p: { promise_id: string }) => p.promise_id)
-    )
+    const existingIds = new Set<string>()
 
     for (const p of body.promises_opened) {
       if (existingIds.has(p.id)) continue
