@@ -63,17 +63,33 @@ export async function POST(
     return NextResponse.json({ error: 'El episodio no tiene guión cargado' }, { status: 400 })
   }
 
-  // ── 2. Load approved asset slots ─────────────────────────────────────────────
-  const { data: approvedSlots } = await supabase
+  // ── 2. Load ALL asset slots (for prompt context) and approved (for gap check)
+  const { data: allSlots } = await supabase
     .from('asset_slots')
     .select('entity_name, entity_label, category, matrix_key, view_type, outfit, status')
-    .eq('status', 'approved')
 
   const approvedSet = new Set(
-    (approvedSlots ?? []).map(s =>
+    (allSlots ?? []).filter(s => s.status === 'approved').map(s =>
       `${s.entity_name}::${s.view_type}::${s.outfit ?? ''}`.toLowerCase()
     )
   )
+
+  // Build a summary of existing entities and their outfits for the prompt
+  const entitySlotMap: Record<string, { label: string; category: string; outfits: Set<string>; views: Set<string> }> = {}
+  for (const s of allSlots ?? []) {
+    if (!entitySlotMap[s.entity_name]) {
+      entitySlotMap[s.entity_name] = { label: s.entity_label, category: s.category, outfits: new Set(), views: new Set() }
+    }
+    entitySlotMap[s.entity_name].views.add(s.view_type)
+    if (s.outfit) entitySlotMap[s.entity_name].outfits.add(s.outfit)
+  }
+
+  const existingSlotsContext = Object.entries(entitySlotMap)
+    .map(([name, info]) => {
+      const outfits = info.outfits.size > 0 ? [...info.outfits].join(', ') : '(sin outfits)'
+      return `- ${name} (${info.label}) [${info.category}]: outfits=[${outfits}], views=[${[...info.views].join(', ')}]`
+    })
+    .join('\n')
 
   // ── 3. Load canon bible docs (reference_docs) ────────────────────────────────
   const { data: refDocs } = await supabase
@@ -111,14 +127,24 @@ Conoces estos matrix_keys que determinan qué slots se generan:
 - "rivales" → equipos rivales
 - "hawks" → jugadores/cuerpo técnico de Hawks FC
 
-Para view_type usa los nombres del paquete base Cinema Studio:
-"Identidad facial", "Cuerpo completo", "Lámina expresiones", "Uniforme partido",
-"Outfit casual", "Acción", "Accesorio", "Vista maestra", "Vista complementaria",
-"Detalle", "Estado A", "Estado B", "Estado C", "Maestro"
+Para view_type usa SOLO estos nombres exactos:
+"Identidad facial", "Cuerpo completo", "Lámina expresiones",
+"Acción", "Accesorio", "Vista maestra", "Vista complementaria",
+"Detalle", "Estado A", "Estado B", "Estado C", "Maestro", "Carta de color"
+
+REGLA CRÍTICA SOBRE OUTFITS:
+- Abajo tienes la lista de entidades existentes con sus outfits registrados.
+- Cuando un personaje necesita un "Cuerpo completo", usa EXACTAMENTE uno de los outfits existentes de ese personaje.
+- NO inventes nombres de outfit nuevos. Si un personaje tiene outfit "Casual", usa "Casual" — NO "Outfit de viaje", "Ropa informal", etc.
+- Si no hay un outfit que calce, usa el más cercano de los existentes.
+- Si el personaje no existe en la lista, usa outfits genéricos: "Casual", "Uniforme Hawks", "Uniforme Prodigios", etc.
 
 Devuelve ÚNICAMENTE un objeto JSON válido.`
 
   const userPrompt = `Episodio: ${episodeLabel}
+
+## Entidades y outfits existentes en el sistema
+${existingSlotsContext || '(No hay entidades registradas aún)'}
 
 ## Canon de la biblia (fragmento)
 ${canonContext || '(Sin docs de biblia disponibles aún)'}
