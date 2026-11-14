@@ -702,7 +702,6 @@ export default function VisualGapsPanel({
       const matchedSlot = (slotsMap[gap.entity_name] ?? [])[0]
       const entityName = matchedSlot?.entity_name ?? gap.entity_name
       const entityLabel = matchedSlot?.entity_label ?? gap.entity_label
-      const category = matchedSlot?.category ?? gap.category
 
       const res = await fetch('/api/assets/create-entity', {
         method: 'POST',
@@ -710,7 +709,7 @@ export default function VisualGapsPanel({
         body: JSON.stringify({
           entity_name: entityName,
           entity_label: entityLabel,
-          category,
+          category: gap.category,
           matrix_key: gap.matrix_key,
           required_approvals: 1,
         }),
