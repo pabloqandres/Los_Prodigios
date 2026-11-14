@@ -697,13 +697,20 @@ export default function VisualGapsPanel({
     const key = gap.id
     setCreatingGap(key)
     try {
+      // Use existing entity_name if a match exists (avoids creating duplicates
+      // when Claude generates slightly different names like "Vale" vs "ValentinaRios")
+      const matchedSlot = (slotsMap[gap.entity_name] ?? [])[0]
+      const entityName = matchedSlot?.entity_name ?? gap.entity_name
+      const entityLabel = matchedSlot?.entity_label ?? gap.entity_label
+      const category = matchedSlot?.category ?? gap.category
+
       const res = await fetch('/api/assets/create-entity', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          entity_name: gap.entity_name,
-          entity_label: gap.entity_label,
-          category: gap.category,
+          entity_name: entityName,
+          entity_label: entityLabel,
+          category,
           matrix_key: gap.matrix_key,
           required_approvals: 1,
         }),

@@ -21,19 +21,68 @@ export async function GET(req: NextRequest) {
 
   const supabase = createServerClient()
 
-  // Base query: approved slots for this entity
+  // Try exact match first, then fuzzy match by label/name similarity
   let query = supabase
     .from('asset_slots')
     .select('id, entity_name, entity_label, category, view_type, outfit, age_version, version_label, approved_drive_file_id, semantic_tags, usage_context')
     .eq('entity_name', entity_name)
     .eq('status', 'approved')
 
-  // Optionally filter by view_type
   if (view_type) {
     query = query.eq('view_type', view_type)
   }
 
-  const { data: slots, error } = await query.order('view_type').order('age_version')
+  let { data: slots, error } = await query.order('view_type').order('age_version')
+
+  // Fuzzy fallback: if no exact match, search by entity_label ilike or partial name match
+  if ((!slots || slots.length === 0) && !error) {
+    // Normalize: split PascalCase into words for partial matching
+    const words = entity_name.replace(/([A-Z])/g, ' $1').trim().split(/\s+/).filter(w => w.length > 2)
+
+    // Try ilike on entity_label and entity_name for each significant word
+    const { data: allApproved } = await supabase
+      .from('asset_slots')
+      .select('id, entity_name, entity_label, category, view_type, outfit, age_version, version_label, approved_drive_file_id, semantic_tags, usage_context')
+      .eq('status', 'approved')
+
+    if (allApproved?.length) {
+      const normalize = (s: string) => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '')
+      const searchNorm = normalize(entity_name)
+
+      // Score each entity by word overlap
+      const entityScores: Record<string, { score: number; slots: typeof allApproved }> = {}
+      for (const slot of allApproved) {
+        const nameNorm = normalize(slot.entity_name)
+        const labelNorm = normalize(slot.entity_label)
+
+        let score = 0
+        for (const w of words) {
+          const wn = normalize(w)
+          if (nameNorm.includes(wn)) score += 2
+          if (labelNorm.includes(wn)) score += 2
+        }
+        // Also check if the search term is contained in the name or vice versa
+        if (nameNorm.includes(searchNorm) || searchNorm.includes(nameNorm)) score += 5
+
+        if (score > 0) {
+          if (!entityScores[slot.entity_name]) entityScores[slot.entity_name] = { score: 0, slots: [] }
+          entityScores[slot.entity_name].score = Math.max(entityScores[slot.entity_name].score, score)
+          entityScores[slot.entity_name].slots.push(slot)
+        }
+      }
+
+      // Take the best matching entity (minimum score threshold)
+      const best = Object.entries(entityScores)
+        .filter(([, v]) => v.score >= 4)
+        .sort((a, b) => b[1].score - a[1].score)[0]
+
+      if (best) {
+        slots = view_type
+          ? best[1].slots.filter(s => s.view_type === view_type)
+          : best[1].slots
+      }
+    }
+  }
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   if (!slots || slots.length === 0) return NextResponse.json([])
