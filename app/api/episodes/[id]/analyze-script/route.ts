@@ -214,8 +214,43 @@ Reglas:
     parsed = { canon_issues: [], scene_needs: [], summary: 'No se pudo interpretar la respuesta del análisis.' }
   }
 
-  // ── 6. Gap analysis — filter out already-approved slots ──────────────────────
+  // ── 6. Gap analysis — fuzzy-match entity names and filter approved slots ─────
+
+  // Build a normalized lookup: strip accents, lowercase for fuzzy matching
+  const norm = (s: string) => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '')
+  const existingEntities = Object.keys(entitySlotMap)
+  const entityNormMap: Record<string, string> = {} // normalized → real entity_name
+  for (const name of existingEntities) {
+    entityNormMap[norm(name)] = name
+    // Also index by label
+    const label = entitySlotMap[name].label
+    if (label) entityNormMap[norm(label)] = name
+  }
+
+  function resolveEntityName(aiName: string): string {
+    // Exact match
+    if (entitySlotMap[aiName]) return aiName
+    // Normalized match
+    const n = norm(aiName)
+    if (entityNormMap[n]) return entityNormMap[n]
+    // Partial match: check if any existing entity contains or is contained by the AI name
+    for (const [normKey, realName] of Object.entries(entityNormMap)) {
+      if (n.length > 4 && (normKey.includes(n) || n.includes(normKey))) return realName
+    }
+    return aiName // no match found, keep original
+  }
+
   const sceneNeeds: SceneAssetNeed[] = Array.isArray(parsed.scene_needs) ? parsed.scene_needs : []
+
+  // Resolve AI-generated entity names to existing ones
+  for (const need of sceneNeeds) {
+    const resolved = resolveEntityName(need.entity_name)
+    if (resolved !== need.entity_name) {
+      need.entity_name = resolved
+      need.entity_label = entitySlotMap[resolved]?.label ?? need.entity_label
+    }
+  }
+
   const gaps = sceneNeeds.filter(need => {
     const key = `${need.entity_name}::${need.view_type}::${need.outfit ?? ''}`.toLowerCase()
     return !approvedSet.has(key)
